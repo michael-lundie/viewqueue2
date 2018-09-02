@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/settings_title">
+    <EditTextPreference
+        android:defaultValue="@string/settings_themoviedb_api_default"
+        android:inputType="text"
+        android:key="@string/settings_themoviedb_apikey_key"
+        android:selectAllOnFocus="true"
+        android:title="@string/settings_themoviedb_api_label"
+        />
+    <ListPreference
+        android:key="@string/settings_orderby_key"
+        android:title="@string/settings_orderby_label"
+        android:entries="@array/settings_orderby_array_labels"
+        android:entryValues="@array/settings_orderby_array_values"
+        android:defaultValue="@string/settings_orderby_most_popular"
+        />
+</PreferenceScreen>

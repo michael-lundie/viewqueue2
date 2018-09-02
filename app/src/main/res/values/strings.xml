@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">viewcue</string>
+
+    <!-- Settings Activity Title -->
+    <string name="settings_title">VueCue Settings</string>
+    <!-- Preference string keys and values -->
+    <string name="settings_themoviedb_api_default" translatable="false"></string>
+    <string name="settings_themoviedb_apikey_key" translatable="false">api_key</string>
+    <string name="settings_themoviedb_api_label" translatable="false">Please enter your API key here.</string>
+
+    <string name="settings_orderby_key" translatable="false">orderby</string>
+    <!-- String for order by preference title [CHAR LIMIT=30] -->
+    <string name="settings_orderby_label">Order news articles by</string>
+    <string-array name="settings_orderby_array_labels">
+        <item>Most Popular</item>
+        <item>Highest Rated</item>
+    </string-array>
+    <string-array name="settings_orderby_array_values" translatable="false">
+        <item>@string/settings_orderby_most_popular</item>
+        <item>@string/settings_orderby_high_rated</item>
+    </string-array>
+    <string name="settings_orderby_most_popular" translatable="false">popularity</string>
+    <string name="settings_orderby_high_rated" translatable="false">rating</string>
+
+</resources>
