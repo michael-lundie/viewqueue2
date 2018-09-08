@@ -7,6 +7,10 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +83,9 @@ public class QueryUtils {
         if (returnUrl == null) {
             Log.i(LOG_TAG, "URL returned null.");
             return null;
-        } return returnUrl.toString();
+        }
+        Log.i(LOG_TAG, "TEST: Query url: " + returnUrl.toString());
+        return returnUrl.toString();
     }
 
     /**
@@ -173,6 +179,7 @@ public class QueryUtils {
                 inputStream.close();
             }
         }
+        Log.i(LOG_TAG, "TEST: json: " + jsonResponse);
         return jsonResponse;
     }
 
@@ -199,16 +206,42 @@ public class QueryUtils {
      * parsing a JSON response.
      */
     //TODO: Complete JSON parsing method
-    private static ArrayList<MovieItem> extractNewsResults(String newsQueryJSON) {
+    private static ArrayList<MovieItem> extractNewsResults(String movieQueryJSON) {
 
         // If the JSON string is empty or null, then return early.
-        if (TextUtils.isEmpty(newsQueryJSON)) {
-
+        if (TextUtils.isEmpty(movieQueryJSON)) {
             return null;
         }
 
         // Create an empty List that we can start adding earthquakes to
-        ArrayList<MovieItem> newsQueryResults = new ArrayList<>();
-        return null;
+        ArrayList<MovieItem> movieQueryResults = new ArrayList<>();
+
+        try {
+            // Let's assign our returned JSON string to a new JSONObject
+            JSONObject jsonObj = new JSONObject(movieQueryJSON);
+
+            // Next, let's grab our JSON array with returned results
+            JSONArray movieItemsJsonA = jsonObj.getJSONArray("results");
+
+            // Alrighty, let's loop through out results!
+
+            for (int movieNumber = 0; movieNumber < movieItemsJsonA.length(); movieNumber++) {
+                JSONObject currentMovieJsonO = movieItemsJsonA.getJSONObject(movieNumber);
+
+                String title = currentMovieJsonO.getString("title");
+                Log.i(LOG_TAG, "TEST: results: " + title);
+
+                String posterPath =  currentMovieJsonO.getString("poster_path");
+
+                movieQueryResults.add(new MovieItem(title, 101010, posterPath, 5, "This is a movie"));
+            }
+
+        } catch (JSONException e) {
+        // Catch any errors above during execution and show the exception in the log.
+        Log.e(LOG_TAG, "Problem parsing the JSON results.", e);
+        }
+
+        // Return our list of movie results
+        return movieQueryResults;
     }
 }

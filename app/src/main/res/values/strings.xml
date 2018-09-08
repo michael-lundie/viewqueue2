@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">viewcue</string>
-
     <!-- Settings Activity Title -->
     <string name="settings_title">VueCue Settings</string>
+    <!-- String text for empty recycle view: no internet connection -->
+    <string name="no_connection">Please check you are connected to the internet.</string>
     <!-- Preference string keys and values -->
     <string name="settings_themoviedb_api_default" translatable="false"></string>
     <string name="settings_themoviedb_apikey_key" translatable="false">api_key</string>

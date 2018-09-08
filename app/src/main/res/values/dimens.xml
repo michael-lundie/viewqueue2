@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--/ General UI  /-->
+    <dimen name="default_padding">16dp</dimen>
+    <dimen name="half_padding">8dp</dimen>
+    <dimen name="text_padding">1dp</dimen>
+
+    <!--/ Card View  /-->
+    <dimen name="title_padding">8dp</dimen>
+    <dimen name="title_textSize">12sp</dimen>
+
+    <dimen name="author_textSize">12sp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+</resources>

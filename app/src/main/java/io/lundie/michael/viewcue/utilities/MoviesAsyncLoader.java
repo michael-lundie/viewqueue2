@@ -4,7 +4,9 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v4.content.AsyncTaskLoader;
 import android.text.TextUtils;
+import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import io.lundie.michael.viewcue.MovieItem;
@@ -41,7 +43,23 @@ public class MoviesAsyncLoader extends AsyncTaskLoader {
     @Nullable
     @Override
     public ArrayList<MovieItem> loadInBackground() {
-        return null;
+        Log.i(LOG_TAG, "TEST: Movies Async Loader: loadInBackground executed");
+        //Let's check to make sure our URL isn't empty for some reason.
+        //We should never have spaces before or after our URL here. Not using trim()
+        if (!TextUtils.isEmpty(queryUrl)) {
+            try {
+                // Everything is a-okay. Continue to fetch results.
+                ArrayList<MovieItem> resultItems = QueryUtils.fetchQueryResults(queryUrl);
+                if (resultItems != null) {
+                    // Fetch results are not null. Assign to our return variable.
+                    apiQueryResults = resultItems;
+                } else {
+                    throw new IOException("No response received.");
+                }
+            } catch(Exception e) {
+                Log.e("Log error", "Problem with Requested URL", e);
+            }
+        }
+        return apiQueryResults;
     }
-
 }
