@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#1a181c</color>
+    <color name="colorPrimaryDark">#212121</color>
+    <color name="colorPrimaryStep">#212121</color>
     <color name="colorAccent">#a1407d</color>
     <color name="colorCardViewMovieTitle">#939294</color>
     <color name="grayTransparent">#001a181c</color>
+    <color name="whiteTransparent">#80ffffff</color>
     <color name="colorTransparent">#00000000</color>
 </resources>

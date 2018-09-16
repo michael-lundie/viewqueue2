@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/colorPrimaryDark"
-    android:padding="2dp"
+    android:padding="1dp"
     android:id="@+id/card_view"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -23,19 +23,23 @@
                     android:layout_height="100dp"
                     android:background="@drawable/gradient_gray"
                     android:layout_gravity="bottom"/>
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/triangle_left"
+                    android:layout_gravity="top|left"/>
             </FrameLayout>
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/colorCardViewMovieTitle"
-                android:paddingBottom="@dimen/half_padding"
-                android:textSize="@dimen/title_textSize"
-                android:textAllCaps="true"
-                app:fontFamily="sans-serif-medium"
-                android:layout_gravity="end"
-                tools:text="Not my Father" />
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/colorCardViewMovieTitle"
+                    android:paddingBottom="@dimen/half_padding"
+                    android:textSize="@dimen/title_textSize"
+                    android:textAllCaps="true"
+                    app:fontFamily="sans-serif-medium"
+                    android:layout_gravity="end" />
 
 </LinearLayout>

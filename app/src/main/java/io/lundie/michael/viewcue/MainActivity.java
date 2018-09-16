@@ -31,9 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Create Loader Manager as static, to prevent NPE onDestroy
-     * NOTE: I tried to find a better way to handle this - but so far unsuccessful.
      */
-    private static LoaderManager.LoaderCallbacks<ArrayList<MovieItem>> movieQueryLoaderCallback;
+    static LoaderManager.LoaderCallbacks<ArrayList<MovieItem>> movieQueryLoaderCallback;
 
     private RecycleViewWithSetEmpty.Adapter mAdapter;
     private ArrayList<MovieItem> mList = new ArrayList<>();
@@ -66,9 +65,11 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         mRecyclerView.setAdapter(mAdapter);
 
-        executeSearch();
 
+
+        executeSearch();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
         String queryURL = QueryUtils.queryUrlBuilder(this);
 
         // Create a new loader from class.
+        // Our instance will persist across configuration changes, as the loader logic will return
+        // any current instances. Not sure if this is the best way to go about it.
         movieQueryLoaderCallback = new MovieQueryCallback(this, queryURL, mList, mAdapter,
                 mProgressRing, mEmptyStateTextView);
 
@@ -113,9 +116,20 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Looks like we are good to go.
             mEmptyStateTextView.setVisibility(View.GONE);
-            mProgressRing.setVisibility(View.GONE);
             // Let's get our loader manager hooked up and started
             getSupportLoaderManager().initLoader(API_REQUEST_LOADER_ID, null, movieQueryLoaderCallback);
         }
+    }
+
+    private void resetSearch() {
+        // upon a new search initiation, destroy previous loader.
+        getLoaderManager().destroyLoader(API_REQUEST_LOADER_ID);
+        //clear the array list
+        mList.clear();
+        //notify the adapter and scroll to position 0
+        mAdapter.notifyDataSetChanged();
+        mRecyclerView.scrollToPosition(0);
+        // Show our progress ring.
+        mProgressRing.setVisibility(View.VISIBLE);
     }
 }

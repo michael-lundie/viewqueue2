@@ -4,13 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
-    android:paddingTop="?attr/actionBarSize">
+    >
 
     <io.lundie.michael.viewcue.RecycleViewWithSetEmpty
         android:id="@+id/movie_list"
-        android:padding="@dimen/default_padding"
+        android:padding="@dimen/half_padding"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"/>
 
     <TextView
         android:id="@+id/list_empty"

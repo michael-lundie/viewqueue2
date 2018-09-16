@@ -107,7 +107,7 @@ public class QueryUtils {
         }
 
         // Extract relevant fields from the JSON response and return a List<NewsItem> object
-        return extractNewsResults(jsonResponse);
+        return extractMovieResults(jsonResponse);
     }
 
     /**
@@ -206,7 +206,7 @@ public class QueryUtils {
      * parsing a JSON response.
      */
     //TODO: Complete JSON parsing method
-    private static ArrayList<MovieItem> extractNewsResults(String movieQueryJSON) {
+    private static ArrayList<MovieItem> extractMovieResults(String movieQueryJSON) {
 
         // If the JSON string is empty or null, then return early.
         if (TextUtils.isEmpty(movieQueryJSON)) {
@@ -233,7 +233,9 @@ public class QueryUtils {
 
                 String posterPath =  currentMovieJsonO.getString("poster_path");
 
-                movieQueryResults.add(new MovieItem(title, 101010, posterPath, 5, "This is a movie"));
+                String backgroundPath = currentMovieJsonO.getString("backdrop_path");
+
+                movieQueryResults.add(new MovieItem(title, 101010, posterPath, backgroundPath, 5, "This is a movie"));
             }
 
         } catch (JSONException e) {
