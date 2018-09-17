@@ -52,11 +52,22 @@
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
                 app:layout_collapseMode="pin" />
         </android.support.design.widget.CollapsingToolbarLayout>
-        <RelativeLayout
+        <FrameLayout
             android:layout_below="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
+            <View
+                android:id="@+id/title_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimaryDark"
+                android:layout_gravity="bottom"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/colorAccent"
+                android:layout_gravity="bottom"/>
             <TextView
             android:id="@+id/title"
             android:layout_gravity="top|end"
@@ -67,12 +78,8 @@
             android:textSize="30sp"
             android:background="#801a181c"
             android:textColor="#ffffff"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="@color/colorAccent"
-                android:layout_below="@+id/title"/>
-        </RelativeLayout>
+
+        </FrameLayout>
     </android.support.design.widget.AppBarLayout>
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
@@ -46,6 +47,8 @@ public class DetailActivity extends AppCompatActivity {
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbar;
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.detail_view_poster) ImageView mPosterView;
+    @BindView(R.id.main_content) CoordinatorLayout mRootDetailLayout;
+    @BindView(R.id.title_background) View titleBackgroundView;
 
     Boolean appBarExpanded;
     @Override
@@ -65,10 +68,22 @@ public class DetailActivity extends AppCompatActivity {
 
         title.setText(movie.getTitle());
 
+        // Solution for scaling from 'bottom': https://stackoverflow.com/a/22144862
+        // Get height after layout is drawn solution: https://stackoverflow.com/a/24035591
+
+        titleBackgroundView.post(new Runnable() {
+            @Override
+            public void run() {
+                titleBackgroundView.getHeight(); //height is ready
+                titleBackgroundView.setPivotY(titleBackgroundView.getHeight());
+                Log.i(LOG_TAG, "ANIM: Pivot:" + (titleBackgroundView.getHeight()));
+            }
+        });
+
+        appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
+
         loadImageWithGlide(movie.getBackgroundURL(), progressBar, backdrop);
         loadImageWithGlide(movie.getPosterURL(), null, mPosterView);
-
-
 
     }
 
@@ -92,6 +107,5 @@ public class DetailActivity extends AppCompatActivity {
                     }
                 })
                 .into(displayView);
-
     }
 }
