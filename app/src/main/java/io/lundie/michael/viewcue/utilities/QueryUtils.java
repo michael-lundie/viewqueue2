@@ -232,10 +232,35 @@ public class QueryUtils {
                 Log.i(LOG_TAG, "TEST: results: " + title);
 
                 String posterPath =  currentMovieJsonO.getString("poster_path");
+                Log.i(LOG_TAG, "TEST: results: " + posterPath);
 
+
+                String overview = currentMovieJsonO.getString("overview");
+                Log.i(LOG_TAG, "TEST: results: " + overview);
+
+
+                String releaseDate = currentMovieJsonO.getString("release_date");
+                Log.i(LOG_TAG, "TEST: results: " + releaseDate);
+
+                // Some movies may not have a URL for background, if so, let's assign the background
+                // the same URL as the poster.
                 String backgroundPath = currentMovieJsonO.getString("backdrop_path");
 
-                movieQueryResults.add(new MovieItem(title, 101010, posterPath, backgroundPath, 5, "This is a movie"));
+                // Note that the string literal 'null' is returned from TMDB in some cases if a
+                // field is empty. Let's check for both a literal and for a null value.
+                if (backgroundPath.equals("null") || TextUtils.isEmpty(backgroundPath)) {
+                    backgroundPath = posterPath;
+                }
+
+                Log.i(LOG_TAG, "TEST: results: " + backgroundPath);
+
+
+                double voteAverage = currentMovieJsonO.getDouble("vote_average");
+                Log.i(LOG_TAG, "TEST: results: " + voteAverage);
+
+
+                movieQueryResults.add(new MovieItem
+                        (title, releaseDate, posterPath, backgroundPath, voteAverage, overview));
             }
 
         } catch (JSONException e) {

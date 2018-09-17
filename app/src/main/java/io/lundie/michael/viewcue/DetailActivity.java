@@ -41,6 +41,9 @@ public class DetailActivity extends AppCompatActivity {
     private static final String LOG_TAG = DetailActivity.class.getSimpleName();
 
     @BindView(R.id.title) TextView title;
+    @BindView(R.id.released_text_tv) TextView releasedDateTv;
+    @BindView(R.id.vote_average_text_tv) TextView voteAverageTv;
+    @BindView(R.id.synopsis_tv) TextView synopsisTv;
     @BindView(R.id.backdrop_iv) PercentageCropImageView backdrop;
     @BindView(R.id.progressbar) ProgressBar progressBar;
     @BindView(R.id.appbar) AppBarLayout appBarLayout;
@@ -67,6 +70,11 @@ public class DetailActivity extends AppCompatActivity {
         collapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.colorTransparent));
 
         title.setText(movie.getTitle());
+        releasedDateTv.setText(movie.getDate());
+        voteAverageTv.setText(Double.toString(movie.getVoteAverage()));
+        Log.i(LOG_TAG, "TEST: Synopsis:" + movie.getSynopsis());
+        synopsisTv.setText(movie.getSynopsis());
+
 
         // Solution for scaling from 'bottom': https://stackoverflow.com/a/22144862
         // Get height after layout is drawn solution: https://stackoverflow.com/a/24035591
@@ -82,7 +90,10 @@ public class DetailActivity extends AppCompatActivity {
 
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
+
         loadImageWithGlide(movie.getBackgroundURL(), progressBar, backdrop);
+
+
         loadImageWithGlide(movie.getPosterURL(), null, mPosterView);
 
     }

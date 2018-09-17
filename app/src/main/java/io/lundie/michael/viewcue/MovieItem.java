@@ -3,10 +3,14 @@ package io.lundie.michael.viewcue;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.net.URI;
 import java.net.URL;
+
+import butterknife.internal.Utils;
+import io.lundie.michael.viewcue.utilities.QueryUtils;
 
 public class MovieItem implements Parcelable {
 
@@ -15,18 +19,21 @@ public class MovieItem implements Parcelable {
     private static final int TYPE_BACKGROUND = 1;
 
     private String title;
-    private int date;
+    private String date;
     private String posterURL;
     private String backgroundURL;
-    private int voteAverage;
+    private double voteAverage;
     private String synopsis;
+    private String test;
 
-    public MovieItem(String title, int date, String posterPath, String backgroundPath, int voteAverage, String synopsis) {
+    public MovieItem(String title, String date, String posterPath,
+                     String backgroundPath, double voteAverage, String synopsis) {
         this.title = title;
         this.date = date;
         this.posterURL = setURL(TYPE_POSTER, posterPath);
-        this.backgroundURL = setURL(TYPE_BACKGROUND, posterPath);
+        this.backgroundURL = setURL(TYPE_BACKGROUND, backgroundPath);
         this.voteAverage = voteAverage;
+        Log.i(LOG_TAG, "TEST: MovieItem Synopsis var: " + synopsis);
         this.synopsis = synopsis;
     }
 
@@ -36,19 +43,19 @@ public class MovieItem implements Parcelable {
      */
     private MovieItem(Parcel in) {
         this.title = in.readString();
-        this.date = in.readInt();
+        this.date = in.readString();
         this.posterURL = in.readString();
         this.backgroundURL = in.readString();
-        this.voteAverage = in.readInt();
+        this.voteAverage = in.readDouble();
         this.synopsis = in.readString();
     }
 
     public void writeToParcel(Parcel out, int flags) {
         out.writeString(title);
-        out.writeInt(date);
+        out.writeString(date);
         out.writeString(posterURL);
         out.writeString(backgroundURL);
-        out.writeInt(voteAverage);
+        out.writeDouble(voteAverage);
         out.writeString(synopsis);
     }
 
@@ -70,17 +77,20 @@ public class MovieItem implements Parcelable {
 
     public String getTitle() { return title; }
 
-    public int getDate() { return date; }
+    public String getDate() { return date; }
 
     public String getPosterURL() { return posterURL; }
 
     public String getBackgroundURL() { return backgroundURL; }
 
-    public int getVoteAverage() { return voteAverage; }
+    public double getVoteAverage() { return voteAverage; }
 
-    public String getSynopsis() { return synopsis; }
+    public String getSynopsis() {
+        Log.i(LOG_TAG, "TEST: Get synopsis called: DATA: " + synopsis);
+        return synopsis; }
 
     private String setURL(int requestType, String path) {
+
         String size = "w185";
         if (requestType == TYPE_BACKGROUND) {
             size = "w500";
