@@ -25,6 +25,9 @@ import io.lundie.michael.viewcue.utilities.MovieQueryCallback;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.utilities.QueryUtils;
 
+/**
+ * Main / Root activity of ViewQueue
+ */
 public class MainActivity extends AppCompatActivity {
 
     public static final String LOG_TAG = MainActivity.class.getName();
@@ -51,23 +54,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Bind view references with butterknife library.
         ButterKnife.bind(this);
 
+        // Set up our toolbar/action bar
         setSupportActionBar(mToolbar);
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
 
-        // Initiate our new custom recycler adapter
+        // Initiate our new custom recycler adapter and set layout manager.
         mAdapter = new MovieResultsViewAdapter(mList, this, 0);
 
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         mRecyclerView.setAdapter(mAdapter);
 
-
-
-        executeSearch();
+        //Execute our API query
+        executeQuery();
     }
 
 
@@ -93,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
      * shared user preferences, if internet access is available and passing our query to the
      * loader manager.
      */
-    public void executeSearch() {
+    public void executeQuery() {
         mProgressRing.setVisibility(View.VISIBLE);
         // Build our Query URL
         String queryURL = QueryUtils.queryUrlBuilder(this);

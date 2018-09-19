@@ -30,8 +30,7 @@ public class QueryUtils {
     /**
      * Create a private constructor because no one should ever create a {@link QueryUtils} object.
      */
-    private QueryUtils() {
-    }
+    private QueryUtils() {}
 
     /**
      * Method for building our query URL
@@ -54,10 +53,10 @@ public class QueryUtils {
 
         final String API_KEY_PARAM = "api_key";
         // TODO: Replace with preference request
-        final String API_KEY = "";
+        final String API_KEY = "***REMOVED***";
         final String testURL = "";
 
-//Use URL builder to construct our URL
+        //Use URI builder to construct our URL
         Uri.Builder query = new Uri.Builder();
         query.scheme("https")
                 .authority(API_AUTHORITY)
@@ -71,7 +70,7 @@ public class QueryUtils {
                 .build();
         URL returnUrl = null;
 
-        //Attempt to return our URL, check for exception, then convert to String on return.
+        //Attempt to return our URL, check for exceptions, then convert to String on return.
         try {
             returnUrl = new URL(query.toString());
         } catch (MalformedURLException e) {
@@ -145,6 +144,7 @@ public class QueryUtils {
      * Make an HTTP request to the given URL and return a String as the response.
      */
     private static String makeHttpRequest(URL url) throws IOException {
+        // Create and initialise empty variable.
         String jsonResponse = "";
 
         // If the URL is null, then return early.
@@ -154,6 +154,7 @@ public class QueryUtils {
 
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
+
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setReadTimeout(10000 /* milliseconds */);
@@ -205,7 +206,6 @@ public class QueryUtils {
      * Return a list of {@link MovieItem} objects that has been built up from
      * parsing a JSON response.
      */
-    //TODO: Complete JSON parsing method
     private static ArrayList<MovieItem> extractMovieResults(String movieQueryJSON) {
 
         // If the JSON string is empty or null, then return early.
@@ -224,41 +224,27 @@ public class QueryUtils {
             JSONArray movieItemsJsonA = jsonObj.getJSONArray("results");
 
             // Alrighty, let's loop through out results!
-
             for (int movieNumber = 0; movieNumber < movieItemsJsonA.length(); movieNumber++) {
+
+                // Let's grab the current movie data from our results query. Sequentially iterates
+                // through results.
                 JSONObject currentMovieJsonO = movieItemsJsonA.getJSONObject(movieNumber);
-
                 String title = currentMovieJsonO.getString("title");
-                Log.i(LOG_TAG, "TEST: results: " + title);
-
                 String posterPath =  currentMovieJsonO.getString("poster_path");
-                Log.i(LOG_TAG, "TEST: results: " + posterPath);
-
-
                 String overview = currentMovieJsonO.getString("overview");
-                Log.i(LOG_TAG, "TEST: results: " + overview);
-
-
                 String releaseDate = currentMovieJsonO.getString("release_date");
-                Log.i(LOG_TAG, "TEST: results: " + releaseDate);
+                double voteAverage = currentMovieJsonO.getDouble("vote_average");
+                String backgroundPath = currentMovieJsonO.getString("backdrop_path");
 
                 // Some movies may not have a URL for background, if so, let's assign the background
                 // the same URL as the poster.
-                String backgroundPath = currentMovieJsonO.getString("backdrop_path");
-
                 // Note that the string literal 'null' is returned from TMDB in some cases if a
                 // field is empty. Let's check for both a literal and for a null value.
                 if (backgroundPath.equals("null") || TextUtils.isEmpty(backgroundPath)) {
                     backgroundPath = posterPath;
                 }
 
-                Log.i(LOG_TAG, "TEST: results: " + backgroundPath);
-
-
-                double voteAverage = currentMovieJsonO.getDouble("vote_average");
-                Log.i(LOG_TAG, "TEST: results: " + voteAverage);
-
-
+                // Everything has gone okay, so let's create a new MovieItem and add to our ArrayList.
                 movieQueryResults.add(new MovieItem
                         (title, releaseDate, posterPath, backgroundPath, voteAverage, overview));
             }

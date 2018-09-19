@@ -2,44 +2,44 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/colorPrimaryDark"
-    android:padding="1dp"
     android:id="@+id/card_view"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimaryDark"
+    android:orientation="vertical"
+    android:padding="1dp">
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="150dp">
                 <ImageView
+                    android:id="@+id/poster"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="2dp"
                     android:background="@drawable/rounded"
-                    android:scaleType="centerCrop"
-                    android:id="@+id/poster"/>
+                    android:padding="2dp"
+                    android:scaleType="centerCrop"/>
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
-                    android:background="@drawable/gradient_gray"
-                    android:layout_gravity="bottom"/>
+                    android:layout_gravity="bottom"
+                    android:background="@drawable/gradient_gray"/>
                 <ImageView
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:src="@drawable/triangle_left"
-                    android:layout_gravity="top|left"/>
+                    android:layout_gravity="top|left"
+                    android:src="@drawable/triangle_left"/>
             </FrameLayout>
 
                 <TextView
                     android:id="@+id/title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAlignment="viewEnd"
-                    android:textColor="@color/colorCardViewMovieTitle"
+                    android:layout_gravity="end"
                     android:paddingBottom="@dimen/half_padding"
-                    android:textSize="@dimen/title_textSize"
+                    android:textAlignment="viewEnd"
                     android:textAllCaps="true"
-                    app:fontFamily="sans-serif-medium"
-                    android:layout_gravity="end" />
+                    android:textColor="@color/colorCardViewMovieTitle"
+                    android:textSize="@dimen/title_textSize"
+                    app:fontFamily="sans-serif-medium" />
 
 </LinearLayout>

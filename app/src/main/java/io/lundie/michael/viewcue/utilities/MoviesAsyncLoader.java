@@ -14,6 +14,7 @@ import io.lundie.michael.viewcue.MovieItem;
 public class MoviesAsyncLoader extends AsyncTaskLoader {
 
     private static final String LOG_TAG = MoviesAsyncLoader.class.getSimpleName();
+
     private ArrayList<MovieItem> apiQueryResults = null;
     private String queryUrl;
 

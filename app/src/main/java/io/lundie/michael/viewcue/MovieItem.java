@@ -12,9 +12,13 @@ import java.net.URL;
 import butterknife.internal.Utils;
 import io.lundie.michael.viewcue.utilities.QueryUtils;
 
+/**
+ * A simple object to store individual movie data.
+ */
 public class MovieItem implements Parcelable {
 
     private static final String LOG_TAG = MainActivity.class.getName();
+
     private static final int TYPE_POSTER = 0;
     private static final int TYPE_BACKGROUND = 1;
 
@@ -24,7 +28,6 @@ public class MovieItem implements Parcelable {
     private String backgroundURL;
     private double voteAverage;
     private String synopsis;
-    private String test;
 
     public MovieItem(String title, String date, String posterPath,
                      String backgroundPath, double voteAverage, String synopsis) {
@@ -85,15 +88,16 @@ public class MovieItem implements Parcelable {
 
     public double getVoteAverage() { return voteAverage; }
 
-    public String getSynopsis() {
-        Log.i(LOG_TAG, "TEST: Get synopsis called: DATA: " + synopsis);
-        return synopsis; }
+    public String getSynopsis() { return synopsis; }
 
     private String setURL(int requestType, String path) {
 
-        String size = "w185";
+        // Image resource URL is set accordingly.
+        // TYPE_POSTER Loads a lower resolution image than TYPE_BACKGROUND
+        String size = "w185"; // == TYPE_POSTER, Lower Resolution
+
         if (requestType == TYPE_BACKGROUND) {
-            size = "w500";
+            size = "w500"; // Higher resolution than TYPE_POSTER
         }
 
         Uri.Builder posterUrlBuilder = new Uri.Builder();

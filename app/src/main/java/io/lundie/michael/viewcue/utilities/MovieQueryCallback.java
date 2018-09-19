@@ -5,8 +5,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -15,9 +13,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import io.lundie.michael.viewcue.MovieItem;
-import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.RecycleViewWithSetEmpty;
 
+/**
+ * A simple LoaderCallbacks interface for creating and managing the Movie Query Loader Manager.
+ */
 public class MovieQueryCallback implements LoaderManager.LoaderCallbacks<ArrayList<MovieItem>> {
 
     private static final String LOG_TAG = MovieQueryCallback.class.getSimpleName();
@@ -65,7 +65,7 @@ public class MovieQueryCallback implements LoaderManager.LoaderCallbacks<ArrayLi
     }
 
     @Override
-    public void onLoadFinished(Loader<ArrayList<MovieItem>> loader, ArrayList<MovieItem> data) {
+    public void onLoadFinished(@NonNull Loader<ArrayList<MovieItem>> loader, ArrayList<MovieItem> data) {
         //Loading is complete. Clear our local array list and notify the adapter of changes.
         list.clear();
         adapter.notifyDataSetChanged();

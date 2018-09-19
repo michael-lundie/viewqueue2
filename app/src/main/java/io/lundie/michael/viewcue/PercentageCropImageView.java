@@ -1,7 +1,7 @@
 package io.lundie.michael.viewcue;
 
 /*
- * Adapted from ImageView code at:
+ * PercentageCropImageView used and adapter from:
  * http://grepcode.com/file/repository.grepcode.com/java/ext/com.google.android/android/4.4.4_r1/android/widget/ImageView.java
  */
 import android.content.Context;
@@ -9,7 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.support.v7.widget.AppCompatImageView;
-
 
 public class PercentageCropImageView extends AppCompatImageView {
 

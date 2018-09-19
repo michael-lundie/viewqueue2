@@ -98,18 +98,18 @@
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fillViewport="true"
             android:layout_margin="@dimen/default_padding"
-            android:paddingBottom="?android:attr/actionBarSize"
-            android:background="#CFD8DC">
+            android:background="#CFD8DC"
+            android:fillViewport="true"
+            android:paddingBottom="?android:attr/actionBarSize">
 
             <TextView
                 android:id="@+id/released_label_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Released"
+                android:text="@string/detail_release"
                 android:textColor="@color/colorPrimaryStep"
+                android:textSize="@dimen/text_default_large"
                 app:layout_constraintBottom_toTopOf="@+id/released_text_tv"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_chainStyle="packed"
@@ -121,31 +121,20 @@
                 android:id="@+id/released_text_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginTop="8dp"
-                android:text="Released"
+                android:textSize="@dimen/text_default_small"
+                android:layout_margin="@dimen/half_padding"
                 app:layout_constraintBottom_toTopOf="@+id/synopsis_tv"
-                app:layout_constraintEnd_toStartOf="@+id/detail_view_poster"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/detail_view_poster"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/released_label_tv" />
 
             <TextView
                 android:id="@+id/vote_average_text_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginTop="8dp"
-                android:text="Released"
+                android:textSize="@dimen/text_default_small"
+                android:layout_margin="@dimen/half_padding"
                 app:layout_constraintBottom_toTopOf="@+id/released_label_tv"
-                app:layout_constraintEnd_toEndOf="@+id/released_label_tv"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/detail_view_poster"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/vote_average_label_tv" />
 
             <ImageView
@@ -161,8 +150,9 @@
                 android:id="@+id/vote_average_label_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Average User Rating"
+                android:text="@string/detail_average_user_rating"
                 android:textColor="@color/colorPrimaryStep"
+                android:textSize="@dimen/text_default_large"
                 app:layout_constraintBottom_toTopOf="@+id/vote_average_text_tv"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout_editor_absoluteX="0dp" />
@@ -171,17 +161,14 @@
                 android:id="@+id/barrier"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:constraint_referenced_ids="detail_view_poster, vote_average_label_tv"
-                app:barrierDirection="bottom" />
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="detail_view_poster, vote_average_label_tv" />
 
             <TextView
                 android:id="@+id/synopsis_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginTop="@dimen/default_padding"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
