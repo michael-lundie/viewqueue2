@@ -7,6 +7,8 @@
     <!-- Detail Activity Text -->
     <string name="detail_average_user_rating">Average User Rating</string>
     <string name="detail_release">Release Date</string>
+    <string name="date_unknown">Unknown Date</string>
+
 
     <!-- Preference string keys and values -->
     <string name="settings_themoviedb_api_default" translatable="false"></string>
@@ -24,7 +26,7 @@
         <item>@string/settings_orderby_most_popular</item>
         <item>@string/settings_orderby_high_rated</item>
     </string-array>
-    <string name="settings_orderby_most_popular" translatable="false">popularity</string>
-    <string name="settings_orderby_high_rated" translatable="false">rating</string>
+    <string name="settings_orderby_most_popular" translatable="false">popularity.desc</string>
+    <string name="settings_orderby_high_rated" translatable="false">vote_average.desc</string>
 
 </resources>

@@ -2,6 +2,7 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#212121</color>
+    <color name="colorPrimaryLight">#CFD8DC</color>
     <color name="colorPrimaryStep">#212121</color>
     <color name="colorAccent">#a1407d</color>
     <color name="colorCardViewMovieTitle">#939294</color>

@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 
@@ -69,6 +71,8 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
         // by Glide.
         Glide.with(mContext)
                 .load(mValues.get(position).getPosterURL())
+                .apply(new RequestOptions().placeholder(R.drawable.light_solid).error(R.drawable.light_solid))
+                .transition(DrawableTransitionOptions.withCrossFade())
                 .into(holder.mPosterView);
 
         // Create an onClickListener.

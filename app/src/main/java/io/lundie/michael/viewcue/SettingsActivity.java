@@ -9,8 +9,13 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Settings activity class allowing a user to alter various shared preferences.
@@ -18,6 +23,7 @@ import android.widget.Toast;
 public class SettingsActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SettingsActivity.class.getSimpleName();
+
     private static boolean settingsChanged = false;
     /** Stores the initial value (upon access of SettingActivity) of
      * {@link QueryPreferenceFragment#apiKey}.*/
@@ -26,28 +32,42 @@ public class SettingsActivity extends AppCompatActivity {
      * {@link QueryPreferenceFragment#apiKey}.*/
     private static String movieOrderInitialValue;
 
+    @BindView(R.id.toolbar) Toolbar mToolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
+        ButterKnife.bind(this);
+        // Set up our toolbar/action bar
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            Intent returnIntent = new Intent();
-            returnIntent.putExtra("settingsChanged",settingsChanged);
-            setResult(Activity.RESULT_OK, returnIntent);
             onBackPressed();
             return true;
         }
         return false;
     }
 
+    @Override
+    public void onBackPressed() {
+        Log.i(LOG_TAG, "TESTSET: On back pressed. Settings changed:" + settingsChanged);
+        Log.d("CDA", "onBackPressed Called");
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("settingsChanged",settingsChanged);
+        setResult(Activity.RESULT_OK, returnIntent);
+        finish();
+    }
+
     public static class QueryPreferenceFragment extends PreferenceFragment
             implements Preference.OnPreferenceChangeListener {
 
         Preference apiKey;
+        Preference movieOrder;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -56,6 +76,8 @@ public class SettingsActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.settings_main);
             apiKey = findPreference(getString(R.string.settings_themoviedb_apikey_key));
             bindPreferenceSummaryToValue(apiKey);
+            movieOrder = findPreference(getString(R.string.settings_orderby_key));
+            bindPreferenceSummaryToValue(movieOrder);
         }
 
         /**
@@ -99,8 +121,10 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             } else if (key.equals(getString(R.string.settings_orderby_key))) {
                 if (value.equals(movieOrderInitialValue)) {
+                    Log.i(LOG_TAG, "TESTSET: order key not changed");
                     settingsChanged = false;
                 } else {
+                    Log.i(LOG_TAG, "TESTSET: order key IS changed");
                     settingsChanged = true;
                 }
             } return true;

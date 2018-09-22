@@ -12,6 +12,7 @@
         <item name="windowActionBarOverlay">true</item>
     </style>
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="android:background">@color/colorTransparent</item>
         <!-- Support library compatibility -->

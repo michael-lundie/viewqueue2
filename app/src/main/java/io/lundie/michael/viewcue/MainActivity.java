@@ -1,5 +1,6 @@
 package io.lundie.michael.viewcue;
 
+import android.app.Activity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -40,10 +42,9 @@ public class MainActivity extends AppCompatActivity {
     private RecycleViewWithSetEmpty.Adapter mAdapter;
     private ArrayList<MovieItem> mList = new ArrayList<>();
     private static final int API_REQUEST_LOADER_ID = 1;
-    static boolean settingsChanged = false;
 
-    /** A boolean value indicating whether or not this is the first time the app has been loaded. */
-    static boolean firstLoad = true;
+    /** A boolean value indicating whether or setting shave been changed. */
+    static boolean settingsChanged = false;
 
     @BindView(R.id.progressRing) ProgressBar mProgressRing;
     @BindView(R.id.list_empty) TextView mEmptyStateTextView;
@@ -65,14 +66,40 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
 
+        //Check for a saved instance to handle rotation and resume
+        if(savedInstanceState != null)
+        {
+            mList = savedInstanceState.getParcelableArrayList("mList");
+            if (mList != null ) {
+                getSupportLoaderManager().initLoader(API_REQUEST_LOADER_ID, null,
+                        movieQueryLoaderCallback);
+                mProgressRing.setVisibility(View.INVISIBLE);
+            } else {
+                mList = new ArrayList<>();
+            }
+        }
+
         // Initiate our new custom recycler adapter and set layout manager.
         mAdapter = new MovieResultsViewAdapter(mList, this, 0);
 
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        mRecyclerView.setAdapter(mAdapter);
+        //Check for screen orientation
+        int orientation = getResources().getConfiguration().orientation;
+
+        if (orientation == 1) {
+            // If portrait mode set our grid layout to 3 columns
+            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+
+        } else {
+            // If landscape mode set our grid layout to 4 columns
+            mRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+
+        } mRecyclerView.setAdapter(mAdapter);
 
         //Execute our API query
-        executeQuery();
+        if (mList.isEmpty()) {
+            Log.i(LOG_TAG, "TEST: New QUERY IS EXECUTING.");
+            executeQuery();
+        }
     }
 
 
@@ -86,11 +113,50 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if(id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivityForResult(settingsIntent, 1);
+            openSettings();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Allows seamless transition of our app between the various activity states.
+     * @param outState Contains the listArray data (if any) used to populate our RecycleViewer
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        //Saving parcelable code adapted from : https://stackoverflow.com/a/12503875/9738433
+        if (!mList.isEmpty()){
+            outState.putParcelableArrayList("mList", mList);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+
+    /**
+     * Override method allowing the passing of intent data when resuming our MainActivity,
+     * after accessing the SettingsActivity.
+     * @param requestCode Where is the request coming from?
+     * @param resultCode Was a result available?
+     * @param data Intent data includes a boolean value, representing the change status of settings.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                Log.i(LOG_TAG, "TESTSET: onActivityResult triggered");
+                settingsChanged = data.getBooleanExtra("settingsChanged", false);
+                if (settingsChanged) {
+                    // Reset our settingsChanged variable
+                    Log.i(LOG_TAG, "TESTSET: settingsChange is TRUE. RESET.");
+                    settingsChanged = false;
+                    // reset search, destroying previous loader and cache
+                    resetSearch();
+                    // Begin our query using AsyncLoader
+                    executeQuery();
+                }
+            }
+        }
     }
 
     /**
@@ -99,9 +165,27 @@ public class MainActivity extends AppCompatActivity {
      * loader manager.
      */
     public void executeQuery() {
-        mProgressRing.setVisibility(View.VISIBLE);
+        Log.i(LOG_TAG, "TESTSET: Executing new query.");
+
+        // Let's access SharedPrefs from here, instead of QueryUtils, to keep code more logically
+        // situated.
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        String orderValue = sharedPrefs.getString(
+                getString(R.string.settings_orderby_key),
+                getString(R.string.settings_orderby_most_popular));
+
+        String apiKey = sharedPrefs.getString(
+                getString(R.string.settings_themoviedb_apikey_key),
+                getString(R.string.settings_themoviedb_api_default));
+
+        if (apiKey.length() < 32) {
+            openSettings();
+            return;
+        }
+
         // Build our Query URL
-        String queryURL = QueryUtils.queryUrlBuilder(this);
+        String queryURL = QueryUtils.queryUrlBuilder(this, apiKey, orderValue);
 
         // Create a new loader from class.
         // Our instance will persist across configuration changes, as the loader logic will return
@@ -119,6 +203,8 @@ public class MainActivity extends AppCompatActivity {
             mEmptyStateTextView.setText(getResources().getString(R.string.no_connection));
             mEmptyStateTextView.setVisibility(View.VISIBLE);
         } else {
+            mProgressRing.setVisibility(View.VISIBLE);
+
             // Looks like we are good to go.
             mEmptyStateTextView.setVisibility(View.GONE);
             // Let's get our loader manager hooked up and started
@@ -127,8 +213,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetSearch() {
+        Log.i(LOG_TAG, "TESTSET: Resetting");
         // upon a new search initiation, destroy previous loader.
-        getLoaderManager().destroyLoader(API_REQUEST_LOADER_ID);
+        getSupportLoaderManager().destroyLoader(API_REQUEST_LOADER_ID);
         //clear the array list
         mList.clear();
         //notify the adapter and scroll to position 0
@@ -136,5 +223,11 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.scrollToPosition(0);
         // Show our progress ring.
         mProgressRing.setVisibility(View.VISIBLE);
+    }
+
+    private void openSettings() {
+        Log.i(LOG_TAG, "TESTSET: Starting startActivityForResult");
+        Intent settingsIntent = new Intent(this, SettingsActivity.class);
+        startActivityForResult(settingsIntent, 1);
     }
 }

@@ -37,7 +37,8 @@ public class QueryUtils {
      * @param context The current activity context.
      * @return url string
      */
-    public static String queryUrlBuilder (Context context) {
+    public static String queryUrlBuilder (Context context, String apiKey, String sortOrder) {
+        Log.i(LOG_TAG, "SORTBY: " +sortOrder);
         final String API_AUTHORITY = "api.themoviedb.org";
         final String API_VERSION = "3";
         final String API_DISCOVER_PATH = "discover";
@@ -52,9 +53,6 @@ public class QueryUtils {
 
 
         final String API_KEY_PARAM = "api_key";
-        // TODO: Replace with preference request
-        final String API_KEY = "***REMOVED***";
-        final String testURL = "";
 
         //Use URI builder to construct our URL
         Uri.Builder query = new Uri.Builder();
@@ -63,8 +61,8 @@ public class QueryUtils {
                 .appendPath(API_VERSION)
                 .appendPath(API_DISCOVER_PATH)
                 .appendPath(API_MOVIE_PATH)
-                .appendQueryParameter(API_KEY_PARAM, API_KEY)
-                .appendQueryParameter(API_SORT_PARAM, API_SORT_POPULAR_VALUE)
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .appendQueryParameter(API_SORT_PARAM, sortOrder)
                 .appendQueryParameter(API_ADULT_PARAM, API_ADULT_VALUE)
                 .appendQueryParameter(API_VIDEO_PARAM, API_VIDEO_VALUE)
                 .build();
