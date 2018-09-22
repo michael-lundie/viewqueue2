@@ -1,14 +1,18 @@
 <resources>
-    <string name="app_name">viewcue</string>
+    <string name="app_name">ViewQ</string>
     <!-- Settings Activity Title -->
     <string name="settings_title">VueCue Settings</string>
     <!-- String text for empty recycle view: no internet connection -->
     <string name="no_connection">Please check you are connected to the internet.</string>
+    <!-- Menu titles/labels -->
+    <string name="menu_settings">Settings</string>
+    <string name="menu_sort_order">Sort Order</string>
+    <string name="menu_sort_popular">Show most popular</string>
+    <string name="menu_sort_rated">Show highest rated</string>
     <!-- Detail Activity Text -->
     <string name="detail_average_user_rating">Average User Rating</string>
     <string name="detail_release">Release Date</string>
     <string name="date_unknown">Unknown Date</string>
-
 
     <!-- Preference string keys and values -->
     <string name="settings_themoviedb_api_default" translatable="false"></string>

@@ -36,7 +36,6 @@ public class MovieItem implements Parcelable {
         this.posterURL = setURL(TYPE_POSTER, posterPath);
         this.backgroundURL = setURL(TYPE_BACKGROUND, backgroundPath);
         this.voteAverage = voteAverage;
-        Log.i(LOG_TAG, "TEST: MovieItem Synopsis var: " + synopsis);
         this.synopsis = synopsis;
     }
 
@@ -107,7 +106,6 @@ public class MovieItem implements Parcelable {
                 .appendPath("p")
                 .appendPath(size)
                 .appendPath(path.substring(1));
-        Log.i(LOG_TAG, "TEST poster URL" + posterUrlBuilder.toString());
         return posterUrlBuilder.toString();
     }
 }

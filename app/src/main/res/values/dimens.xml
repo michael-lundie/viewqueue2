@@ -4,8 +4,14 @@
     <dimen name="default_padding">16dp</dimen>
     <dimen name="half_padding">8dp</dimen>
     <dimen name="text_padding">1dp</dimen>
+    <dimen name="text_default_huge">30sp</dimen>
     <dimen name="text_default_large">18sp</dimen>
     <dimen name="text_default_small">16sp</dimen>
+    <dimen name="text_default_tiny">16sp</dimen>
+
+    <!--/ Main View  /-->
+    <dimen name="list_empty_width">140dp</dimen>
+    <dimen name="detail_progressbar_dimen">80dp</dimen>
 
     <!--/ Card View  /-->
     <dimen name="title_padding">8dp</dimen>
@@ -14,4 +20,7 @@
     <dimen name="author_textSize">12sp</dimen>
     <dimen name="text_margin">16dp</dimen>
 
+    <!--/ Detail View  /-->
+    <dimen name="collapse_toolbar_height">200dp</dimen>
+    <dimen name="background_progressbar_dimen">30dp</dimen>
 </resources>

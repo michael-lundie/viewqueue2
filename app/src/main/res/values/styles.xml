@@ -18,4 +18,32 @@
         <!-- Support library compatibility -->
         <item name="background">@color/colorTransparent</item>
     </style>
+
+    <!-- Generic Root Layout Style for Coordinator type -->
+    <item type="id" name="main_content"/>
+    <style name="RootCoordLayout">
+        <item name="android:id">@id/main_content</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
+
+    <!-- Generic Toolbar Style -->
+    <item type="id" name="toolbar"/>
+    <style name="ToolbarStyle">
+        <item name="android:id">@id/toolbar</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?android:attr/actionBarSize</item>
+    </style>
+
+    <!-- Generic Overlay AppBar Style -->
+    <item type="id" name="appbar"/>
+    <style name="OverlayAppBarStyle">
+        <item name="android:id">@id/appbar</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:theme">@style/AppTheme.AppBarOverlay</item>
+    </style>
 </resources>

@@ -2,15 +2,12 @@ package io.lundie.michael.viewcue;
 
 import android.app.Activity;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -42,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private RecycleViewWithSetEmpty.Adapter mAdapter;
     private ArrayList<MovieItem> mList = new ArrayList<>();
     private static final int API_REQUEST_LOADER_ID = 1;
+    private boolean hasInternet = true;
 
     /** A boolean value indicating whether or setting shave been changed. */
     static boolean settingsChanged = false;
@@ -97,11 +95,20 @@ public class MainActivity extends AppCompatActivity {
 
         //Execute our API query
         if (mList.isEmpty()) {
-            Log.i(LOG_TAG, "TEST: New QUERY IS EXECUTING.");
-            executeQuery();
+            Log.i(LOG_TAG, "TEST - MLIST EMPTY");
+            executeQuery(getOrderDefault());
         }
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (!hasInternet) {
+            hasInternet = true;
+            resetSearch();
+            executeQuery(getOrderDefault());
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -112,9 +119,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.action_settings) {
-            openSettings();
-            return true;
+        switch(id) {
+            case R.id.action_settings:
+                openSettings();
+                return true;
+            case R.id.action_sort_popular:
+                resetSearch();
+                executeQuery(getString(R.string.settings_orderby_most_popular));
+                return true;
+            case R.id.action_sort_rating:
+                resetSearch();
+                executeQuery(getString(R.string.settings_orderby_high_rated));
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -132,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
-
     /**
      * Override method allowing the passing of intent data when resuming our MainActivity,
      * after accessing the SettingsActivity.
@@ -144,19 +159,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
             if(resultCode == Activity.RESULT_OK){
-                Log.i(LOG_TAG, "TESTSET: onActivityResult triggered");
                 settingsChanged = data.getBooleanExtra("settingsChanged", false);
                 if (settingsChanged) {
                     // Reset our settingsChanged variable
-                    Log.i(LOG_TAG, "TESTSET: settingsChange is TRUE. RESET.");
                     settingsChanged = false;
                     // reset search, destroying previous loader and cache
                     resetSearch();
                     // Begin our query using AsyncLoader
-                    executeQuery();
+                    executeQuery(getOrderDefault());
                 }
             }
         }
+    }
+
+    /**
+     * Simple utility method for checking the default order preference set by the user
+     * @return the user order preference
+     */
+    private String getOrderDefault(){
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPrefs.getString(
+                getString(R.string.settings_orderby_key),
+                getString(R.string.settings_orderby_most_popular));
     }
 
     /**
@@ -164,16 +188,9 @@ public class MainActivity extends AppCompatActivity {
      * shared user preferences, if internet access is available and passing our query to the
      * loader manager.
      */
-    public void executeQuery() {
-        Log.i(LOG_TAG, "TESTSET: Executing new query.");
-
-        // Let's access SharedPrefs from here, instead of QueryUtils, to keep code more logically
-        // situated.
+    private void executeQuery(String queryOrder) {
+        // For testing purposes only: Checking if there is a valid API key.
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String orderValue = sharedPrefs.getString(
-                getString(R.string.settings_orderby_key),
-                getString(R.string.settings_orderby_most_popular));
 
         String apiKey = sharedPrefs.getString(
                 getString(R.string.settings_themoviedb_apikey_key),
@@ -185,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Build our Query URL
-        String queryURL = QueryUtils.queryUrlBuilder(this, apiKey, orderValue);
+        String queryURL = QueryUtils.queryUrlBuilder(this, apiKey, queryOrder);
 
         // Create a new loader from class.
         // Our instance will persist across configuration changes, as the loader logic will return
@@ -194,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 mProgressRing, mEmptyStateTextView);
 
         boolean isConnected = QueryUtils.checkNetworkAccess(this);
-        Log.i(LOG_TAG, "TEST: Connection is " + isConnected);
+
         if (!isConnected) {
             // There is no internet connection. Let's deal with that.
             // We already checked for connection, but just in case the user resumed while the dialog
@@ -202,10 +219,10 @@ public class MainActivity extends AppCompatActivity {
             mProgressRing.setVisibility(View.GONE);
             mEmptyStateTextView.setText(getResources().getString(R.string.no_connection));
             mEmptyStateTextView.setVisibility(View.VISIBLE);
+            hasInternet = false;
         } else {
-            mProgressRing.setVisibility(View.VISIBLE);
-
             // Looks like we are good to go.
+            mProgressRing.setVisibility(View.VISIBLE);
             mEmptyStateTextView.setVisibility(View.GONE);
             // Let's get our loader manager hooked up and started
             getSupportLoaderManager().initLoader(API_REQUEST_LOADER_ID, null, movieQueryLoaderCallback);
@@ -213,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetSearch() {
-        Log.i(LOG_TAG, "TESTSET: Resetting");
         // upon a new search initiation, destroy previous loader.
         getSupportLoaderManager().destroyLoader(API_REQUEST_LOADER_ID);
         //clear the array list
@@ -226,7 +242,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openSettings() {
-        Log.i(LOG_TAG, "TESTSET: Starting startActivityForResult");
         Intent settingsIntent = new Intent(this, SettingsActivity.class);
         startActivityForResult(settingsIntent, 1);
     }

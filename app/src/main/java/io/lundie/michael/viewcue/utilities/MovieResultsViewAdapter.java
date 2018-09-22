@@ -34,7 +34,6 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
     private Context mContext;
     private final ArrayList<MovieItem> mValues;
     private final int mPadding;
-    private BitmapDrawable nothumbnail;
 
     /**
      * Simple constructor class for adapter.

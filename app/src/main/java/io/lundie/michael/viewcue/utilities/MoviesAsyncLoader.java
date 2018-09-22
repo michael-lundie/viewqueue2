@@ -44,7 +44,6 @@ public class MoviesAsyncLoader extends AsyncTaskLoader {
     @Nullable
     @Override
     public ArrayList<MovieItem> loadInBackground() {
-        Log.i(LOG_TAG, "TEST: Movies Async Loader: loadInBackground executed");
         //Let's check to make sure our URL isn't empty for some reason.
         //We should never have spaces before or after our URL here. Not using trim()
         if (!TextUtils.isEmpty(queryUrl)) {

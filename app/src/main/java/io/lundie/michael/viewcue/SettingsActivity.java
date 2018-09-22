@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,7 +36,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.settings_activity);
+        setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
         // Set up our toolbar/action bar
         setSupportActionBar(mToolbar);
@@ -55,7 +54,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Log.i(LOG_TAG, "TESTSET: On back pressed. Settings changed:" + settingsChanged);
         Log.d("CDA", "onBackPressed Called");
         Intent returnIntent = new Intent();
         returnIntent.putExtra("settingsChanged",settingsChanged);
@@ -121,10 +119,8 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             } else if (key.equals(getString(R.string.settings_orderby_key))) {
                 if (value.equals(movieOrderInitialValue)) {
-                    Log.i(LOG_TAG, "TESTSET: order key not changed");
                     settingsChanged = false;
                 } else {
-                    Log.i(LOG_TAG, "TESTSET: order key IS changed");
                     settingsChanged = true;
                 }
             } return true;

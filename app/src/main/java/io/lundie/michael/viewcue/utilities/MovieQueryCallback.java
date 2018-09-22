@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import io.lundie.michael.viewcue.MovieItem;
+import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.RecycleViewWithSetEmpty;
 
 /**
@@ -54,7 +55,6 @@ public class MovieQueryCallback implements LoaderManager.LoaderCallbacks<ArrayLi
     @Override
     public Loader<ArrayList<MovieItem>> onCreateLoader(int id, Bundle args) {
         if (mLoader == null) {
-            Log.i(LOG_TAG, "TEST: Loader is null");
             // It's the first time to request a the loader, lets create a new instance.
             return new MoviesAsyncLoader(context, connectURL);
         } else {
@@ -74,7 +74,7 @@ public class MovieQueryCallback implements LoaderManager.LoaderCallbacks<ArrayLi
         adapter.notifyDataSetChanged();
         //Hide our UI progress spinner
         progressRing.setVisibility(View.GONE);
-        //emptyStateTextView.setText(R.string.no_connection);
+        emptyStateTextView.setText(R.string.no_connection);
     }
 
     @Override

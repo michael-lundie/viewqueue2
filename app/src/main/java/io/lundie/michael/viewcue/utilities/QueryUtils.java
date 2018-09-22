@@ -38,7 +38,6 @@ public class QueryUtils {
      * @return url string
      */
     public static String queryUrlBuilder (Context context, String apiKey, String sortOrder) {
-        Log.i(LOG_TAG, "SORTBY: " +sortOrder);
         final String API_AUTHORITY = "api.themoviedb.org";
         final String API_VERSION = "3";
         final String API_DISCOVER_PATH = "discover";
@@ -50,7 +49,6 @@ public class QueryUtils {
         final String API_ADULT_VALUE = "false";
         final String API_VIDEO_PARAM = "include_video";
         final String API_VIDEO_VALUE = "false";
-
 
         final String API_KEY_PARAM = "api_key";
 
@@ -78,11 +76,8 @@ public class QueryUtils {
         }
         //Handle any null pointer exception that may be thrown by .toString() method;
         if (returnUrl == null) {
-            Log.i(LOG_TAG, "URL returned null.");
             return null;
-        }
-        Log.i(LOG_TAG, "TEST: Query url: " + returnUrl.toString());
-        return returnUrl.toString();
+        } return returnUrl.toString();
     }
 
     /**
@@ -178,7 +173,6 @@ public class QueryUtils {
                 inputStream.close();
             }
         }
-        Log.i(LOG_TAG, "TEST: json: " + jsonResponse);
         return jsonResponse;
     }
 

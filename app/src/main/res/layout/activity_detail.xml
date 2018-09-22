@@ -2,11 +2,7 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_content"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
-    android:fitsSystemWindows="true">
+    style="@style/RootCoordLayout">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -20,7 +16,7 @@
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="@dimen/collapse_toolbar_height"
             android:clipChildren="false"
             android:fitsSystemWindows="true"
             app:contentScrim="#00000000"
@@ -44,15 +40,13 @@
 
             <ProgressBar
                 android:id="@+id/progressbar"
-                android:layout_width="40dp"
-                android:layout_height="30dp"
+                android:layout_width="@dimen/background_progressbar_dimen"
+                android:layout_height="@dimen/background_progressbar_dimen"
                 android:layout_gravity="center"
                 android:background="@color/grayTransparent" />
 
             <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?android:attr/actionBarSize"
+                style="@style/ToolbarStyle"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
         </android.support.design.widget.CollapsingToolbarLayout>
@@ -80,10 +74,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
-                android:background="#801a181c"
+                android:background="@color/graySemiTransparent"
                 android:padding="@dimen/half_padding"
-                android:textColor="#ffffff"
-                android:textSize="30sp"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_default_huge"
                 app:fontFamily="sans-serif-condensed" />
 
         </FrameLayout>
@@ -121,8 +115,8 @@
                 android:id="@+id/released_text_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_default_small"
                 android:layout_margin="@dimen/half_padding"
+                android:textSize="@dimen/text_default_small"
                 app:layout_constraintBottom_toTopOf="@+id/synopsis_tv"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/released_label_tv" />
@@ -131,8 +125,8 @@
                 android:id="@+id/vote_average_text_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_default_small"
                 android:layout_margin="@dimen/half_padding"
+                android:textSize="@dimen/text_default_small"
                 app:layout_constraintBottom_toTopOf="@+id/released_label_tv"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/vote_average_label_tv" />

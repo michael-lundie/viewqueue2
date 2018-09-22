@@ -7,6 +7,7 @@
     <color name="colorAccent">#a1407d</color>
     <color name="colorCardViewMovieTitle">#939294</color>
     <color name="grayTransparent">#001a181c</color>
+    <color name="graySemiTransparent">#801a181c</color>
     <color name="whiteTransparent">#80ffffff</color>
     <color name="colorTransparent">#00000000</color>
 </resources>

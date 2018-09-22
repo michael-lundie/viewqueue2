@@ -19,7 +19,6 @@ public class SolidScrollShrinker implements AppBarLayout.OnOffsetChangedListener
     public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
 
         double displacementFraction = (-verticalOffset / (float) appBarLayout.getHeight()) * 1.7;
-        Log.i(LOG_TAG, "ANIM: Displacement:" + (1- displacementFraction));
         mScrollSolidView.setScaleY((1 - ((float) displacementFraction)));
     }
 }
