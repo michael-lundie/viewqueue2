@@ -17,6 +17,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +33,9 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
     private static final String LOG_TAG = MovieResultsViewAdapter.class.getSimpleName();
 
+    /**
+     * Used tutorial at https://antonioleiva.com/recyclerview-listener/ for setting up interface.
+     */
     public interface OnItemClickListener {
         void onItemClick(MovieItem item);
     }
@@ -60,7 +64,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
     @Override
     public void onBindViewHolder(@NonNull MovieResultsViewAdapter.ViewHolder holder, int position) {
-        holder.bind(holder.mItem, mListener);
+        holder.bind(mValues.get(position), mListener);
     }
 
     @Override
@@ -73,7 +77,6 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
      */
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        MovieItem mItem;
         final View mView;
         @BindView(R.id.title) TextView mTitleView;
         @BindView(R.id.poster) ImageView mPosterView;
@@ -96,6 +99,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(mPosterView);
 
+            //Set up our onClickListener interface up.
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

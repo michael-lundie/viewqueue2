@@ -26,9 +26,6 @@ public class SettingsActivity extends AppCompatActivity {
     private static boolean settingsChanged = false;
     /** Stores the initial value (upon access of SettingActivity) of
      * {@link QueryPreferenceFragment#apiKey}.*/
-    private static String apiKeyInitialValue;
-    /** Stores the initial value (upon access of SettingActivity) of
-     * {@link QueryPreferenceFragment#apiKey}.*/
     private static String movieOrderInitialValue;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -72,8 +69,6 @@ public class SettingsActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
 
             addPreferencesFromResource(R.xml.settings_main);
-            apiKey = findPreference(getString(R.string.settings_themoviedb_apikey_key));
-            bindPreferenceSummaryToValue(apiKey);
             movieOrder = findPreference(getString(R.string.settings_orderby_key));
             bindPreferenceSummaryToValue(movieOrder);
         }
@@ -86,11 +81,10 @@ public class SettingsActivity extends AppCompatActivity {
         private void bindPreferenceSummaryToValue(Preference preference) {
             preference.setOnPreferenceChangeListener(this);
             SharedPreferences preferences =
-                    PreferenceManager.getDefaultSharedPreferences(preference.getContext());
+            PreferenceManager.getDefaultSharedPreferences(preference.getContext());
             String preferenceValue = preferences.getString(preference.getKey(), "");
-            if (preference == apiKey) {
-                apiKeyInitialValue = preferenceValue;
-            } else {
+
+            if (preference == movieOrder) {
                 movieOrderInitialValue = preferenceValue;
             } onPreferenceChange(preference, preferenceValue);
         }
@@ -111,13 +105,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             String key = preference.getKey();  // Check this returns string and not id
 
-            if (key.equals(getString(R.string.settings_themoviedb_apikey_key))) {
-                if (value.equals(apiKeyInitialValue)) {
-                    settingsChanged = false;
-                } else {
-                    settingsChanged = true;
-                }
-            } else if (key.equals(getString(R.string.settings_orderby_key))) {
+            if (key.equals(getString(R.string.settings_orderby_key))) {
                 if (value.equals(movieOrderInitialValue)) {
                     settingsChanged = false;
                 } else {

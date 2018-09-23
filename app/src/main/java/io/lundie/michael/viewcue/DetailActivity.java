@@ -30,7 +30,6 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-
 /**
  * Detail Activity
  * Tutorials/code assistance used from:

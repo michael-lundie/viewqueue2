@@ -81,7 +81,11 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(MovieItem item) {
-
+                // On click, create an intent and marshall necessary data using our parcelable
+                // MovieItem object, and start our new activity.
+                Intent openDetailIntent = new Intent(MainActivity.this, DetailActivity.class);
+                openDetailIntent.putExtra("movie", item);
+                startActivity(openDetailIntent);
             }
         });
 
