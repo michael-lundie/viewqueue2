@@ -78,7 +78,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Initiate our new custom recycler adapter and set layout manager.
-        mAdapter = new MovieResultsViewAdapter(mList, this, 0);
+        mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(MovieItem item) {
+
+            }
+        });
 
         //Check for screen orientation
         int orientation = getResources().getConfiguration().orientation;

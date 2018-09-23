@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,20 +32,21 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
     private static final String LOG_TAG = MovieResultsViewAdapter.class.getSimpleName();
 
-    private Context mContext;
+    public interface OnItemClickListener {
+        void onItemClick(MovieItem item);
+    }
+
     private final ArrayList<MovieItem> mValues;
-    private final int mPadding;
+    private final OnItemClickListener mListener;
 
     /**
      * Simple constructor class for adapter.
      * @param items ArrayList of MovieItem objects.
-     * @param context Current context.
-     * @param padding Adapter padding.
+     * @param listener Reference to our listener object.
      */
-    public MovieResultsViewAdapter(ArrayList<MovieItem> items, Context context, int padding) {
+    public MovieResultsViewAdapter(ArrayList<MovieItem> items, OnItemClickListener listener) {
         mValues = items;
-        mContext = context;
-        mPadding = padding;
+        mListener = listener;
     }
 
     @NonNull
@@ -58,33 +60,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
     @Override
     public void onBindViewHolder(@NonNull MovieResultsViewAdapter.ViewHolder holder, int position) {
-
-        holder.mItem = mValues.get(position);
-
-        // Create a final reference variable to our movie object for this item.
-        // Used to access from onClick method.
-        final MovieItem movie = holder.mItem;
-        holder.mTitleView.setText(mValues.get(position).getTitle());
-
-        // Use Glide library to load our poster image. Async and cache is automatically managed
-        // by Glide.
-        Glide.with(mContext)
-                .load(mValues.get(position).getPosterURL())
-                .apply(new RequestOptions().placeholder(R.drawable.light_solid).error(R.drawable.light_solid))
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(holder.mPosterView);
-
-        // Create an onClickListener.
-        holder.mPosterView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // On click, create an intent and marshall necessary data using our parcelable
-                // MovieItem object, and start our new activity.
-                Intent openDetailIntent = new Intent(mContext, DetailActivity.class);
-                openDetailIntent.putExtra("movie", movie);
-                mContext.startActivity(openDetailIntent);
-            }
-        });
+        holder.bind(holder.mItem, mListener);
     }
 
     @Override
@@ -106,6 +82,26 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
             super(view);
             mView = view;
             ButterKnife.bind(this, view);
+        }
+
+        void bind(final MovieItem item, final OnItemClickListener listener) {
+
+            mTitleView.setText(item.getTitle());
+
+            // Use Glide library to load our poster image. Async and cache is automatically managed
+            // by Glide.
+            Glide.with(mView.getContext())
+                    .load(item.getPosterURL())
+                    .apply(new RequestOptions().placeholder(R.drawable.light_solid).error(R.drawable.light_solid))
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(mPosterView);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onItemClick(item);
+                }
+            });
         }
     }
 }
