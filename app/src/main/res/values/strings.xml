@@ -15,7 +15,7 @@
     <string name="date_unknown">Unknown Date</string>
 
     <!-- Preference string keys and values -->
-    <string name="settings_themoviedb_api_default" translatable="false"></string>
+    <string name="settings_themoviedb_api_default" translatable="false">408d0d40eb17172284d8c10052c70708</string>
     <string name="settings_themoviedb_apikey_key" translatable="false">api_key</string>
     <string name="settings_themoviedb_api_label" translatable="false">Please enter your API key here.</string>
     <string name="settings_orderby_key" translatable="false">orderby</string>
@@ -30,7 +30,7 @@
         <item>@string/settings_orderby_most_popular</item>
         <item>@string/settings_orderby_high_rated</item>
     </string-array>
-    <string name="settings_orderby_most_popular" translatable="false">popularity.desc</string>
-    <string name="settings_orderby_high_rated" translatable="false">vote_average.desc</string>
+    <string name="settings_orderby_most_popular" translatable="false">popular</string>
+    <string name="settings_orderby_high_rated" translatable="false">top_rated</string>
 
 </resources>

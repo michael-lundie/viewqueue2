@@ -189,20 +189,8 @@ public class MainActivity extends AppCompatActivity {
      * loader manager.
      */
     private void executeQuery(String queryOrder) {
-        // For testing purposes only: Checking if there is a valid API key.
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String apiKey = sharedPrefs.getString(
-                getString(R.string.settings_themoviedb_apikey_key),
-                getString(R.string.settings_themoviedb_api_default));
-
-        if (apiKey.length() < 32) {
-            openSettings();
-            return;
-        }
-
         // Build our Query URL
-        String queryURL = QueryUtils.queryUrlBuilder(this, apiKey, queryOrder);
+        String queryURL = QueryUtils.queryUrlBuilder(this, queryOrder);
 
         // Create a new loader from class.
         // Our instance will persist across configuration changes, as the loader logic will return

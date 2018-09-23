@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
+import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.MovieItem;
 
 public class QueryUtils {
@@ -37,19 +38,12 @@ public class QueryUtils {
      * @param context The current activity context.
      * @return url string
      */
-    public static String queryUrlBuilder (Context context, String apiKey, String sortOrder) {
+    public static String queryUrlBuilder (Context context, String sortOrder) {
         final String API_AUTHORITY = "api.themoviedb.org";
         final String API_VERSION = "3";
-        final String API_DISCOVER_PATH = "discover";
         final String API_MOVIE_PATH = "movie";
-        final String API_SORT_PARAM = "sort_by";
-        final String API_SORT_POPULAR_VALUE = "popularity.desc";
-        final String API_SORT_RATED_VALUE = "vote_average.desc";
-        final String API_ADULT_PARAM = "include_adult";
+        final String API_ADULT_PARAM = "adult";
         final String API_ADULT_VALUE = "false";
-        final String API_VIDEO_PARAM = "include_video";
-        final String API_VIDEO_VALUE = "false";
-
         final String API_KEY_PARAM = "api_key";
 
         //Use URI builder to construct our URL
@@ -57,12 +51,10 @@ public class QueryUtils {
         query.scheme("https")
                 .authority(API_AUTHORITY)
                 .appendPath(API_VERSION)
-                .appendPath(API_DISCOVER_PATH)
                 .appendPath(API_MOVIE_PATH)
-                .appendQueryParameter(API_KEY_PARAM, apiKey)
-                .appendQueryParameter(API_SORT_PARAM, sortOrder)
+                .appendPath(sortOrder)
+                .appendQueryParameter(API_KEY_PARAM, BuildConfig.API_KEY)
                 .appendQueryParameter(API_ADULT_PARAM, API_ADULT_VALUE)
-                .appendQueryParameter(API_VIDEO_PARAM, API_VIDEO_VALUE)
                 .build();
         URL returnUrl = null;
 
@@ -77,7 +69,9 @@ public class QueryUtils {
         //Handle any null pointer exception that may be thrown by .toString() method;
         if (returnUrl == null) {
             return null;
-        } return returnUrl.toString();
+        }
+        Log.i(LOG_TAG, "TEST URL:" + returnUrl.toString());
+        return returnUrl.toString();
     }
 
     /**
