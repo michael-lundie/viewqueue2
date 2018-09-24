@@ -21,7 +21,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="io.lundie.michael.viewcue.DetailActivity"/>
         </activity>
-        <activity android:name=".SettingsActivity">
+        <activity android:name=".SettingsActivity" android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="io.lundie.michael.viewcue.SettingsActivity"/>

@@ -4,11 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
+import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -58,16 +58,14 @@ public class SettingsActivity extends AppCompatActivity {
         finish();
     }
 
-    public static class QueryPreferenceFragment extends PreferenceFragment
+    public static class QueryPreferenceFragment extends PreferenceFragmentCompat
             implements Preference.OnPreferenceChangeListener {
 
         Preference apiKey;
         Preference movieOrder;
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             addPreferencesFromResource(R.xml.settings_main);
             movieOrder = findPreference(getString(R.string.settings_orderby_key));
             bindPreferenceSummaryToValue(movieOrder);
