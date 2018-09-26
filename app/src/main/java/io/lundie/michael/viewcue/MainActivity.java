@@ -27,7 +27,7 @@ import io.lundie.michael.viewcue.utilities.QueryUtils;
 /**
  * Main / Root activity of ViewQueue
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String LOG_TAG = MainActivity.class.getName();
 
@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<MovieItem> mList = new ArrayList<>();
     private static final int API_REQUEST_LOADER_ID = 1;
     private boolean hasInternet = true;
+
+    private String orderPreference;
 
     /** A boolean value indicating whether or setting shave been changed. */
     static boolean settingsChanged = false;
@@ -59,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up our toolbar/action bar
         setSupportActionBar(mToolbar);
+
+        getSharedPreferences();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
@@ -105,8 +111,15 @@ public class MainActivity extends AppCompatActivity {
         //Execute our API query
         if (mList.isEmpty()) {
             Log.i(LOG_TAG, "TEST - MLIST EMPTY");
-            executeQuery(getOrderDefault());
+            executeQuery(orderPreference);
         }
+    }
+
+    private void getSharedPreferences() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        orderPreference =  sharedPrefs.getString(
+                getString(R.string.settings_orderby_key),
+                getString(R.string.settings_orderby_most_popular));
     }
 
     @Override
@@ -115,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         if (!hasInternet) {
             hasInternet = true;
             resetSearch();
-            executeQuery(getOrderDefault());
+            executeQuery(orderPreference);
         }
     }
 
@@ -130,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch(id) {
             case R.id.action_settings:
-                openSettings();
+                startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             case R.id.action_sort_popular:
                 resetSearch();
@@ -157,39 +170,11 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
-    /**
-     * Override method allowing the passing of intent data when resuming our MainActivity,
-     * after accessing the SettingsActivity.
-     * @param requestCode Where is the request coming from?
-     * @param resultCode Was a result available?
-     * @param data Intent data includes a boolean value, representing the change status of settings.
-     */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
-            if(resultCode == Activity.RESULT_OK){
-                settingsChanged = data.getBooleanExtra("settingsChanged", false);
-                if (settingsChanged) {
-                    // Reset our settingsChanged variable
-                    settingsChanged = false;
-                    // reset search, destroying previous loader and cache
-                    resetSearch();
-                    // Begin our query using AsyncLoader
-                    executeQuery(getOrderDefault());
-                }
-            }
-        }
-    }
-
-    /**
-     * Simple utility method for checking the default order preference set by the user
-     * @return the user order preference
-     */
-    private String getOrderDefault(){
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        return sharedPrefs.getString(
-                getString(R.string.settings_orderby_key),
-                getString(R.string.settings_orderby_most_popular));
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -197,9 +182,9 @@ public class MainActivity extends AppCompatActivity {
      * shared user preferences, if internet access is available and passing our query to the
      * loader manager.
      */
-    private void executeQuery(String queryOrder) {
+    private void executeQuery(String listOrder) {
         // Build our Query URL
-        String queryURL = QueryUtils.queryUrlBuilder(this, queryOrder);
+        String queryURL = QueryUtils.queryUrlBuilder(this, listOrder);
 
         // Create a new loader from class.
         // Our instance will persist across configuration changes, as the loader logic will return
@@ -238,8 +223,14 @@ public class MainActivity extends AppCompatActivity {
         mProgressRing.setVisibility(View.VISIBLE);
     }
 
-    private void openSettings() {
-        Intent settingsIntent = new Intent(this, SettingsActivity.class);
-        startActivityForResult(settingsIntent, 1);
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.settings_orderby_key))) {
+            // reset search, destroying previous loader and cache
+            resetSearch();
+            getSharedPreferences();
+            // Begin our query using AsyncLoader
+            executeQuery(orderPreference);
+        }
     }
 }

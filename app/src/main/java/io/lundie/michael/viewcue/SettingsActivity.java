@@ -51,17 +51,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Log.d("CDA", "onBackPressed Called");
-        Intent returnIntent = new Intent();
-        returnIntent.putExtra("settingsChanged",settingsChanged);
-        setResult(Activity.RESULT_OK, returnIntent);
         finish();
     }
 
     public static class QueryPreferenceFragment extends PreferenceFragmentCompat
             implements Preference.OnPreferenceChangeListener {
 
-        Preference apiKey;
         Preference movieOrder;
 
         @Override
