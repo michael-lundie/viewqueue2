@@ -14,7 +14,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 
 import io.lundie.michael.viewcue.MainActivity;
 
@@ -29,21 +29,27 @@ public class MovieItem implements Parcelable {
     private static final int TYPE_POSTER = 0;
     private static final int TYPE_BACKGROUND = 1;
 
+    @SerializedName("title")
     private String title;
-    private String date;
-    private String posterURL;
-    private String backgroundURL;
+    @SerializedName("release_date")
+    private String releaseDate;
+    @SerializedName("poster_path")
+    private String posterPath;
+    @SerializedName("background_path")
+    private String backgroundPath;
+    @SerializedName("vote_average")
     private double voteAverage;
-    private String synopsis;
+    @SerializedName("overview")
+    private String overview;
 
-    public MovieItem(String title, String date, String posterPath,
-                     String backgroundPath, double voteAverage, String synopsis) {
+    public MovieItem(String title, String releaseDate, String posterPath,
+                     String backgroundPath, double voteAverage, String overview) {
         this.title = title;
-        this.date = date;
-        this.posterURL = setURL(TYPE_POSTER, posterPath);
-        this.backgroundURL = setURL(TYPE_BACKGROUND, backgroundPath);
+        this.releaseDate = releaseDate;
+        this.posterPath = setURL(TYPE_POSTER, posterPath);
+        this.backgroundPath = setURL(TYPE_BACKGROUND, backgroundPath);
         this.voteAverage = voteAverage;
-        this.synopsis = synopsis;
+        this.overview = overview;
     }
 
     /**
@@ -52,20 +58,20 @@ public class MovieItem implements Parcelable {
      */
     private MovieItem(Parcel in) {
         this.title = in.readString();
-        this.date = in.readString();
-        this.posterURL = in.readString();
-        this.backgroundURL = in.readString();
+        this.releaseDate = in.readString();
+        this.posterPath = in.readString();
+        this.backgroundPath = in.readString();
         this.voteAverage = in.readDouble();
-        this.synopsis = in.readString();
+        this.overview = in.readString();
     }
 
     public void writeToParcel(Parcel out, int flags) {
         out.writeString(title);
-        out.writeString(date);
-        out.writeString(posterURL);
-        out.writeString(backgroundURL);
+        out.writeString(releaseDate);
+        out.writeString(posterPath);
+        out.writeString(backgroundPath);
         out.writeDouble(voteAverage);
-        out.writeString(synopsis);
+        out.writeString(overview);
     }
 
     public static final Parcelable.Creator<MovieItem> CREATOR = new Parcelable.Creator<MovieItem>() {
@@ -86,15 +92,15 @@ public class MovieItem implements Parcelable {
 
     public String getTitle() { return title; }
 
-    public String getDate() { return date; }
+    public String getReleaseDate() { return releaseDate; }
 
-    public String getPosterURL() { return posterURL; }
+    public String getPosterPath() { return posterPath; }
 
-    public String getBackgroundURL() { return backgroundURL; }
+    public String getBackgroundPath() { return backgroundPath; }
 
     public double getVoteAverage() { return voteAverage; }
 
-    public String getSynopsis() { return synopsis; }
+    public String getOverview() { return overview; }
 
     private String setURL(int requestType, String path) {
 

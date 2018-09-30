@@ -85,9 +85,9 @@ public class DetailActivity extends AppCompatActivity {
 
         // Set text data to appropriate views.
         title.setText(movie.getTitle());
-        releasedDateTv.setText(formatDate(movie.getDate(), this.getString(R.string.date_unknown)));
+        releasedDateTv.setText(formatDate(movie.getReleaseDate(), this.getString(R.string.date_unknown)));
         voteAverageTv.setText(Double.toString(movie.getVoteAverage()));
-        synopsisTv.setText(movie.getSynopsis());
+        synopsisTv.setText(movie.getOverview());
 
         // Set up our 'fake parallax' transition.
         // Solution for scaling transition from 'bottom': https://stackoverflow.com/a/22144862
@@ -102,8 +102,8 @@ public class DetailActivity extends AppCompatActivity {
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
         // Load background and poster images using glide library.
-        loadImageWithGlide(movie.getBackgroundURL(), progressBar, backdrop);
-        loadImageWithGlide(movie.getPosterURL(), null, mPosterView);
+        loadImageWithGlide(movie.getBackgroundPath(), progressBar, backdrop);
+        loadImageWithGlide(movie.getPosterPath(), null, mPosterView);
     }
 
     /**
