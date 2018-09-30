@@ -1,14 +1,10 @@
 package io.lundie.michael.viewcue.utilities;
 
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,12 +13,10 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.lundie.michael.viewcue.DetailActivity;
-import io.lundie.michael.viewcue.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.R;
 
 /**
@@ -40,7 +34,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
         void onItemClick(MovieItem item);
     }
 
-    private final ArrayList<MovieItem> mValues;
+    private ArrayList<MovieItem> mValues;
     private final OnItemClickListener mListener;
 
     /**
@@ -70,6 +64,15 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
     @Override
     public int getItemCount() {
         return mValues.size();
+    }
+
+    /**
+     * When data changes, this method updates the list of taskEntries
+     * and notifies the adapter to use the new values on it
+     */
+    public void setMovieEntries(ArrayList<MovieItem> movieEntries) {
+        mValues = movieEntries;
+        notifyDataSetChanged();
     }
 
     /**

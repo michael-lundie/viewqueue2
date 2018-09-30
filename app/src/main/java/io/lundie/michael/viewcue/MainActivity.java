@@ -1,6 +1,5 @@
 package io.lundie.michael.viewcue;
 
-import android.app.Activity;
 import android.support.v4.app.LoaderManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.utilities.MovieQueryCallback;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.utilities.QueryUtils;
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         // Set up our toolbar/action bar
         setSupportActionBar(mToolbar);
+        
 
         getSharedPreferences();
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -184,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      */
     private void executeQuery(String listOrder) {
         // Build our Query URL
-        String queryURL = QueryUtils.queryUrlBuilder(this, listOrder);
+        String queryURL = QueryUtils.queryUrlBuilder(listOrder);
 
         // Create a new loader from class.
         // Our instance will persist across configuration changes, as the loader logic will return

@@ -1,20 +1,27 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 29/09/18 16:14
+ */
+
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 29/09/18 16:14
+ */
+
+package io.lundie.michael.viewcue.datamodel.models;
 
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
-import android.util.Log;
 
-import java.net.URI;
-import java.net.URL;
+import com.google.gson.annotations.JsonAdapter;
 
-import butterknife.internal.Utils;
-import io.lundie.michael.viewcue.utilities.QueryUtils;
+import io.lundie.michael.viewcue.MainActivity;
 
 /**
  * A simple object to store individual movie data.
  */
+
 public class MovieItem implements Parcelable {
 
     private static final String LOG_TAG = MainActivity.class.getName();

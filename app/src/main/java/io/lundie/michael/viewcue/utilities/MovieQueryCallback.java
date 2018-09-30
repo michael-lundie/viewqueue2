@@ -5,14 +5,13 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import io.lundie.michael.viewcue.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.RecycleViewWithSetEmpty;
 

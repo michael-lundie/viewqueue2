@@ -29,6 +29,7 @@ import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 
 /**
  * Detail Activity

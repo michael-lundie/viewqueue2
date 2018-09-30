@@ -22,7 +22,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import io.lundie.michael.viewcue.BuildConfig;
-import io.lundie.michael.viewcue.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 
 public class QueryUtils {
 
@@ -38,7 +38,7 @@ public class QueryUtils {
      * @param context The current activity context.
      * @return url string
      */
-    public static String queryUrlBuilder (Context context, String sortOrder) {
+    public static String queryUrlBuilder (String sortOrder) {
         final String API_AUTHORITY = "api.themoviedb.org";
         final String API_VERSION = "3";
         final String API_MOVIE_PATH = "movie";

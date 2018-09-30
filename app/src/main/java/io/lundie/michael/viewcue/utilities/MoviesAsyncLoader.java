@@ -9,7 +9,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import io.lundie.michael.viewcue.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 
 public class MoviesAsyncLoader extends AsyncTaskLoader {
 
