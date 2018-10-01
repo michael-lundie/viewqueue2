@@ -13,6 +13,7 @@ package io.lundie.michael.viewcue.datamodel.models;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -26,6 +27,10 @@ public class MovieItem implements Parcelable {
 
     private static final String LOG_TAG = MainActivity.class.getName();
 
+    private static final String POSTER_SIZE = "w185";
+    private static final String BACKGROUND_SIZE = "w500";
+
+    //TODO: REmove constants
     private static final int TYPE_POSTER = 0;
     private static final int TYPE_BACKGROUND = 1;
 
@@ -94,14 +99,19 @@ public class MovieItem implements Parcelable {
 
     public String getReleaseDate() { return releaseDate; }
 
-    public String getPosterPath() { return posterPath; }
+    public String getPosterURL() { return buildImageURL(POSTER_SIZE, posterPath); }
 
-    public String getBackgroundPath() { return backgroundPath; }
+    public String getBackgroundURL() {
+        if(TextUtils.isEmpty(backgroundPath)) {
+            return buildImageURL(BACKGROUND_SIZE, posterPath);
+        } return buildImageURL(BACKGROUND_SIZE, backgroundPath); }
 
     public double getVoteAverage() { return voteAverage; }
 
     public String getOverview() { return overview; }
 
+
+    //TODO: Remove this method.
     private String setURL(int requestType, String path) {
 
         // Image resource URL is set accordingly.
@@ -118,6 +128,17 @@ public class MovieItem implements Parcelable {
                 .appendPath("t")
                 .appendPath("p")
                 .appendPath(size)
+                .appendPath(path.substring(1));
+        return posterUrlBuilder.toString();
+    }
+
+    private String buildImageURL(String requestSize, String path) {
+        Uri.Builder posterUrlBuilder = new Uri.Builder();
+        posterUrlBuilder.scheme("http")
+                .authority("image.tmdb.org")
+                .appendPath("t")
+                .appendPath("p")
+                .appendPath(requestSize)
                 .appendPath(path.substring(1));
         return posterUrlBuilder.toString();
     }

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -71,7 +72,7 @@ public class TestActivity extends AppCompatActivity {
 
         MoviesViewModel model = ViewModelProviders.of(this).get(MoviesViewModel.class);
 
-        model.getMovies().observe(this, new Observer<ArrayList<MovieItem>>() {
+        model.getMovies("popular").observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
                 Log.i("TEST", "TEST Observer changed" +movieItems);
@@ -79,10 +80,5 @@ public class TestActivity extends AppCompatActivity {
                 mAdapter.notifyDataSetChanged();
             }
         });
-
-    }
-
-    private void testMethod() {
-
     }
 }

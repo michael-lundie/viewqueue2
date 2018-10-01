@@ -1,6 +1,8 @@
 package io.lundie.michael.viewcue;
 
-import android.support.v4.app.LoaderManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.support.annotation.Nullable;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -19,10 +21,11 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.lundie.michael.viewcue.datamodel.MovieRepository;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
-import io.lundie.michael.viewcue.utilities.MovieQueryCallback;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.utilities.QueryUtils;
+import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
 /**
  * Main / Root activity of ViewQueue
@@ -31,20 +34,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     public static final String LOG_TAG = MainActivity.class.getName();
 
-    /**
-     * Create Loader Manager as static, to prevent NPE onDestroy
-     */
-    static LoaderManager.LoaderCallbacks<ArrayList<MovieItem>> movieQueryLoaderCallback;
-
-    private RecycleViewWithSetEmpty.Adapter mAdapter;
+    private MovieResultsViewAdapter mAdapter;
     private ArrayList<MovieItem> mList = new ArrayList<>();
-    private static final int API_REQUEST_LOADER_ID = 1;
     private boolean hasInternet = true;
 
-    private String orderPreference;
+    MoviesViewModel model;
 
-    /** A boolean value indicating whether or setting shave been changed. */
-    static boolean settingsChanged = false;
+    private String orderPreference;
 
     @BindView(R.id.progressRing) ProgressBar mProgressRing;
     @BindView(R.id.list_empty) TextView mEmptyStateTextView;
@@ -61,28 +57,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         // Set up our toolbar/action bar
         setSupportActionBar(mToolbar);
-        
 
-        getSharedPreferences();
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
-
-        //Check for a saved instance to handle rotation and resume
-        if(savedInstanceState != null)
-        {
-            mList = savedInstanceState.getParcelableArrayList("mList");
-            if (mList != null ) {
-                getSupportLoaderManager().initLoader(API_REQUEST_LOADER_ID, null,
-                        movieQueryLoaderCallback);
-                mProgressRing.setVisibility(View.INVISIBLE);
-            } else {
-                mList = new ArrayList<>();
-            }
-        }
 
         // Initiate our new custom recycler adapter and set layout manager.
         mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
@@ -109,16 +90,22 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         } mRecyclerView.setAdapter(mAdapter);
 
-        //Execute our API query
-        if (mList.isEmpty()) {
-            Log.i(LOG_TAG, "TEST - MLIST EMPTY");
-            executeQuery(orderPreference);
-        }
+        MovieRepository.getInstance();
+        model = ViewModelProviders.of(this).get(MoviesViewModel.class);
+
+        model.getMovies(getSharedPreferences()).observe(this, new Observer<ArrayList<MovieItem>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
+                Log.i("TEST", "TEST Observer changed" +movieItems);
+                mAdapter.setMovieEntries(movieItems);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
-    private void getSharedPreferences() {
+    private String getSharedPreferences() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        orderPreference =  sharedPrefs.getString(
+        return  sharedPrefs.getString(
                 getString(R.string.settings_orderby_key),
                 getString(R.string.settings_orderby_most_popular));
     }
@@ -147,28 +134,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             case R.id.action_sort_popular:
-                resetSearch();
-                executeQuery(getString(R.string.settings_orderby_most_popular));
+                mList.clear();
+                mAdapter.notifyDataSetChanged();
+                model.getMovies(getString(R.string.settings_orderby_most_popular));
                 return true;
             case R.id.action_sort_rating:
-                resetSearch();
-                executeQuery(getString(R.string.settings_orderby_high_rated));
+                mList.clear();
+                mAdapter.notifyDataSetChanged();
+                model.getMovies(getString(R.string.settings_orderby_high_rated));
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Allows seamless transition of our app between the various activity states.
-     * @param outState Contains the listArray data (if any) used to populate our RecycleViewer
-     */
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        //Saving parcelable code adapted from : https://stackoverflow.com/a/12503875/9738433
-        if (!mList.isEmpty()){
-            outState.putParcelableArrayList("mList", mList);
-        }
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -190,8 +166,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         // Create a new loader from class.
         // Our instance will persist across configuration changes, as the loader logic will return
         // any current instances. Not sure if this is the best way to go about it.
-        movieQueryLoaderCallback = new MovieQueryCallback(this, queryURL, mList, mAdapter,
-                mProgressRing, mEmptyStateTextView);
 
         boolean isConnected = QueryUtils.checkNetworkAccess(this);
 
@@ -208,13 +182,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             mProgressRing.setVisibility(View.VISIBLE);
             mEmptyStateTextView.setVisibility(View.GONE);
             // Let's get our loader manager hooked up and started
-            getSupportLoaderManager().initLoader(API_REQUEST_LOADER_ID, null, movieQueryLoaderCallback);
         }
     }
 
     private void resetSearch() {
         // upon a new search initiation, destroy previous loader.
-        getSupportLoaderManager().destroyLoader(API_REQUEST_LOADER_ID);
+
         //clear the array list
         mList.clear();
         //notify the adapter and scroll to position 0
@@ -226,12 +199,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.i(LOG_TAG, "TEST: Prefs changed");
         if (key.equals(getString(R.string.settings_orderby_key))) {
-            // reset search, destroying previous loader and cache
-            resetSearch();
-            getSharedPreferences();
-            // Begin our query using AsyncLoader
-            executeQuery(orderPreference);
+            mList.clear();
+            mAdapter.notifyDataSetChanged();
+            model.getMovies(getSharedPreferences());
         }
     }
 }

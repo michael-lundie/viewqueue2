@@ -97,7 +97,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
             // Use Glide library to load our poster image. Async and cache is automatically managed
             // by Glide.
             Glide.with(mView.getContext())
-                    .load(item.getPosterPath())
+                    .load(item.getPosterURL())
                     .apply(new RequestOptions().placeholder(R.drawable.light_solid).error(R.drawable.light_solid))
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(mPosterView);

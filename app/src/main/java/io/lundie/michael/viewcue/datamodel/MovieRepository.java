@@ -10,6 +10,8 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import javax.inject.Singleton;
+
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
@@ -41,15 +43,16 @@ public class MovieRepository {
         if (movieRepository == null) {
             movieRepository = new MovieRepository();
         }
-
         return movieRepository;
     }
 
-    public LiveData<ArrayList<MovieItem>> getMovieList() {
+    private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
 
-        final MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
+    public MutableLiveData<ArrayList<MovieItem>> getMovieList(String sortOrder) {
 
-        theMovieDbApi.getListOfMovies("popular", BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
+
+
+        theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
             @Override
             public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {
 

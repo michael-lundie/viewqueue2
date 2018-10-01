@@ -102,8 +102,8 @@ public class DetailActivity extends AppCompatActivity {
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
         // Load background and poster images using glide library.
-        loadImageWithGlide(movie.getBackgroundPath(), progressBar, backdrop);
-        loadImageWithGlide(movie.getPosterPath(), null, mPosterView);
+        loadImageWithGlide(movie.getBackgroundURL(), progressBar, backdrop);
+        loadImageWithGlide(movie.getPosterURL(), null, mPosterView);
     }
 
     /**
