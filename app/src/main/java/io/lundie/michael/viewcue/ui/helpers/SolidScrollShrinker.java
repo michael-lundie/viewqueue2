@@ -1,8 +1,12 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 22/09/18 12:59
+ */
+
+package io.lundie.michael.viewcue.ui.helpers;
 
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
-import android.util.Log;
 import android.view.View;
 
 public class SolidScrollShrinker implements AppBarLayout.OnOffsetChangedListener{
@@ -11,7 +15,7 @@ public class SolidScrollShrinker implements AppBarLayout.OnOffsetChangedListener
 
     private final View mScrollSolidView;
 
-    SolidScrollShrinker(@NonNull View scrollSolidView) {
+    public SolidScrollShrinker(@NonNull View scrollSolidView) {
         this.mScrollSolidView = scrollSolidView;
     }
 

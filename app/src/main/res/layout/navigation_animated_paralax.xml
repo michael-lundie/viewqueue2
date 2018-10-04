@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Crafted by Michael R Lundie (2018)
+  ~ Last Modified 02/10/18 22:33
+  -->
+
+<android.support.design.widget.AppBarLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/appbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimaryStep"
+    android:clipChildren="false"
+    android:fitsSystemWindows="true"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+    <android.support.design.widget.CollapsingToolbarLayout
+        android:id="@+id/collapsing_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/collapse_toolbar_height"
+        android:clipChildren="false"
+        android:fitsSystemWindows="true"
+        app:contentScrim="#00000000"
+        app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
+        <io.lundie.michael.viewcue.PercentageCropImageView
+            android:id="@+id/backdrop_iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:contentDescription="..."
+            android:fitsSystemWindows="true"
+            android:scaleType="matrix"
+            app:layout_collapseMode="parallax" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_gray_angle" />
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="@dimen/background_progressbar_dimen"
+            android:layout_height="@dimen/background_progressbar_dimen"
+            android:layout_gravity="center"
+            android:background="@color/grayTransparent" />
+
+        <android.support.v7.widget.Toolbar
+            style="@style/ToolbarStyle"
+            app:layout_collapseMode="pin"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+    </android.support.design.widget.CollapsingToolbarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/collapsing_toolbar">
+
+        <View
+            android:id="@+id/title_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:background="@color/colorPrimaryDark" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_gravity="bottom"
+            android:background="@color/colorAccent" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:background="@color/graySemiTransparent"
+            android:padding="@dimen/half_padding"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_default_huge"
+            app:fontFamily="sans-serif-condensed" />
+
+    </FrameLayout>
+</android.support.design.widget.AppBarLayout>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Crafted by Michael R Lundie (2018)
+  ~ Last Modified 02/10/18 22:30
+  -->
+
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/RootCoordLayout">
+
+    <include layout="@layout/navigation_animated_paralax" />
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimaryLight"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/default_padding"
+            android:background="#CFD8DC"
+            android:fillViewport="true"
+            android:paddingBottom="?android:attr/actionBarSize">
+
+            <TextView
+                android:id="@+id/released_label_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/detail_release"
+                android:textColor="@color/colorPrimaryStep"
+                android:textSize="@dimen/text_default_large"
+                app:layout_constraintBottom_toTopOf="@+id/released_text_tv"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/detail_view_poster"
+                app:layout_constraintTop_toBottomOf="@+id/vote_average_text_tv" />
+
+            <TextView
+                android:id="@+id/released_text_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/half_padding"
+                android:textSize="@dimen/text_default_small"
+                app:layout_constraintBottom_toTopOf="@+id/synopsis_tv"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/released_label_tv" />
+
+            <TextView
+                android:id="@+id/vote_average_text_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/half_padding"
+                android:textSize="@dimen/text_default_small"
+                app:layout_constraintBottom_toTopOf="@+id/released_label_tv"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/vote_average_label_tv" />
+
+            <ImageView
+                android:id="@+id/detail_view_poster"
+                android:layout_width="0dp"
+                android:layout_height="200dp"
+                android:scaleType="fitCenter"
+                app:layout_constraintLeft_toRightOf="@id/released_label_tv"
+                app:layout_constraintRight_toRightOf="parent" />
+
+
+            <TextView
+                android:id="@+id/vote_average_label_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/detail_average_user_rating"
+                android:textColor="@color/colorPrimaryStep"
+                android:textSize="@dimen/text_default_large"
+                app:layout_constraintBottom_toTopOf="@+id/vote_average_text_tv"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="0dp" />
+
+            <android.support.constraint.Barrier
+                android:id="@+id/barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="detail_view_poster, vote_average_label_tv" />
+
+            <TextView
+                android:id="@+id/synopsis_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/default_padding"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/barrier" />
+        </android.support.constraint.ConstraintLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+</android.support.design.widget.CoordinatorLayout>

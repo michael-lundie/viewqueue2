@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Crafted by Michael R Lundie (2018)
+  ~ Last Modified 01/10/18 15:38
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.MovieListFragment">
+
+    <include layout="@layout/navigation_simple" />
+
+    <io.lundie.michael.viewcue.RecycleViewWithSetEmpty
+        android:id="@+id/movie_list"
+        android:paddingTop="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/half_padding"
+        android:paddingRight="@dimen/half_padding" />
+
+    <TextView
+        android:id="@+id/list_empty"
+        android:layout_width="@dimen/list_empty_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:gravity="center"
+        android:padding="@dimen/half_padding"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_default_tiny"
+        android:visibility="gone"/>
+
+    <ProgressBar
+        android:id="@+id/progressRing"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="@dimen/detail_progressbar_dimen"
+        android:layout_height="@dimen/detail_progressbar_dimen"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:visibility="visible" />
+</FrameLayout>

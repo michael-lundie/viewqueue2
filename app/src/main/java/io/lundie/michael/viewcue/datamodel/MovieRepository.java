@@ -38,7 +38,6 @@ public class MovieRepository {
         theMovieDbApi = retrofit.create(TheMovieDbApi.class);
     }
 
-
     public synchronized static MovieRepository getInstance() {
         if (movieRepository == null) {
             movieRepository = new MovieRepository();

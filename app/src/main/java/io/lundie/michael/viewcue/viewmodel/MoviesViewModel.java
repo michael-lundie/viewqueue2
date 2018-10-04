@@ -12,10 +12,11 @@ import io.lundie.michael.viewcue.datamodel.MovieRepository;
 
 public class MoviesViewModel extends ViewModel {
 
-    private MutableLiveData<ArrayList<MovieItem>> movieListObservable;
+    private MutableLiveData<ArrayList<MovieItem>> movieListObservable = new MutableLiveData<>();
+    private MutableLiveData<MovieItem> selectedMovieItem = new MutableLiveData<>();
 
     // Getter method for fetching data
-    public MutableLiveData<ArrayList<MovieItem>> getMovies(String sortOrder) {
+    public LiveData<ArrayList<MovieItem>> getMovies(String sortOrder) {
         Log.i("TEST", "ViewModel get movies called");
 
         //movieListObservable = new LiveData<ArrayList<MovieItem>>();
@@ -24,5 +25,13 @@ public class MoviesViewModel extends ViewModel {
         movieListObservable = MovieRepository.getInstance().getMovieList(sortOrder);
         // Return our movies array list
         return movieListObservable;
+    }
+
+    public LiveData<MovieItem> getSelectedItem() {
+        return selectedMovieItem;
+    }
+
+    public void selectMovieItem(MovieItem item) {
+        selectedMovieItem.setValue(item);
     }
 }

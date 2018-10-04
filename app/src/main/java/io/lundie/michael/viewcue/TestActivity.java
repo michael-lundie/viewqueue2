@@ -8,7 +8,9 @@ package io.lundie.michael.viewcue;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,25 +19,30 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import junit.framework.Test;
+
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.MovieRepository;
+import io.lundie.michael.viewcue.ui.MovieListFragment;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
-public class TestActivity extends AppCompatActivity {
+public class TestActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
-    private MovieResultsViewAdapter mAdapter;
+    public static final String LOG_TAG = TestActivity.class.getName();
+
+    private RecycleViewWithSetEmpty.Adapter mAdapter;
     private ArrayList<MovieItem> mList = new ArrayList<>();
+    private boolean hasInternet = true;
 
-    @BindView(R.id.list_empty)
-    TextView mEmptyStateTextView;
-    @BindView(R.id.movie_list) RecycleViewWithSetEmpty mRecyclerView;
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
+    private String orderPreference;
+
+    /** A boolean value indicating whether or setting shave been changed. */
+    static boolean settingsChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,40 +52,26 @@ public class TestActivity extends AppCompatActivity {
         // Bind view references with butterknife library.
         ButterKnife.bind(this);
 
-        // Set up our toolbar/action bar
-        setSupportActionBar(mToolbar);
 
-        // Set up Recycler view
-        mRecyclerView.setHasFixedSize(false);
-        mRecyclerView.setEmptyView(mEmptyStateTextView);
+        if(savedInstanceState == null) {
+            FragmentManager manager = getSupportFragmentManager();
+            MovieListFragment listFragment = new MovieListFragment();
+            manager.beginTransaction().replace(R.id.content_frame, listFragment, listFragment.getTag()).commit();
+        }
+    }
+
+    public interface selectionChangeListener {
+
+    }
 
 
-        // Initiate our new custom recycler adapter and set layout manager.
-        mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(MovieItem item) {
-                // On click, create an intent and marshall necessary data using our parcelable
-                // MovieItem object, and start our new activity.
-                Intent openDetailIntent = new Intent(TestActivity.this, DetailActivity.class);
-                openDetailIntent.putExtra("movie", item);
-                startActivity(openDetailIntent);
-            }
-        });
-
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        mRecyclerView.setAdapter(mAdapter);
-
-        MovieRepository.getInstance();
-
-        MoviesViewModel model = ViewModelProviders.of(this).get(MoviesViewModel.class);
-
-        model.getMovies("popular").observe(this, new Observer<ArrayList<MovieItem>>() {
-            @Override
-            public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
-                Log.i("TEST", "TEST Observer changed" +movieItems);
-                mAdapter.setMovieEntries(movieItems);
-                mAdapter.notifyDataSetChanged();
-            }
-        });
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.i(LOG_TAG, "TEST: Prefs changed");
+        if (key.equals(getString(R.string.settings_orderby_key))) {
+            mList.clear();
+            mAdapter.notifyDataSetChanged();
+            // model.getMovies(getSharedPreferences());
+        }
     }
 }
