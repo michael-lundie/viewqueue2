@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Crafted by Michael R Lundie (2018)
-  ~ Last Modified 01/10/18 15:38
+  ~ Last Modified 07/10/18 09:52
   -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -9,8 +9,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.MovieListFragment">
-
-    <include layout="@layout/navigation_simple" />
 
     <io.lundie.michael.viewcue.RecycleViewWithSetEmpty
         android:id="@+id/movie_list"
@@ -38,4 +36,6 @@
         android:layout_height="@dimen/detail_progressbar_dimen"
         android:layout_gravity="center_vertical|center_horizontal"
         android:visibility="visible" />
+
+    <include layout="@layout/navigation_simple" />
 </FrameLayout>

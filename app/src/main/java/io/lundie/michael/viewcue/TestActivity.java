@@ -52,18 +52,31 @@ public class TestActivity extends AppCompatActivity implements SharedPreferences
         // Bind view references with butterknife library.
         ButterKnife.bind(this);
 
-
         if(savedInstanceState == null) {
-            FragmentManager manager = getSupportFragmentManager();
             MovieListFragment listFragment = new MovieListFragment();
-            manager.beginTransaction().replace(R.id.content_frame, listFragment, listFragment.getTag()).commit();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.content_frame, listFragment, listFragment.getTag())
+                    .commit();
         }
     }
 
-    public interface selectionChangeListener {
-
+    @Override
+    public void onBackPressed() {
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+        if (count == 0) {
+            super.onBackPressed();
+        } else {
+            getSupportFragmentManager().popBackStack();
+        }
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        super.onSupportNavigateUp();
+        onBackPressed();
+        return true;
+    }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

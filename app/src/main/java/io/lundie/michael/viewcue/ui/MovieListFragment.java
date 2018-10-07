@@ -7,6 +7,7 @@ package io.lundie.michael.viewcue.ui;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -17,6 +18,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -28,6 +32,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.RecycleViewWithSetEmpty;
+import io.lundie.michael.viewcue.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
@@ -49,6 +54,17 @@ public class MovieListFragment extends Fragment {
     @BindView(R.id.movie_list) RecycleViewWithSetEmpty mRecyclerView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
+    SharedPreferences.OnSharedPreferenceChangeListener listener
+            = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            Log.i(LOG_TAG, "TEST: Prefs changed");
+            if (key.equals(getString(R.string.settings_orderby_key))) {
+                mList.clear();
+                mAdapter.notifyDataSetChanged();
+                moviesViewModel.getMovies(getSharedPreferences());
+            }
+        }
+    };
 
     public MovieListFragment() {
         // Required empty public constructor
@@ -67,7 +83,11 @@ public class MovieListFragment extends Fragment {
         // Bind view references with butterknife library.
         ButterKnife.bind(this, listFragmentView);
 
+        PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .registerOnSharedPreferenceChangeListener(listener);
+
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
+        setHasOptionsMenu(true);
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
@@ -83,10 +103,10 @@ public class MovieListFragment extends Fragment {
             public void onItemClick(MovieItem item) {
                 moviesViewModel.selectMovieItem(item);
                 getFragmentManager().beginTransaction()
-                                    .replace(R.id.content_frame,
-                                            new MovieDetailFragment(), "MovieDetailFragment")
-                                    .addToBackStack(null)
-                                    .commit();
+                        .replace(R.id.content_frame,
+                                new MovieDetailFragment(), "MovieDetailFragment")
+                        .addToBackStack(null)
+                        .commit();
             }
         });
 
@@ -116,10 +136,46 @@ public class MovieListFragment extends Fragment {
         return listFragmentView;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(getActivity())
+                .unregisterOnSharedPreferenceChangeListener(listener);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.settings_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch(id) {
+            case R.id.action_settings:
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            case R.id.action_sort_popular:
+                //mList.clear();
+                //mAdapter.notifyDataSetChanged();
+                moviesViewModel.getMovies(getString(R.string.settings_orderby_most_popular));
+                return true;
+            case R.id.action_sort_rating:
+                //TODO: We need a data network listener interface here somehow
+                //mList.clear();
+                //mAdapter.notifyDataSetChanged();
+                moviesViewModel.getMovies(getString(R.string.settings_orderby_high_rated));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private String getSharedPreferences() {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         return  sharedPrefs.getString(
                 getString(R.string.settings_orderby_key),
                 getString(R.string.settings_orderby_most_popular));
     }
+
 }
