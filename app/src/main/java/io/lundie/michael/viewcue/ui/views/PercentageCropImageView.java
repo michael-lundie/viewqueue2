@@ -1,4 +1,9 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 19/09/18 20:13
+ */
+
+package io.lundie.michael.viewcue.ui.views;
 
 /*
  * PercentageCropImageView used and adapter from:

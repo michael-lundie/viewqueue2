@@ -5,6 +5,7 @@
 
 package io.lundie.michael.viewcue.ui;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -31,7 +32,8 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.R;
-import io.lundie.michael.viewcue.RecycleViewWithSetEmpty;
+import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
+import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
@@ -48,6 +50,8 @@ public class MovieListFragment extends Fragment {
     private ArrayList<MovieItem> mList = new ArrayList<>();
 
     private MoviesViewModel moviesViewModel;
+
+    private MoviesDatabase moviesDatabase;
 
     @BindView(R.id.progressRing) ProgressBar mProgressRing;
     @BindView(R.id.list_empty) TextView mEmptyStateTextView;
@@ -89,6 +93,8 @@ public class MovieListFragment extends Fragment {
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         setHasOptionsMenu(true);
 
+        moviesDatabase = MoviesDatabase.getInstance(getActivity());
+
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
@@ -101,6 +107,7 @@ public class MovieListFragment extends Fragment {
         mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(MovieItem item) {
+                Log.i(LOG_TAG, "TEST: Returning item: " + item);
                 moviesViewModel.selectMovieItem(item);
                 getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame,
@@ -136,6 +143,8 @@ public class MovieListFragment extends Fragment {
         return listFragmentView;
     }
 
+    //TODO: Implement savedInstanceState?
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -167,6 +176,16 @@ public class MovieListFragment extends Fragment {
                 //mAdapter.notifyDataSetChanged();
                 moviesViewModel.getMovies(getString(R.string.settings_orderby_high_rated));
                 return true;
+            case R.id.action_save:
+                saveItem(moviesViewModel.getSelectedItem());
+                return true;
+            case R.id.action_test:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.content_frame,
+                                new DbTestFragment(), "DbTestFragment")
+                        .addToBackStack(null)
+                        .commit();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -178,4 +197,9 @@ public class MovieListFragment extends Fragment {
                 getString(R.string.settings_orderby_most_popular));
     }
 
+    private void saveItem(LiveData<MovieItem> selectedItem) {
+        MovieItem item = selectedItem.getValue().item();
+        moviesDatabase.moviesDao().insertMovie(item);
+        Log.i(LOG_TAG, "TEST: Movie Entered to Database");
+    }
 }

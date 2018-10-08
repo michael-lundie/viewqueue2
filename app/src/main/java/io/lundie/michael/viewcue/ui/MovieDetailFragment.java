@@ -19,7 +19,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -40,7 +39,7 @@ import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.lundie.michael.viewcue.PercentageCropImageView;
+import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;

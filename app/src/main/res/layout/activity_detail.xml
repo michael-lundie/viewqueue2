@@ -22,7 +22,7 @@
             app:contentScrim="#00000000"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <io.lundie.michael.viewcue.PercentageCropImageView
+            <io.lundie.michael.viewcue.ui.views.PercentageCropImageView
                 android:id="@+id/backdrop_iv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

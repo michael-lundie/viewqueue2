@@ -5,31 +5,17 @@
 
 package io.lundie.michael.viewcue;
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
-import android.widget.TextView;
-
-import junit.framework.Test;
 
 import java.util.ArrayList;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
-import io.lundie.michael.viewcue.datamodel.MovieRepository;
 import io.lundie.michael.viewcue.ui.MovieListFragment;
-import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
-import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
+import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
 public class TestActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 

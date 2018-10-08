@@ -1,16 +1,31 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 07/10/18 20:11
+ */
 
-import android.content.Intent;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 03/10/18 21:44
+ */
+
+package io.lundie.michael.viewcue.ui;
+
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,19 +44,20 @@ import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.lundie.michael.viewcue.R;
+import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
+import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
-/**
- * Detail Activity
- * Tutorials/code assistance used from:
- * https://www.bignerdranch.com/blog/extracting-colors-to-a-palette-with-android-lollipop/
- * https://blog.iamsuleiman.com/toolbar-animation-with-android-design-support-library/
- */
-public class DetailActivity extends AppCompatActivity {
+public class DbTestFragment extends Fragment {
 
-    private static final String LOG_TAG = DetailActivity.class.getSimpleName();
+    private static final String LOG_TAG = DbTestFragment.class.getName();
+
+    private MoviesViewModel moviesViewModel;
+
+    private MoviesDatabase moviesDatabase;
 
     // Coordinator layout and tool/appbar view references.
     @BindView(R.id.main_content) CoordinatorLayout mRootDetailLayout;
@@ -52,8 +68,7 @@ public class DetailActivity extends AppCompatActivity {
     // Image/UI misc display view references.
     @BindView(R.id.title_background) View titleBackgroundView;
     @BindView(R.id.detail_view_poster) ImageView mPosterView;
-    @BindView(R.id.backdrop_iv)
-    PercentageCropImageView backdrop;
+    @BindView(R.id.backdrop_iv) PercentageCropImageView backdrop;
     @BindView(R.id.progressbar) ProgressBar progressBar;
 
     // References to views displaying text.
@@ -63,34 +78,40 @@ public class DetailActivity extends AppCompatActivity {
     @BindView(R.id.synopsis_tv) TextView synopsisTv;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail);
-
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View detailFragmentView =  inflater.inflate(R.layout.fragment_movie_detail, container, false);
         // Bind view references with butterknife library.
-        ButterKnife.bind(this);
+        ButterKnife.bind(this, detailFragmentView);
+
+        moviesDatabase = MoviesDatabase.getInstance(getActivity());
 
         // Set-up toolbar.
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //Make the title invisible - we have our own TextView for that. Maybe there is a better
         // way to do this?
         collapsingToolbar.setExpandedTitleColor(getResources().getColor(R.color.colorTransparent));
         collapsingToolbar.setCollapsedTitleTextColor(getResources().getColor(R.color.colorTransparent));
 
-        // Get intent and parcelable from main activity.
-        Intent activityIntent = getIntent();
-        MovieItem movie = activityIntent.getParcelableExtra("movie");
-
         // Set Y center offset crop (uses 'PercentCropImageView')
         backdrop.setCropYCenterOffsetPct(0f);
 
-        // Set text data to appropriate views.
-        title.setText(movie.getTitle());
-        releasedDateTv.setText(formatDate(movie.getReleaseDate(), this.getString(R.string.date_unknown)));
-        voteAverageTv.setText(Double.toString(movie.getVoteAverage()));
-        synopsisTv.setText(movie.getOverview());
+        // Let's get our view model instance. Note we are returning the view model instance of
+        // this fragments parent activity.
+        moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
+
+        int id = moviesViewModel.getSelectedItem().getValue().getId();
+
+        MovieItem item = moviesDatabase.moviesDao().fetchMovie(id);
+
+        title.setText(item.getTitle());
+        releasedDateTv.setText(formatDate(item.getReleaseDate(), getActivity().getString(R.string.date_unknown)));
+        voteAverageTv.setText(Double.toString(item.getVoteAverage()));
+        synopsisTv.setText(item.getOverview());
+        // Load background and poster images using glide library.
+        loadImageWithGlide(item.getBackgroundURL(), progressBar, backdrop);
+        loadImageWithGlide(item.getPosterURL(), null, mPosterView);
 
         // Set up our 'fake parallax' transition.
         // Solution for scaling transition from 'bottom': https://stackoverflow.com/a/22144862
@@ -102,11 +123,10 @@ public class DetailActivity extends AppCompatActivity {
                 titleBackgroundView.setPivotY(titleBackgroundView.getHeight());
             }
         });
+
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
-        // Load background and poster images using glide library.
-        loadImageWithGlide(movie.getBackgroundURL(), progressBar, backdrop);
-        loadImageWithGlide(movie.getPosterURL(), null, mPosterView);
+        return detailFragmentView;
     }
 
     /**
@@ -155,8 +175,6 @@ public class DetailActivity extends AppCompatActivity {
                 .transition(DrawableTransitionOptions.withCrossFade())
                 .into(displayView);
     }
-
-
 
     /**
      * A simple utility method to parse/format a given date to the users locale

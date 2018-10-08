@@ -49,8 +49,6 @@ public class MovieRepository {
 
     public MutableLiveData<ArrayList<MovieItem>> getMovieList(String sortOrder) {
 
-
-
         theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
             @Override
             public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {

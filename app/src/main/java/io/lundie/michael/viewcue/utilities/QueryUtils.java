@@ -75,28 +75,6 @@ public class QueryUtils {
     }
 
     /**
-     * Query themoviedb.org API and return an {@link ArrayList<MovieItem>} object to represent a.
-     * list of movies
-     * @param requestUrl the URL for our API data request
-     * @return parsed JSON query results (as a MovieItem object)
-     */
-    public static ArrayList<MovieItem> fetchQueryResults(String requestUrl) {
-        // Create URL object
-        URL url = createUrl(requestUrl);
-
-        // Perform HTTP request to the URL and receive a JSON response back
-        String jsonResponse = null;
-        try {
-            jsonResponse = makeHttpRequest(url);
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error closing input stream", e);
-        }
-
-        // Extract relevant fields from the JSON response and return a List<NewsItem> object
-        return extractMovieResults(jsonResponse);
-    }
-
-    /**
      * Checks to make sure the smart phone has access to the internet.
      * @param context the application context
      * @return boolean
@@ -186,61 +164,5 @@ public class QueryUtils {
             }
         }
         return output.toString();
-    }
-
-    /**
-     * Return a list of {@link MovieItem} objects that has been built up from
-     * parsing a JSON response.
-     */
-    private static ArrayList<MovieItem> extractMovieResults(String movieQueryJSON) {
-
-        // If the JSON string is empty or null, then return early.
-        if (TextUtils.isEmpty(movieQueryJSON)) {
-            return null;
-        }
-
-        // Create an empty List that we can start adding earthquakes to
-        ArrayList<MovieItem> movieQueryResults = new ArrayList<>();
-
-        try {
-            // Let's assign our returned JSON string to a new JSONObject
-            JSONObject jsonObj = new JSONObject(movieQueryJSON);
-
-            // Next, let's grab our JSON array with returned results
-            JSONArray movieItemsJsonA = jsonObj.getJSONArray("results");
-
-            // Alrighty, let's loop through out results!
-            for (int movieNumber = 0; movieNumber < movieItemsJsonA.length(); movieNumber++) {
-
-                // Let's grab the current movie data from our results query. Sequentially iterates
-                // through results.
-                JSONObject currentMovieJsonO = movieItemsJsonA.getJSONObject(movieNumber);
-                String title = currentMovieJsonO.getString("title");
-                String posterPath =  currentMovieJsonO.getString("poster_path");
-                String overview = currentMovieJsonO.getString("overview");
-                String releaseDate = currentMovieJsonO.getString("release_date");
-                double voteAverage = currentMovieJsonO.getDouble("vote_average");
-                String backgroundPath = currentMovieJsonO.getString("backdrop_path");
-
-                // Some movies may not have a URL for background, if so, let's assign the background
-                // the same URL as the poster.
-                // Note that the string literal 'null' is returned from TMDB in some cases if a
-                // field is empty. Let's check for both a literal and for a null value.
-                if (backgroundPath.equals("null") || TextUtils.isEmpty(backgroundPath)) {
-                    backgroundPath = posterPath;
-                }
-
-                // Everything has gone okay, so let's create a new MovieItem and add to our ArrayList.
-                movieQueryResults.add(new MovieItem
-                        (title, releaseDate, posterPath, backgroundPath, voteAverage, overview));
-            }
-
-        } catch (JSONException e) {
-        // Catch any errors above during execution and show the exception in the log.
-        Log.e(LOG_TAG, "Problem parsing the JSON results.", e);
-        }
-
-        // Return our list of movie results
-        return movieQueryResults;
     }
 }

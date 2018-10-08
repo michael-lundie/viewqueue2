@@ -1,9 +1,14 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 07/10/18 11:58
+ */
+
+package io.lundie.michael.viewcue.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import io.lundie.michael.viewcue.ui.MovieListFragment;
+import io.lundie.michael.viewcue.R;
 
 /**
  * Main / Root activity of ViewQueue

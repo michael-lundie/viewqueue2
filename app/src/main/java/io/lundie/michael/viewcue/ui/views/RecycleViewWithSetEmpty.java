@@ -1,10 +1,14 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 22/09/18 12:59
+ */
+
+package io.lundie.michael.viewcue.ui.views;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.Adapter;
 
 /**
  * Recycler view with a 'set empty' view. Code from:
