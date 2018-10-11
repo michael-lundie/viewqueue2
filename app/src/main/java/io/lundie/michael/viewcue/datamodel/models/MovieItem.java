@@ -19,7 +19,7 @@ import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
-import io.lundie.michael.viewcue.ui.MainActivity;
+import io.lundie.michael.viewcue.ui.activities.MainActivity;
 
 /**
  * A simple object to store individual movie data.

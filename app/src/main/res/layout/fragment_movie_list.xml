@@ -8,7 +8,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MovieListFragment">
+    tools:context=".ui.fragments.MovieListFragment">
 
     <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
         android:id="@+id/movie_list"

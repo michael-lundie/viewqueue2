@@ -1,11 +1,17 @@
 /*
  * Crafted by Michael R Lundie (2018)
+ * Last Modified 07/10/18 20:11
+ */
+
+/*
+ * Crafted by Michael R Lundie (2018)
  * Last Modified 03/10/18 21:44
  */
 
-package io.lundie.michael.viewcue.ui;
+package io.lundie.michael.viewcue.ui.fragments;
 
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -35,10 +41,14 @@ import com.bumptech.glide.request.target.Target;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
@@ -49,6 +59,8 @@ public class MovieDetailFragment extends Fragment {
 
     private static final String LOG_TAG = MovieDetailFragment.class.getName();
 
+    @Inject
+    ViewModelProvider.Factory moviesViewModelFactory;
     private MoviesViewModel moviesViewModel;
 
     // Coordinator layout and tool/appbar view references.
@@ -92,18 +104,7 @@ public class MovieDetailFragment extends Fragment {
         // this fragments parent activity.
         moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
 
-        moviesViewModel.getSelectedItem().observe(this, new Observer<MovieItem>() {
-            @Override
-            public void onChanged(@Nullable MovieItem movieItem) {
-                title.setText(movieItem.getTitle());
-                releasedDateTv.setText(formatDate(movieItem.getReleaseDate(), getActivity().getString(R.string.date_unknown)));
-                voteAverageTv.setText(Double.toString(movieItem.getVoteAverage()));
-                synopsisTv.setText(movieItem.getOverview());
-                // Load background and poster images using glide library.
-                loadImageWithGlide(movieItem.getBackgroundURL(), progressBar, backdrop);
-                loadImageWithGlide(movieItem.getPosterURL(), null, mPosterView);
-            }
-        });
+
         // Set up our 'fake parallax' transition.
         // Solution for scaling transition from 'bottom': https://stackoverflow.com/a/22144862
         // Get height after layout is drawn solution: https://stackoverflow.com/a/24035591
@@ -118,6 +119,32 @@ public class MovieDetailFragment extends Fragment {
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
         return detailFragmentView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        this.configureDagger();
+        Log.i(LOG_TAG, "TEST: onActivityCreated, configureDagger");
+        this.configureViewModel();
+    }
+
+    private void configureDagger(){ AndroidSupportInjection.inject(this); }
+
+    private void configureViewModel(){
+        moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
+        moviesViewModel.getSelectedItem().observe(this, new Observer<MovieItem>() {
+            @Override
+            public void onChanged(@Nullable MovieItem movieItem) {
+                title.setText(movieItem.getTitle());
+                releasedDateTv.setText(formatDate(movieItem.getReleaseDate(), getActivity().getString(R.string.date_unknown)));
+                voteAverageTv.setText(Double.toString(movieItem.getVoteAverage()));
+                synopsisTv.setText(movieItem.getOverview());
+                // Load background and poster images using glide library.
+                loadImageWithGlide(movieItem.getBackgroundURL(), progressBar, backdrop);
+                loadImageWithGlide(movieItem.getPosterURL(), null, mPosterView);
+            }
+        });
     }
 
     /**

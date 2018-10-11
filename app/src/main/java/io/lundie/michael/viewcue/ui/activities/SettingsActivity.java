@@ -1,7 +1,10 @@
-package io.lundie.michael.viewcue;
+/*
+ * Crafted by Michael R Lundie (2018)
+ * Last Modified 26/09/18 20:57
+ */
 
-import android.app.Activity;
-import android.content.Intent;
+package io.lundie.michael.viewcue.ui.activities;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.preference.ListPreference;
@@ -10,11 +13,11 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.lundie.michael.viewcue.R;
 
 /**
  * Settings activity class allowing a user to alter various shared preferences.

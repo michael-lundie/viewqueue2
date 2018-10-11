@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
-import io.lundie.michael.viewcue.ui.MovieListFragment;
+import io.lundie.michael.viewcue.ui.fragments.MovieListFragment;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
 public class TestActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{

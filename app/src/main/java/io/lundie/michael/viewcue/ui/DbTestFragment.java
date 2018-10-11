@@ -49,6 +49,7 @@ import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
+import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
 public class DbTestFragment extends Fragment {
@@ -77,13 +78,15 @@ public class DbTestFragment extends Fragment {
     @BindView(R.id.vote_average_text_tv) TextView voteAverageTv;
     @BindView(R.id.synopsis_tv) TextView synopsisTv;
 
+    MovieItem item;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View detailFragmentView =  inflater.inflate(R.layout.fragment_movie_detail, container, false);
         // Bind view references with butterknife library.
         ButterKnife.bind(this, detailFragmentView);
 
-        moviesDatabase = MoviesDatabase.getInstance(getActivity());
+        //moviesDatabase = MoviesDatabase.getInstance(getActivity());
 
         // Set-up toolbar.
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
@@ -101,9 +104,14 @@ public class DbTestFragment extends Fragment {
         // this fragments parent activity.
         moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
 
-        int id = moviesViewModel.getSelectedItem().getValue().getId();
+        final int id = moviesViewModel.getSelectedItem().getValue().getId();
 
-        MovieItem item = moviesDatabase.moviesDao().fetchMovie(id);
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                item = moviesDatabase.moviesDao().fetchMovie(id);
+            }
+        });
 
         title.setText(item.getTitle());
         releasedDateTv.setText(formatDate(item.getReleaseDate(), getActivity().getString(R.string.date_unknown)));

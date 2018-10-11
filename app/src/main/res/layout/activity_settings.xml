@@ -19,9 +19,9 @@
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/settingsFragment"
-        android:name="io.lundie.michael.viewcue.SettingsActivity$QueryPreferenceFragment"
+        android:name="io.lundie.michael.viewcue.ui.activities.SettingsActivity$QueryPreferenceFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
-        tools:context="io.lundie.michael.viewcue.SettingsActivity"/>
+        tools:context="io.lundie.michael.viewcue.ui.activities.SettingsActivity"/>
 </android.support.design.widget.CoordinatorLayout>

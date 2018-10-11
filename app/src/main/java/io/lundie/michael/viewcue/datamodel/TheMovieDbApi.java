@@ -6,7 +6,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
-interface TheMovieDbApi {
+public interface TheMovieDbApi {
 
     String HTTPS_THEMOVIEDB_API_URL = "https://api.themoviedb.org/3/";
 

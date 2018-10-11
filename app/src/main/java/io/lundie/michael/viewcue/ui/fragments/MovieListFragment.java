@@ -1,12 +1,18 @@
 /*
  * Crafted by Michael R Lundie (2018)
+ * Last Modified 07/10/18 21:18
+ */
+
+/*
+ * Crafted by Michael R Lundie (2018)
  * Last Modified 01/10/18 15:37
  */
 
-package io.lundie.michael.viewcue.ui;
+package io.lundie.michael.viewcue.ui.fragments;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,13 +35,18 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
+import io.lundie.michael.viewcue.ui.DbTestFragment;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
-import io.lundie.michael.viewcue.SettingsActivity;
+import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
@@ -44,12 +55,14 @@ import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
  */
 public class MovieListFragment extends Fragment {
 
+    @Inject
+    ViewModelProvider.Factory moviesViewModelFactory;
+    private MoviesViewModel moviesViewModel;
+
     public static final String LOG_TAG = MovieListFragment.class.getName();
 
     private MovieResultsViewAdapter mAdapter;
     private ArrayList<MovieItem> mList = new ArrayList<>();
-
-    private MoviesViewModel moviesViewModel;
 
     private MoviesDatabase moviesDatabase;
 
@@ -74,10 +87,6 @@ public class MovieListFragment extends Fragment {
         // Required empty public constructor
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,15 +102,16 @@ public class MovieListFragment extends Fragment {
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         setHasOptionsMenu(true);
 
-        moviesDatabase = MoviesDatabase.getInstance(getActivity());
+        //moviesDatabase = MoviesDatabase.getInstance(getActivity());
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
 
+        //TODO: Delete...
         // Let's get our view model instance. Note we are returning the view model instance of
         // this fragments parent activity.
-        moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
+        // moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
 
         // Initiate our new custom recycler adapter and set layout manager.
         mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
@@ -131,16 +141,17 @@ public class MovieListFragment extends Fragment {
         } mRecyclerView.setAdapter(mAdapter);
 
 
-        moviesViewModel.getMovies(getSharedPreferences()).observe(this, new Observer<ArrayList<MovieItem>>() {
-            @Override
-            public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
-                Log.i("TEST", "TEST Observer changed" +movieItems);
-                mAdapter.setMovieEntries(movieItems);
-                mAdapter.notifyDataSetChanged();
-            }
-        });
+
 
         return listFragmentView;
+    }
+
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        this.configureDagger();
+        this.configureViewModel();
     }
 
     //TODO: Implement savedInstanceState?
@@ -198,8 +209,29 @@ public class MovieListFragment extends Fragment {
     }
 
     private void saveItem(LiveData<MovieItem> selectedItem) {
-        MovieItem item = selectedItem.getValue().item();
-        moviesDatabase.moviesDao().insertMovie(item);
+        final MovieItem item = selectedItem.getValue().item();
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                moviesDatabase.moviesDao().insertMovie(item);
+            }
+        });
         Log.i(LOG_TAG, "TEST: Movie Entered to Database");
+    }
+
+    private void configureDagger(){
+        AndroidSupportInjection.inject(this);
+    }
+
+    private void configureViewModel(){
+        moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
+        moviesViewModel.getMovies(getSharedPreferences()).observe(this, new Observer<ArrayList<MovieItem>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
+                Log.i("TEST", "TEST Observer changed" +movieItems);
+                mAdapter.setMovieEntries(movieItems);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 }
