@@ -3,10 +3,11 @@
  * Last Modified 10/10/18 19:42
  */
 
-package io.lundie.michael.viewcue.injection;
+package io.lundie.michael.viewcue.injection.modules;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
+import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.ui.fragments.MovieDetailFragment;
 import io.lundie.michael.viewcue.ui.fragments.MovieListFragment;
 
@@ -17,4 +18,7 @@ public abstract class FragmentModule {
 
     @ContributesAndroidInjector
     abstract MovieDetailFragment contributeMovieDetailFragment();
+
+    @ContributesAndroidInjector
+    abstract SettingsActivity.QueryPreferenceFragment contributeQueryPrefsFragment();
 }

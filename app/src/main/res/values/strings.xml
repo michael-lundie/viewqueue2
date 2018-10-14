@@ -17,8 +17,8 @@
     <string name="detail_release">Release Date</string>
     <string name="date_unknown">Unknown Date</string>
 
-    <!-- Preference string keys and values -->
-    <!-- String for order by preference title [CHAR LIMIT=30] -->
+    <!--// PREFS/SETTINGS VALUES \\-->
+    <!-- Movie order preferences -->
     <string name="settings_orderby_key" translatable="false">orderby</string>
     <string name="settings_orderby_label">Order news articles by</string>
     <string-array name="settings_orderby_array_labels">
@@ -31,4 +31,9 @@
     </string-array>
     <string name="settings_orderby_most_popular" translatable="false">popular</string>
     <string name="settings_orderby_high_rated" translatable="false">top_rated</string>
+
+    <!-- Last Updated Preference (non-editable) -->
+    <string name="settings_db_update_time_key">dbupdate</string>
+    <string name="settings_db_update_time_label">Movie List Updated at:</string>
+
 </resources>

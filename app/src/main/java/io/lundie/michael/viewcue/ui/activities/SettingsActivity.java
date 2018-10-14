@@ -5,6 +5,7 @@
 
 package io.lundie.michael.viewcue.ui.activities;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.preference.ListPreference;
@@ -15,9 +16,18 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.R;
+import io.lundie.michael.viewcue.utilities.GeneralUtils;
+import io.lundie.michael.viewcue.utilities.Prefs;
 
 /**
  * Settings activity class allowing a user to alter various shared preferences.
@@ -27,8 +37,8 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String LOG_TAG = SettingsActivity.class.getSimpleName();
 
     private static boolean settingsChanged = false;
-    /** Stores the initial value (upon access of SettingActivity) of
-     * {@link QueryPreferenceFragment#apiKey}.*/
+
+
     private static String movieOrderInitialValue;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
@@ -76,9 +86,9 @@ public class SettingsActivity extends AppCompatActivity {
          */
         private void bindPreferenceSummaryToValue(Preference preference) {
             preference.setOnPreferenceChangeListener(this);
-            SharedPreferences preferences =
-            PreferenceManager.getDefaultSharedPreferences(preference.getContext());
-            String preferenceValue = preferences.getString(preference.getKey(), "");
+            getPreferenceManager().setSharedPreferencesName("vq_prefs");
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String preferenceValue = sharedPrefs.getString(preference.getKey(), "");
 
             if (preference == movieOrder) {
                 movieOrderInitialValue = preferenceValue;
@@ -109,5 +119,6 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             } return true;
         }
+
     }
 }

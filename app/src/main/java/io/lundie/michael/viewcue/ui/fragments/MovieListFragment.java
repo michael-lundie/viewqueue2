@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -48,6 +49,7 @@ import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
+import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
 /**
@@ -57,6 +59,10 @@ public class MovieListFragment extends Fragment {
 
     @Inject
     ViewModelProvider.Factory moviesViewModelFactory;
+
+    @Inject
+    Prefs prefs;
+
     private MoviesViewModel moviesViewModel;
 
     public static final String LOG_TAG = MovieListFragment.class.getName();
@@ -73,12 +79,12 @@ public class MovieListFragment extends Fragment {
 
     SharedPreferences.OnSharedPreferenceChangeListener listener
             = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
             Log.i(LOG_TAG, "TEST: Prefs changed");
             if (key.equals(getString(R.string.settings_orderby_key))) {
                 mList.clear();
                 mAdapter.notifyDataSetChanged();
-                moviesViewModel.getMovies(getSharedPreferences());
+                moviesViewModel.getMovies(prefs.getOrderPref());
             }
         }
     };
@@ -188,24 +194,20 @@ public class MovieListFragment extends Fragment {
                 moviesViewModel.getMovies(getString(R.string.settings_orderby_high_rated));
                 return true;
             case R.id.action_save:
-                saveItem(moviesViewModel.getSelectedItem());
+                //saveItem(moviesViewModel.getSelectedItem());
+                prefs.updateDbRefreshTime(2222222);
                 return true;
             case R.id.action_test:
-                getFragmentManager().beginTransaction()
+                /*getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame,
                                 new DbTestFragment(), "DbTestFragment")
                         .addToBackStack(null)
-                        .commit();
+                        .commit();*/
+
+                Toast.makeText(getContext(), Long.toString(prefs.getRefreshTime()), Toast.LENGTH_SHORT).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private String getSharedPreferences() {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        return  sharedPrefs.getString(
-                getString(R.string.settings_orderby_key),
-                getString(R.string.settings_orderby_most_popular));
     }
 
     private void saveItem(LiveData<MovieItem> selectedItem) {
@@ -225,7 +227,7 @@ public class MovieListFragment extends Fragment {
 
     private void configureViewModel(){
         moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
-        moviesViewModel.getMovies(getSharedPreferences()).observe(this, new Observer<ArrayList<MovieItem>>() {
+        moviesViewModel.getMovies(prefs.getOrderPref()).observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
                 Log.i("TEST", "TEST Observer changed" +movieItems);

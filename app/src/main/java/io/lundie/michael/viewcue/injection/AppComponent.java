@@ -5,7 +5,6 @@
 
 package io.lundie.michael.viewcue.injection;
 
-import android.app.Activity;
 import android.app.Application;
 
 import javax.inject.Singleton;
@@ -13,24 +12,27 @@ import javax.inject.Singleton;
 import dagger.BindsInstance;
 import dagger.Component;
 
-import dagger.Subcomponent;
 import dagger.android.AndroidInjectionModule;
-import dagger.android.AndroidInjector;
 import io.lundie.michael.viewcue.App;
+import io.lundie.michael.viewcue.injection.modules.AppModule;
+import io.lundie.michael.viewcue.injection.modules.FragmentModule;
+import io.lundie.michael.viewcue.injection.modules.SharedPreferencesModule;
 
 @Singleton
-@Component(modules = {AndroidInjectionModule.class,
-                        FragmentModule.class, AppModule.class, ActivityBuilder.class})
+@Component(modules = {  AndroidInjectionModule.class,
+                        FragmentModule.class,
+                        SharedPreferencesModule.class,
+                        AppModule.class,
+                        ActivityBuilder.class  })
+
 public interface AppComponent {
 
     @Component.Builder
     interface Builder {
+        AppComponent build();
 
         @BindsInstance
         Builder application(Application application);
-
-        AppComponent build();
-
     }
 
     void inject(App app);

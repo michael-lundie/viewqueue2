@@ -3,7 +3,7 @@
  * Last Modified 10/10/18 06:30
  */
 
-package io.lundie.michael.viewcue.injection;
+package io.lundie.michael.viewcue.injection.modules;
 
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
@@ -11,6 +11,7 @@ import android.arch.lifecycle.ViewModelProvider;
 import dagger.Binds;
 import dagger.Module;
 import dagger.multibindings.IntoMap;
+import io.lundie.michael.viewcue.injection.ViewModelKey;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModelFactory;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 

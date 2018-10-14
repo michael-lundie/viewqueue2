@@ -7,6 +7,8 @@ package io.lundie.michael.viewcue.datamodel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -32,8 +34,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MovieRepository {
 
     private final TheMovieDbApi theMovieDbApi;
-    private final Executor appExecutors;
-    private final MoviesDatabase moviesDatabase;
     private final MoviesDao moviesDao;
     private Context mContext;
 
@@ -42,17 +42,9 @@ public class MovieRepository {
 
     // Add requirement for client in method params, and use api.getClient.
     @Inject
-    public MovieRepository(MoviesDatabase moviesDatabase, MoviesDao moviesDao, Executor appExecutors) {
-        this.moviesDatabase = moviesDatabase;
+    public MovieRepository(TheMovieDbApi theMovieDbApi, MoviesDao moviesDao) {
         this.moviesDao = moviesDao;
-        this.appExecutors = appExecutors;
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(TheMovieDbApi.HTTPS_THEMOVIEDB_API_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        theMovieDbApi = retrofit.create(TheMovieDbApi.class);
+        this.theMovieDbApi = theMovieDbApi;
     }
 
     private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
@@ -82,7 +74,9 @@ public class MovieRepository {
 
     ArrayList<MovieItem> movieItems;
 
-    private void refreshMoviesDatabase(final String sortOrder) {
+    private void updateMoviesDatabase(final String sortOrder) {
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
             @Override
@@ -104,13 +98,13 @@ public class MovieRepository {
         });
 
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < movieItems.size(); i++) {
-                    movieItems.get(i).getId();
-                    // insert using database
+                @Override
+                public void run() {
+                    for (int i = 0; i < movieItems.size(); i++) {
+                        movieItems.get(i).getId();
+                        // insert using database
+                    }
                 }
-            }
         });
     }
 
