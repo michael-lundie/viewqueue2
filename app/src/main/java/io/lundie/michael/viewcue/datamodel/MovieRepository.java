@@ -4,52 +4,53 @@
  */
 package io.lundie.michael.viewcue.datamodel;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
+import java.util.Date;
+import java.util.List;
+
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
-import dagger.android.ContributesAndroidInjector;
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
-import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
+import io.lundie.michael.viewcue.utilities.Prefs;
+import io.lundie.michael.viewcue.utilities.AppConstants;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MovieRepository {
 
+    private static final String LOG_TAG = MovieRepository.class.getSimpleName();
+
+    private final AppConstants constants;
+
     private final TheMovieDbApi theMovieDbApi;
     private final MoviesDao moviesDao;
-    private Context mContext;
+    private final Prefs prefs;
 
     /*// Declare our singleton variable of which we will get an instance
     private static MovieRepository movieRepository;*/
 
     // Add requirement for client in method params, and use api.getClient.
     @Inject
-    public MovieRepository(TheMovieDbApi theMovieDbApi, MoviesDao moviesDao) {
+    public MovieRepository(TheMovieDbApi theMovieDbApi,
+                           MoviesDao moviesDao, Prefs prefs, AppConstants constants) {
         this.moviesDao = moviesDao;
         this.theMovieDbApi = theMovieDbApi;
+        this.prefs = prefs;
+        this.constants = constants;
     }
 
     private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
 
-    public MutableLiveData<ArrayList<MovieItem>> getMovieList(String sortOrder) {
+    public MutableLiveData<ArrayList<MovieItem>> temp(String sortOrder) {
 
         theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
             @Override
@@ -72,44 +73,102 @@ public class MovieRepository {
         return movieList;
     }
 
+
     ArrayList<MovieItem> movieItems;
 
-    private void updateMoviesDatabase(final String sortOrder) {
+    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder) {
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        // Let's check to see if the refresh time is over the defined limit.
+        if (isRefreshOverLimit()) {
 
-        theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
-            @Override
-            public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {
+            Log.i(LOG_TAG, "TEST: Refresh is 0  over limit");
+            // We are over the refresh limit so we will fetch new movie results from the API and
+            // update our list of movies in the database using our MoviesDao.
 
-                // Now let's set out list to out MutableLiveData
-                // Keep in mind this is a singleton object instance
-                //movieList.setValue(response.body());
+            theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
+                @Override
+                public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {
+                    Log.i(LOG_TAG, "TEST: getting list of movies from API");
+                    // Now let's get an Array of movies to work with
+                    Log.i(LOG_TAG, "TEST: Json: " + response.body());
+                    movieItems = parseMovieItems(response);
 
-                Log.i("LOG", "TEST: Json: " + response.body());
+                    Log.i(LOG_TAG, "TEST: Sending list of items to UI.");
+                    movieList.setValue(movieItems);
 
-                movieItems = parseMovieItems(response);
-            }
+                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i(LOG_TAG, "TEST: Getting App Executors");
+                            if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+                                Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
+                                for (int i = 0; i < movieItems.size(); i++) {
+                                    Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
+                                    movieItems.get(i).setPopular(i);
+                                    moviesDao.insertMovie(movieItems.get(i));
+                                }
+                                prefs.updateDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+                            } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+                                Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
+                                for (int i = 0; i < movieItems.size(); i++) {
+                                    Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
+                                    movieItems.get(i).setHighRated(i);
+                                    moviesDao.insertMovie(movieItems.get(i));
+                                }
+                                prefs.updateDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+                            } else { // We're accessing favorites
+                                    Log.i(LOG_TAG, "TEST; STRUCK OUT");
+                            }
+                        }
+                    });
+                }
 
-            @Override
-            public void onFailure(Call<MoviesList> call, Throwable t) {
-                Log.e("LOG", "TEST: Json: Failed", t);
-            }
-        });
-
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                @Override
+                public void onFailure(Call<MoviesList> call, Throwable t) {
+                    Log.e(LOG_TAG, "TEST: Json: Failed", t);
+                }
+            });
+        } else {
+            // Display the offline data from our database
+            Log.i(LOG_TAG, "TEST: Retrieving items from database");
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < movieItems.size(); i++) {
-                        movieItems.get(i).getId();
-                        // insert using database
+                    if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+                        Log.i(LOG_TAG, "TEST: Retrieving items from database: POPULAR");
+                        movieItems = (ArrayList<MovieItem>) moviesDao.loadPopularMovies();
+                    } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+                            Log.i(LOG_TAG, "TEST: Retrieving items from database: HIGH RATED");
+                        movieItems = (ArrayList<MovieItem>) moviesDao.loadHighRatedMovies();
                     }
                 }
-        });
+            });
+            movieList.setValue(movieItems);
+        }
+        Log.i(LOG_TAG, "TEST: Returning movie items: " + movieList);
+        return movieList;
+    }
+
+    private void setLiveData(List<MovieItem> arrayList) {
+        movieList.setValue((ArrayList<MovieItem>) arrayList);
     }
 
     private ArrayList<MovieItem> parseMovieItems(Response<MoviesList> response) {
+        Log.i(LOG_TAG, "TEST: INITIAL Response: " + response);
         MoviesList moviesList = response.body();
+        Log.i(LOG_TAG, "TEST: NEXT Response: " + response.body());
         return moviesList.getResults();
     }
+
+    private boolean isRefreshOverLimit() {
+        long lastRefreshTime = prefs.getRefreshTime();
+
+        Date date = new Date(System.currentTimeMillis());
+        long currentTimeMs = date.getTime();
+
+        if ((currentTimeMs - lastRefreshTime) > 240_000 || lastRefreshTime == 0) {
+            return true;
+        } return false;
+    }
+
 }

@@ -13,10 +13,12 @@ import java.util.ArrayList;
 public class MoviesList {
 
     @SerializedName("page")
+    @Expose
     private Integer page;
 
     @SerializedName("results")
-    private ArrayList<MovieItem> results = new ArrayList<MovieItem>();
+    @Expose
+    private ArrayList<MovieItem> results = new ArrayList<>();
 
     public ArrayList<MovieItem> getResults() {
         return results;

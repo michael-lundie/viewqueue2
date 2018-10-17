@@ -146,9 +146,6 @@ public class MovieListFragment extends Fragment {
 
         } mRecyclerView.setAdapter(mAdapter);
 
-
-
-
         return listFragmentView;
     }
 
@@ -230,9 +227,11 @@ public class MovieListFragment extends Fragment {
         moviesViewModel.getMovies(prefs.getOrderPref()).observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
-                Log.i("TEST", "TEST Observer changed" +movieItems);
+                Log.i(LOG_TAG, "TEST Observer changed" +movieItems);
                 mAdapter.setMovieEntries(movieItems);
+                Log.i(LOG_TAG, "TEST Set Adapter to:" +movieItems);
                 mAdapter.notifyDataSetChanged();
+                Log.i(LOG_TAG, "TEST Notify Data changed.");
             }
         });
     }

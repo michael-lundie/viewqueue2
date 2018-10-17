@@ -10,6 +10,7 @@
 
 package io.lundie.michael.viewcue.datamodel.models;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import io.lundie.michael.viewcue.ui.activities.MainActivity;
@@ -38,21 +40,47 @@ public class MovieItem implements Parcelable {
 
     @PrimaryKey
     @SerializedName("id")
+    @Expose
     private int id;
+
     @SerializedName("popularity")
+    @Expose
     private float popularity;
+
     @SerializedName("title")
+    @Expose
     private String title;
+
+    @ColumnInfo(name = "release_date")
     @SerializedName("release_date")
+    @Expose
     private String releaseDate;
+
+    @ColumnInfo(name = "poster_path")
     @SerializedName("poster_path")
+    @Expose
     private String posterPath;
+
+    @ColumnInfo(name = "background_path")
     @SerializedName("background_path")
+    @Expose
     private String backgroundPath;
+
+    @ColumnInfo(name = "vote_average")
     @SerializedName("vote_average")
+    @Expose
     private double voteAverage;
+
     @SerializedName("overview")
+    @Expose
     private String overview;
+
+    @ColumnInfo(name = "high_rated")
+    private int highRated;
+
+    private int popular;
+
+    private int favorite;
 
     public MovieItem(int id, float popularity, String title, String releaseDate, String posterPath,
                      String backgroundPath, double voteAverage, String overview) {
@@ -141,6 +169,17 @@ public class MovieItem implements Parcelable {
 
     public String getOverview() { return overview; }
 
+    public int getHighRated() { return highRated; }
+
+    public void setHighRated(int highRated) { this.highRated = highRated; }
+
+    public int getPopular() { return popular; }
+
+    public void setPopular(int popular) { this.popular = popular; }
+
+    public int getFavorite() { return favorite; }
+
+    public void setFavorite(int favorite) { this.favorite = favorite; }
 
     //TODO: Remove this method.
     private String setURL(int requestType, String path) {
