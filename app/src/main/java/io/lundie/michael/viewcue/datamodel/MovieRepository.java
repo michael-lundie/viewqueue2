@@ -96,31 +96,7 @@ public class MovieRepository {
                     Log.i(LOG_TAG, "TEST: Sending list of items to UI.");
                     movieList.setValue(movieItems);
 
-                    AppExecutors.getInstance().diskIO().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i(LOG_TAG, "TEST: Getting App Executors");
-                            if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
-                                Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
-                                for (int i = 0; i < movieItems.size(); i++) {
-                                    Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
-                                    movieItems.get(i).setPopular(i);
-                                    moviesDao.insertMovie(movieItems.get(i));
-                                }
-                                prefs.updateDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
-                            } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
-                                Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
-                                for (int i = 0; i < movieItems.size(); i++) {
-                                    Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
-                                    movieItems.get(i).setHighRated(i);
-                                    moviesDao.insertMovie(movieItems.get(i));
-                                }
-                                prefs.updateDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
-                            } else { // We're accessing favorites
-                                    Log.i(LOG_TAG, "TEST; STRUCK OUT");
-                            }
-                        }
-                    });
+                    sendItemsToDatabase(sortOrder);
                 }
 
                 @Override
@@ -130,27 +106,55 @@ public class MovieRepository {
             });
         } else {
             // Display the offline data from our database
-            Log.i(LOG_TAG, "TEST: Retrieving items from database");
-            AppExecutors.getInstance().diskIO().execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
-                        Log.i(LOG_TAG, "TEST: Retrieving items from database: POPULAR");
-                        movieItems = (ArrayList<MovieItem>) moviesDao.loadPopularMovies();
-                    } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
-                            Log.i(LOG_TAG, "TEST: Retrieving items from database: HIGH RATED");
-                        movieItems = (ArrayList<MovieItem>) moviesDao.loadHighRatedMovies();
-                    }
-                }
-            });
+            fetchItemsFromDatabase(sortOrder);
+            // Sending returned items from Database to LiveData. (Note: This must be done outside of
+            // our background/executor thread.
             movieList.setValue(movieItems);
         }
         Log.i(LOG_TAG, "TEST: Returning movie items: " + movieList);
         return movieList;
     }
 
-    private void setLiveData(List<MovieItem> arrayList) {
-        movieList.setValue((ArrayList<MovieItem>) arrayList);
+    private void sendItemsToDatabase(final String sortOrder) {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(LOG_TAG, "TEST: Getting App Executors");
+                if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+                    Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
+                    for (int i = 0; i < movieItems.size(); i++) {
+                        Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
+                        movieItems.get(i).setPopular(i);
+                        moviesDao.insertMovie(movieItems.get(i));
+                    }
+                } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+                    Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
+                    for (int i = 0; i < movieItems.size(); i++) {
+                        Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
+                        movieItems.get(i).setHighRated(i);
+                        moviesDao.insertMovie(movieItems.get(i));
+                    }
+                }
+                //TODO: Check if Successful
+                prefs.updateDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+            }
+        });
+    }
+
+    private void fetchItemsFromDatabase(final String sortOrder) {
+        Log.i(LOG_TAG, "TEST: Retrieving items from database");
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+                    Log.i(LOG_TAG, "TEST: Retrieving items from database: POPULAR");
+                    movieItems = (ArrayList<MovieItem>) moviesDao.loadPopularMovies();
+                } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+                    Log.i(LOG_TAG, "TEST: Retrieving items from database: HIGH RATED");
+                    movieItems = (ArrayList<MovieItem>) moviesDao.loadHighRatedMovies();
+                }
+            }
+        });
     }
 
     private ArrayList<MovieItem> parseMovieItems(Response<MoviesList> response) {

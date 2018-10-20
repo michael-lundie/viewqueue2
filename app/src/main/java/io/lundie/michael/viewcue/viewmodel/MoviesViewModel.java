@@ -33,11 +33,6 @@ public class MoviesViewModel extends ViewModel {
     public LiveData<ArrayList<MovieItem>> getMovies(String sortOrder) {
         Log.i("TEST", "ViewModel get movies called");
 
-        /*//movieListObservable = new LiveData<ArrayList<MovieItem>>();
-        //Fetch Data Async from server.
-
-        movieListObservable = MovieRepository.getInstance().getMovieList(sortOrder);*/
-
         movieListObservable = movieRepository.getMovieList(sortOrder);
         // Return our movies array list
         return movieListObservable;
