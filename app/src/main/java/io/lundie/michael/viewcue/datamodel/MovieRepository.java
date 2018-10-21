@@ -9,7 +9,6 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 
 import javax.inject.Inject;
@@ -107,9 +106,6 @@ public class MovieRepository {
         } else {
             // Display the offline data from our database
             fetchItemsFromDatabase(sortOrder);
-            // Sending returned items from Database to LiveData. (Note: This must be done outside of
-            // our background/executor thread.
-            movieList.setValue(movieItems);
         }
         Log.i(LOG_TAG, "TEST: Returning movie items: " + movieList);
         return movieList;
@@ -149,9 +145,23 @@ public class MovieRepository {
                 if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
                     Log.i(LOG_TAG, "TEST: Retrieving items from database: POPULAR");
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadPopularMovies();
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i(LOG_TAG, "TEST - movieItems: " + movieItems);
+                            movieList.setValue(movieItems);
+                        }
+                    });
                 } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
                     Log.i(LOG_TAG, "TEST: Retrieving items from database: HIGH RATED");
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadHighRatedMovies();
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i(LOG_TAG, "TEST - movieItems: " + movieItems);
+                            movieList.setValue(movieItems);
+                        }
+                    });
                 }
             }
         });
@@ -174,5 +184,4 @@ public class MovieRepository {
             return true;
         } return false;
     }
-
 }

@@ -22,12 +22,19 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // Android support libs
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:cardview-v7:27.1.1'
+    implementation 'com.android.support:preference-v7:27.1.1'
+
+    // Glide
     implementation 'com.github.bumptech.glide:glide:4.8.0'
+
+    //Picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
     // Dagger 2
     implementation 'com.google.dagger:dagger-android:2.11'
@@ -37,15 +44,15 @@ dependencies {
 
     // Retrofit & OkHttp
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+
     // JSON Converter
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 
     //BUTTERKNIFE
-
     implementation 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 
-    implementation 'com.android.support:preference-v7:27.1.1'
+    // Android Architecture components
 
     implementation "android.arch.lifecycle:extensions:1.1.1"
     implementation "android.arch.lifecycle:viewmodel:1.1.1"
@@ -53,7 +60,6 @@ dependencies {
     // ROOM
     implementation "android.arch.persistence.room:runtime:1.1.1"
     annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
-
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

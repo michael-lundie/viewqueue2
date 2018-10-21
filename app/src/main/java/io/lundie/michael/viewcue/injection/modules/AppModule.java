@@ -22,7 +22,9 @@ import io.lundie.michael.viewcue.datamodel.TheMovieDbApi;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
 import io.lundie.michael.viewcue.utilities.AppConstants;
+import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.utilities.Prefs;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -36,6 +38,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AppModule {
 
     private static final String LOG_TAG = AppModule.class.getSimpleName();
+
+    // Utils Injection
+    @Provides
+    @Singleton
+    AppUtils provideUtils(Application application) {
+        Log.i(LOG_TAG, "TEST: UTILS INJECTION");
+        return new AppUtils(application);
+    }
 
     // Preference Injection
     @Provides

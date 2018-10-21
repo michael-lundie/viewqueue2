@@ -37,6 +37,9 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -53,6 +56,7 @@ import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
 public class MovieDetailFragment extends Fragment {
@@ -61,6 +65,10 @@ public class MovieDetailFragment extends Fragment {
 
     @Inject
     ViewModelProvider.Factory moviesViewModelFactory;
+
+    @Inject
+    AppUtils appUtils;
+
     private MoviesViewModel moviesViewModel;
 
     // Coordinator layout and tool/appbar view references.
@@ -137,79 +145,80 @@ public class MovieDetailFragment extends Fragment {
             @Override
             public void onChanged(@Nullable MovieItem movieItem) {
                 title.setText(movieItem.getTitle());
-                releasedDateTv.setText(formatDate(movieItem.getReleaseDate(), getActivity().getString(R.string.date_unknown)));
+                releasedDateTv.setText(AppUtils.formatDate(new SimpleDateFormat("yyyy-MM-dd"),
+                        movieItem.getReleaseDate(),
+                        getActivity().getString(R.string.date_unknown), LOG_TAG));
                 voteAverageTv.setText(Double.toString(movieItem.getVoteAverage()));
                 synopsisTv.setText(movieItem.getOverview());
                 // Load background and poster images using glide library.
-                loadImageWithGlide(movieItem.getBackgroundURL(), progressBar, backdrop);
-                loadImageWithGlide(movieItem.getPosterURL(), null, mPosterView);
+                loadImageWithPicasso(movieItem.getBackgroundURL(), progressBar, backdrop);
+                loadImageWithPicasso(movieItem.getPosterURL(), null, mPosterView);
+
             }
         });
     }
 
     /**
-     * Simple method for loading an image using glide.
+     * Simple method for loading an image using picasso.
      * @param url The URL of the image we wish to process.
      * @param progressViewId The reference ID if the progress bar.
      * @param displayView The reference ID for the image view.
      */
-    private void loadImageWithGlide(String url, final ProgressBar progressViewId, final ImageView displayView) {
-        Glide.with(this)
-                .load(url)
-                .listener(new RequestListener<Drawable>() {
-
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                Target<Drawable> target, boolean isFirstResource)
-                    {
-                        if(progressViewId != null) {
-                            progressViewId.setVisibility(View.GONE); }
-                        if(displayView == backdrop) {
-                            appBarLayout.setExpanded(false);
-                            appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-                                // Used code from: https://stackoverflow.com/a/39424318
-                                @Override
-                                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                                    if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
-                                        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams)
-                                                collapsingToolbar.getLayoutParams();
-                                        params.setScrollFlags(0);
-                                    }
-                                }
-                            });
+    private void loadImageWithPicasso(String url, final ProgressBar progressViewId, final ImageView displayView) {
+        if (appUtils.checkNetworkAccess()) {
+            Log.i(LOG_TAG, "TEST: We have network access");
+            Picasso.get().load(url)
+                    .into(displayView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            onPicassoSuccess(progressViewId);
                         }
-                        return false;
-                    }
 
-                    @Override
-                    public boolean onResourceReady(
-                            Drawable resource, Object model, Target<Drawable> target,
-                            DataSource dataSource, boolean isFirstResource)
-                    {
-                        if(progressViewId != null) {progressViewId.setVisibility(View.GONE);}
-                        return false;
-                    }
-                })
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(displayView);
+                        @Override
+                        public void onError(Exception e) {
+                            onPicassoError(progressViewId, displayView);
+                        }
+                    });
+        } else {
+            Log.i(LOG_TAG, "TEST: No network, load from cache.");
+            Picasso.get().load(url).networkPolicy(NetworkPolicy.OFFLINE)
+                    .into(displayView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            onPicassoSuccess(progressViewId);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            onPicassoError(progressViewId, displayView);
+                        }
+                    });
+        }
     }
 
-    /**
-     * A simple utility method to parse/format a given date to the users locale
-     * @param dateString The original date string (from JSON Query)
-     * @param errorMessage An error message to display if the date cannot be parsed.
-     * @return Formatted date.
-     */
-    private String formatDate(String dateString, String errorMessage) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String parsedDate = errorMessage;
-        try {
-            Date date = dateFormat.parse(dateString);
-            parsedDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(date);
-        } catch (ParseException e) {
-            Log.e(LOG_TAG, "Error parsing date.", e);
-            e.printStackTrace();
+    private void onPicassoSuccess(ProgressBar progressViewId) {
+        if (progressViewId != null) {
+            progressViewId.setVisibility(View.GONE);
         }
-        return parsedDate;
+    }
+
+    private void onPicassoError(ProgressBar progressViewId, ImageView displayView) {
+        if (progressViewId != null) {
+            progressViewId.setVisibility(View.GONE);
+        }
+        if (displayView == backdrop) {
+            appBarLayout.setExpanded(false);
+            appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+                // Used code from: https://stackoverflow.com/a/39424318
+                @Override
+                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                    if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
+                        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams)
+                                collapsingToolbar.getLayoutParams();
+                        params.setScrollFlags(0);
+                    }
+                }
+            });
+        }
     }
 }

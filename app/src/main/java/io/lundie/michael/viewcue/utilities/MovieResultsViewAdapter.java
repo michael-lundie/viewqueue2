@@ -8,12 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.bumptech.glide.request.RequestOptions;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -92,16 +92,20 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
         }
 
         void bind(final MovieItem item, final OnItemClickListener listener) {
-
             mTitleView.setText(item.getTitle());
-
-            // Use Glide library to load our poster image. Async and cache is automatically managed
-            // by Glide.
-            Glide.with(mView.getContext())
+            Picasso.get()
                     .load(item.getPosterURL())
-                    .apply(new RequestOptions().placeholder(R.drawable.light_solid).error(R.drawable.light_solid))
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(mPosterView);
+                   .into(mPosterView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        // Hide our progress bar view on completion of image download.
+
+                    }
+                    @Override
+                       public void onError(Exception e) {
+
+                    }
+                   });
 
             //Set up our onClickListener interface up.
             itemView.setOnClickListener(new View.OnClickListener() {

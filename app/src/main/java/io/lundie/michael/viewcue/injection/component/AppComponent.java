@@ -3,7 +3,7 @@
  * Last Modified 08/10/18 15:10
  */
 
-package io.lundie.michael.viewcue.injection;
+package io.lundie.michael.viewcue.injection.component;
 
 import android.app.Application;
 
@@ -14,6 +14,7 @@ import dagger.Component;
 
 import dagger.android.AndroidInjectionModule;
 import io.lundie.michael.viewcue.App;
+import io.lundie.michael.viewcue.injection.ActivityBuilder;
 import io.lundie.michael.viewcue.injection.modules.AppModule;
 import io.lundie.michael.viewcue.injection.modules.FragmentModule;
 import io.lundie.michael.viewcue.injection.modules.SharedPreferencesModule;
@@ -36,5 +37,4 @@ public interface AppComponent {
     }
 
     void inject(App app);
-
 }

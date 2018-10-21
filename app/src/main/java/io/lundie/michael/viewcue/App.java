@@ -22,7 +22,7 @@ import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasActivityInjector;
 import dagger.android.support.HasSupportFragmentInjector;
-import io.lundie.michael.viewcue.injection.DaggerAppComponent;
+import io.lundie.michael.viewcue.injection.component.DaggerAppComponent;
 
 public class App extends Application implements HasActivityInjector {
 

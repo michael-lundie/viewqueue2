@@ -63,11 +63,14 @@ public class MovieListFragment extends Fragment {
     @Inject
     Prefs prefs;
 
+    private MovieResultsViewAdapter mAdapter;
+
     private MoviesViewModel moviesViewModel;
 
     public static final String LOG_TAG = MovieListFragment.class.getName();
 
-    private MovieResultsViewAdapter mAdapter;
+
+
     private ArrayList<MovieItem> mList = new ArrayList<>();
 
     private MoviesDatabase moviesDatabase;
@@ -131,6 +134,7 @@ public class MovieListFragment extends Fragment {
                         .addToBackStack(null)
                         .commit();
             }
+            
         });
 
         //Check for screen orientation
@@ -227,11 +231,13 @@ public class MovieListFragment extends Fragment {
         moviesViewModel.getMovies(prefs.getOrderPref()).observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
-                Log.i(LOG_TAG, "TEST Observer changed" +movieItems);
-                mAdapter.setMovieEntries(movieItems);
-                Log.i(LOG_TAG, "TEST Set Adapter to:" +movieItems);
-                mAdapter.notifyDataSetChanged();
-                Log.i(LOG_TAG, "TEST Notify Data changed.");
+                if((movieItems != null) && (!movieItems.isEmpty())) {
+                    Log.i(LOG_TAG, "TEST Observer changed" +movieItems);
+                    mAdapter.setMovieEntries(movieItems);
+                    Log.i(LOG_TAG, "TEST Set Adapter to:" +movieItems);
+                    mAdapter.notifyDataSetChanged();
+                    Log.i(LOG_TAG, "TEST Notify Data changed.");
+                }
             }
         });
     }
