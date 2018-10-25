@@ -7,6 +7,8 @@ package io.lundie.michael.viewcue.datamodel;
 import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -18,8 +20,11 @@ import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
+import io.lundie.michael.viewcue.utilities.CallbackRunnable;
+import io.lundie.michael.viewcue.utilities.NetworkStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.AppConstants;
+import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -49,36 +54,17 @@ public class MovieRepository {
 
     private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
 
-    public MutableLiveData<ArrayList<MovieItem>> temp(String sortOrder) {
-
-        theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
-            @Override
-            public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {
-
-                // Now let's set out list to out MutableLiveData
-                // Keep in mind this is a singleton object instance
-                //movieList.setValue(response.body());
-
-                Log.i("LOG", "TEST: Json: " + response.body());
-
-                movieList.setValue(parseMovieItems(response));
-            }
-
-            @Override
-            public void onFailure(Call<MoviesList> call, Throwable t) {
-                Log.e("LOG", "TEST: Json: Failed", t);
-            }
-        });
-        return movieList;
-    }
-
+    private MutableLiveData<NetworkStatus> networkStatus = new MutableLiveData<>();
 
     ArrayList<MovieItem> movieItems;
+
+    MoviesList moviesList;
+
 
     public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder) {
 
         // Let's check to see if the refresh time is over the defined limit.
-        if (isRefreshOverLimit()) {
+        if (hasInvalidRefreshTime(sortOrder)) {
 
             Log.i(LOG_TAG, "TEST: Refresh is 0  over limit");
             // We are over the refresh limit so we will fetch new movie results from the API and
@@ -87,31 +73,41 @@ public class MovieRepository {
             theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
                 @Override
                 public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {
-                    Log.i(LOG_TAG, "TEST: getting list of movies from API");
-                    // Now let's get an Array of movies to work with
-                    Log.i(LOG_TAG, "TEST: Json: " + response.body());
-                    movieItems = parseMovieItems(response);
 
-                    Log.i(LOG_TAG, "TEST: Sending list of items to UI.");
-                    movieList.setValue(movieItems);
+                        RunnableInterface runnableInterface = new RunnableInterface() {
+                            @Override
+                            public void complete() {
+                                setNetworkStatus(NetworkStatus.LOAD_COMPLETE);
+                                Log.i(LOG_TAG, "Interface returned complete.");
 
-                    sendItemsToDatabase(sortOrder);
+                                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        movieList.setValue(movieItems);
+                                    }
+                                });
+
+                                commitItemsToDatabase(sortOrder);
+                            }
+                        };
+                        parseMovieListResults(response, runnableInterface);
                 }
 
                 @Override
                 public void onFailure(Call<MoviesList> call, Throwable t) {
                     Log.e(LOG_TAG, "TEST: Json: Failed", t);
+                    setNetworkStatus(NetworkStatus.ERROR);
                 }
             });
         } else {
             // Display the offline data from our database
             fetchItemsFromDatabase(sortOrder);
         }
-        Log.i(LOG_TAG, "TEST: Returning movie items: " + movieList);
+        Log.i(LOG_TAG, "TEST: Returning movie items: ");
         return movieList;
     }
 
-    private void sendItemsToDatabase(final String sortOrder) {
+    private void commitItemsToDatabase(final String sortOrder) {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -120,19 +116,19 @@ public class MovieRepository {
                     Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
                     for (int i = 0; i < movieItems.size(); i++) {
                         Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
-                        movieItems.get(i).setPopular(i);
+                        movieItems.get(i).setPopular((i+1));
                         moviesDao.insertMovie(movieItems.get(i));
                     }
+                    prefs.updatePopularDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
                 } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
                     Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
                     for (int i = 0; i < movieItems.size(); i++) {
                         Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
-                        movieItems.get(i).setHighRated(i);
+                        movieItems.get(i).setHighRated((i+1));
                         moviesDao.insertMovie(movieItems.get(i));
                     }
+                    prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
                 }
-                //TODO: Check if Successful
-                prefs.updateDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
             }
         });
     }
@@ -167,6 +163,18 @@ public class MovieRepository {
         });
     }
 
+    private void parseMovieListResults(final Response<MoviesList> response, RunnableInterface runInterface) {
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.i(LOG_TAG, "TEST: Parsing results");
+                movieItems = response.body().getResults();
+            }
+        };
+
+        AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(myRunnable, runInterface));
+    }
+
     private ArrayList<MovieItem> parseMovieItems(Response<MoviesList> response) {
         Log.i(LOG_TAG, "TEST: INITIAL Response: " + response);
         MoviesList moviesList = response.body();
@@ -174,8 +182,14 @@ public class MovieRepository {
         return moviesList.getResults();
     }
 
-    private boolean isRefreshOverLimit() {
-        long lastRefreshTime = prefs.getRefreshTime();
+    private boolean hasInvalidRefreshTime(String sortOrder) {
+        long lastRefreshTime = 0;
+
+        if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+            lastRefreshTime = prefs.getPopularRefreshTime();
+        } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+            lastRefreshTime = prefs.getHighRatedRefreshTime();
+        }
 
         Date date = new Date(System.currentTimeMillis());
         long currentTimeMs = date.getTime();
@@ -183,5 +197,18 @@ public class MovieRepository {
         if ((currentTimeMs - lastRefreshTime) > 240_000 || lastRefreshTime == 0) {
             return true;
         } return false;
+    }
+
+    public MutableLiveData<NetworkStatus> getNetworkStatusLiveData() {
+        return networkStatus;
+    }
+
+    private void setNetworkStatus(final NetworkStatus status) {
+        AppExecutors.getInstance().mainThread().execute(new Runnable() {
+            @Override
+            public void run() {
+                networkStatus.setValue(status);
+            }
+        });
     }
 }

@@ -8,7 +8,8 @@ import javax.inject.Inject;
 import io.lundie.michael.viewcue.R;
 
 public class Prefs {
-    private final static String REFRESH_TIME= "settings_db_update_time_key";
+    private final static String REFRESH_TIME_POPULAR = "settings_db_update_time_pop_key";
+    private final static String REFRESH_TIME_HIGH_RATED = "settings_db_update_time_hr_key";
 
     SharedPreferences mSharedPrefs;
     Application mApplication;
@@ -19,16 +20,28 @@ public class Prefs {
         mSharedPrefs = sharedPrefs;
     }
 
-    public void updateDbRefreshTime(long time) {
-        mSharedPrefs.edit().putLong(REFRESH_TIME, time).apply();
+    public void updatePopularDbRefreshTime(long time) {
+        mSharedPrefs.edit().putLong(REFRESH_TIME_POPULAR, time).apply();
     }
 
-    public boolean hasRefreshTime() {
-        return mSharedPrefs.contains(REFRESH_TIME);
+    public void updateHighRatedDbRefreshTime(long time) {
+        mSharedPrefs.edit().putLong(REFRESH_TIME_HIGH_RATED, time).apply();
     }
 
-    public long getRefreshTime() {
-        return mSharedPrefs.getLong(REFRESH_TIME, 0);
+    public boolean hasPopularRefreshTime() {
+        return mSharedPrefs.contains(REFRESH_TIME_POPULAR);
+    }
+
+    public boolean hasHighRatedRefreshTime() {
+        return mSharedPrefs.contains(REFRESH_TIME_HIGH_RATED);
+    }
+
+    public long getPopularRefreshTime() {
+        return mSharedPrefs.getLong(REFRESH_TIME_POPULAR, 0);
+    }
+
+    public long getHighRatedRefreshTime() {
+        return mSharedPrefs.getLong(REFRESH_TIME_HIGH_RATED, 0);
     }
 
     public String getOrderPref() {

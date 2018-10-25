@@ -25,10 +25,10 @@ public interface MoviesDao {
     @Query("SELECT * FROM movies ORDER BY popularity")
     List<MovieItem> loadAllMovies();
 
-    @Query("SELECT * FROM movies WHERE popular IS NOT NULL ORDER BY popular")
+    @Query("SELECT * FROM movies WHERE popular IS NOT 0 ORDER BY popular")
     List<MovieItem> loadPopularMovies();
 
-    @Query("SELECT * FROM movies WHERE high_rated IS NOT NULL ORDER BY high_rated")
+    @Query("SELECT * FROM movies WHERE high_rated IS NOT 0 ORDER BY high_rated")
     List<MovieItem> loadHighRatedMovies();
 
     @Query("SELECT * FROM movies WHERE id = :id")

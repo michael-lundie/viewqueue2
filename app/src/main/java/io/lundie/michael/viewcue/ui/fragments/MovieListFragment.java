@@ -153,6 +153,11 @@ public class MovieListFragment extends Fragment {
         return listFragmentView;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -196,7 +201,6 @@ public class MovieListFragment extends Fragment {
                 return true;
             case R.id.action_save:
                 //saveItem(moviesViewModel.getSelectedItem());
-                prefs.updateDbRefreshTime(2222222);
                 return true;
             case R.id.action_test:
                 /*getFragmentManager().beginTransaction()
@@ -204,8 +208,6 @@ public class MovieListFragment extends Fragment {
                                 new DbTestFragment(), "DbTestFragment")
                         .addToBackStack(null)
                         .commit();*/
-
-                Toast.makeText(getContext(), Long.toString(prefs.getRefreshTime()), Toast.LENGTH_SHORT).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -228,13 +230,14 @@ public class MovieListFragment extends Fragment {
 
     private void configureViewModel(){
         moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
+        moviesViewModel.getMovies(prefs.getOrderPref()).removeObservers(this);
         moviesViewModel.getMovies(prefs.getOrderPref()).observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
                 if((movieItems != null) && (!movieItems.isEmpty())) {
-                    Log.i(LOG_TAG, "TEST Observer changed" +movieItems);
+                    Log.i(LOG_TAG, "TEST Observer changed");
                     mAdapter.setMovieEntries(movieItems);
-                    Log.i(LOG_TAG, "TEST Set Adapter to:" +movieItems);
+                    Log.i(LOG_TAG, "TEST Set Adapter");
                     mAdapter.notifyDataSetChanged();
                     Log.i(LOG_TAG, "TEST Notify Data changed.");
                 }

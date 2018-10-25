@@ -14,6 +14,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.facebook.stetho.Stetho;
+
 import javax.inject.Inject;
 
 import dagger.android.AndroidInjection;
@@ -35,6 +37,10 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //TODO: Remove
+        Stetho.initializeWithDefaults(this);
+
         setContentView(R.layout.activity_test);
         this.configureDagger();
         if(savedInstanceState == null) {

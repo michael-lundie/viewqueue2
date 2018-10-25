@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.MovieRepository;
 import io.lundie.michael.viewcue.ui.fragments.MovieListFragment;
+import io.lundie.michael.viewcue.utilities.NetworkStatus;
 
 public class MoviesViewModel extends ViewModel {
 
@@ -21,6 +22,8 @@ public class MoviesViewModel extends ViewModel {
 
     private MutableLiveData<ArrayList<MovieItem>> movieListObservable = new MutableLiveData<>();
     private MutableLiveData<MovieItem> selectedMovieItem = new MutableLiveData<>();
+
+    private MutableLiveData<NetworkStatus> netStatusObservable = new MutableLiveData<>();
 
     public MoviesViewModel() {}
 
@@ -46,5 +49,10 @@ public class MoviesViewModel extends ViewModel {
     public void selectMovieItem(MovieItem item) {
         Log.i(LOG_TAG, "TEST Selecting Item:" + item);
         selectedMovieItem.setValue(item);
+    }
+
+    public LiveData<NetworkStatus> getNetworkStatus() {
+        netStatusObservable = movieRepository.getNetworkStatusLiveData();
+        return netStatusObservable;
     }
 }
