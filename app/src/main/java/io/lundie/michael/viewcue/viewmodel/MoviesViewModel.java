@@ -11,19 +11,20 @@ import javax.inject.Inject;
 
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.MovieRepository;
-import io.lundie.michael.viewcue.ui.fragments.MovieListFragment;
-import io.lundie.michael.viewcue.utilities.NetworkStatus;
+import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
 
 public class MoviesViewModel extends ViewModel {
 
-    public static final String LOG_TAG = MoviesViewModel.class.getName();
+    private static final String LOG_TAG = MoviesViewModel.class.getName();
 
     private MovieRepository movieRepository;
-
     private MutableLiveData<ArrayList<MovieItem>> movieListObservable = new MutableLiveData<>();
     private MutableLiveData<MovieItem> selectedMovieItem = new MutableLiveData<>();
+    private MutableLiveData<DataAcquireStatus> dataStatusObservable = new MutableLiveData<>();
 
-    private MutableLiveData<NetworkStatus> netStatusObservable = new MutableLiveData<>();
+    // Defining model access constants.
+    public static final byte REFRESH_DATA = 0;
+    public static final byte DO_NOT_REFRESH_DATA = 1;
 
     public MoviesViewModel() {}
 
@@ -33,10 +34,10 @@ public class MoviesViewModel extends ViewModel {
     }
 
     // Getter method for fetching data
-    public LiveData<ArrayList<MovieItem>> getMovies(String sortOrder) {
+    public LiveData<ArrayList<MovieItem>> getMovies(String sortOrder, byte refreshCase) {
         Log.i("TEST", "ViewModel get movies called");
 
-        movieListObservable = movieRepository.getMovieList(sortOrder);
+        movieListObservable = movieRepository.getMovieList(sortOrder, refreshCase);
         // Return our movies array list
         return movieListObservable;
     }
@@ -51,8 +52,8 @@ public class MoviesViewModel extends ViewModel {
         selectedMovieItem.setValue(item);
     }
 
-    public LiveData<NetworkStatus> getNetworkStatus() {
-        netStatusObservable = movieRepository.getNetworkStatusLiveData();
-        return netStatusObservable;
+    public LiveData<DataAcquireStatus> getDataAcquireStatus() {
+        dataStatusObservable = movieRepository.getDataAcquireStatusLiveData();
+        return dataStatusObservable;
     }
 }

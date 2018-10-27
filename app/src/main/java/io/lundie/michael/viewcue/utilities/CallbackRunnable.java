@@ -7,18 +7,13 @@ import android.util.Log;
  */
 public class CallbackRunnable implements Runnable {
 
-    private final Runnable task;
     private final RunnableInterface runnableInterface;
 
-    public CallbackRunnable(Runnable task, RunnableInterface runnableInterface) {
-        this.task = task;
+    public CallbackRunnable(RunnableInterface runnableInterface) {
         this.runnableInterface = runnableInterface;
     }
 
-    @Override
     public void run() {
-        Log.i("CALLBACK", "TEST: called complete.");
-        task.run();
         runnableInterface.complete();
     }
 }

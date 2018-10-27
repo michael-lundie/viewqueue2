@@ -10,7 +10,6 @@
 
 package io.lundie.michael.viewcue.ui.fragments;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
@@ -32,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -42,13 +40,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.R;
-import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
-import io.lundie.michael.viewcue.ui.DbTestFragment;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
-import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
+import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
@@ -57,29 +53,30 @@ import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
  */
 public class MovieListFragment extends Fragment {
 
+    private static final String LOG_TAG = MovieListFragment.class.getName();
+
+    // In a fragment, constructor injection is not possible. Let's use field injection.
     @Inject
     ViewModelProvider.Factory moviesViewModelFactory;
 
     @Inject
     Prefs prefs;
 
-    private MovieResultsViewAdapter mAdapter;
-
+    // Declaring private variables.
     private MoviesViewModel moviesViewModel;
+    private MovieResultsViewAdapter mAdapter;
+    private DataAcquireStatus mDataAcquireStatus;
 
-    public static final String LOG_TAG = MovieListFragment.class.getName();
-
-
-
+    // Instantiate our ArrayList of MovieItems.
     private ArrayList<MovieItem> mList = new ArrayList<>();
 
-    private MoviesDatabase moviesDatabase;
-
+    // Declaring annotated view variables for butterknife to bind references.
     @BindView(R.id.progressRing) ProgressBar mProgressRing;
     @BindView(R.id.list_empty) TextView mEmptyStateTextView;
     @BindView(R.id.movie_list) RecycleViewWithSetEmpty mRecyclerView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
+    // Setting up our shared preference listener. If any preferences change, we'll know about it.
     SharedPreferences.OnSharedPreferenceChangeListener listener
             = new SharedPreferences.OnSharedPreferenceChangeListener() {
         public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
@@ -87,42 +84,38 @@ public class MovieListFragment extends Fragment {
             if (key.equals(getString(R.string.settings_orderby_key))) {
                 mList.clear();
                 mAdapter.notifyDataSetChanged();
-                moviesViewModel.getMovies(prefs.getOrderPref());
+                moviesViewModel.getMovies(prefs.getOrderPref(), MoviesViewModel.REFRESH_DATA);
             }
         }
     };
 
     public MovieListFragment() {
-        // Required empty public constructor
+        // Required empty public constructor for fragment classes.
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         View listFragmentView =  inflater.inflate(R.layout.fragment_movie_list, container, false);
-        // Bind view references with butterknife library.
+
+        // Time to butter some toast... Bind view references with butterknife library.
         ButterKnife.bind(this, listFragmentView);
 
+        // Let's register our shared preferences change listener, set up earlier.
         PreferenceManager.getDefaultSharedPreferences(getActivity())
                 .registerOnSharedPreferenceChangeListener(listener);
 
+        // Set up our supportActionBar.
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         setHasOptionsMenu(true);
-
-        //moviesDatabase = MoviesDatabase.getInstance(getActivity());
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
 
-        //TODO: Delete...
-        // Let's get our view model instance. Note we are returning the view model instance of
-        // this fragments parent activity.
-        // moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
-
-        // Initiate our new custom recycler adapter and set layout manager.
+        // Initiate our custom recycler adapter and set layout manager.
         mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(MovieItem item) {
@@ -134,7 +127,6 @@ public class MovieListFragment extends Fragment {
                         .addToBackStack(null)
                         .commit();
             }
-            
         });
 
         //Check for screen orientation
@@ -143,11 +135,9 @@ public class MovieListFragment extends Fragment {
         if (orientation == 1) {
             // If portrait mode set our grid layout to 3 columns
             mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
-
         } else {
             // If landscape mode set our grid layout to 4 columns
             mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
-
         } mRecyclerView.setAdapter(mAdapter);
 
         return listFragmentView;
@@ -161,6 +151,7 @@ public class MovieListFragment extends Fragment {
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.i(LOG_TAG, "TEST: ON activity created - configuring dagger and viewMODEL");
         super.onActivityCreated(savedInstanceState);
         this.configureDagger();
         this.configureViewModel();
@@ -184,64 +175,74 @@ public class MovieListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        // Simple switch statement for accessing items from our AppSupportBar.
         switch(id) {
             case R.id.action_settings:
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
             case R.id.action_sort_popular:
-                //mList.clear();
-                //mAdapter.notifyDataSetChanged();
-                moviesViewModel.getMovies(getString(R.string.settings_orderby_most_popular));
+                moviesViewModel.getMovies(getString(R.string.settings_orderby_most_popular),
+                        MoviesViewModel.REFRESH_DATA);
+                mProgressRing.setVisibility(View.VISIBLE);
                 return true;
             case R.id.action_sort_rating:
                 //TODO: We need a data network listener interface here somehow
-                //mList.clear();
-                //mAdapter.notifyDataSetChanged();
-                moviesViewModel.getMovies(getString(R.string.settings_orderby_high_rated));
-                return true;
-            case R.id.action_save:
-                //saveItem(moviesViewModel.getSelectedItem());
-                return true;
-            case R.id.action_test:
-                /*getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame,
-                                new DbTestFragment(), "DbTestFragment")
-                        .addToBackStack(null)
-                        .commit();*/
+                moviesViewModel.getMovies(getString(R.string.settings_orderby_high_rated),
+                        MoviesViewModel.REFRESH_DATA);
+                mProgressRing.setVisibility(View.VISIBLE);
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void saveItem(LiveData<MovieItem> selectedItem) {
-        final MovieItem item = selectedItem.getValue().item();
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+    /**
+     * A simple helper method to configure our view model.
+     * Let's return two observables. One, which accesses our data. The other returns network status.
+     */
+    private void configureViewModel(){
+        Log.i(LOG_TAG, "TEST: Configure view model called.");
+
+        // Get our view model provider.
+        moviesViewModel = ViewModelProviders.of(getActivity(),
+                moviesViewModelFactory).get(MoviesViewModel.class);
+
+        // We want to remove any observers that current exist.
+        // (This can be done with a singleton observe class and injection, but I haven't been
+        // able to get this to work successfully yet.
+        moviesViewModel.getDataAcquireStatus().removeObservers(this);
+        moviesViewModel.getMovies(prefs.getOrderPref(),
+                    MoviesViewModel.DO_NOT_REFRESH_DATA).removeObservers(this);
+
+        // Fetch our network / data status observable first.
+        // This will allow us some feedback so we can handle errors in our UI better.
+        moviesViewModel.getDataAcquireStatus().observe(this, new Observer<DataAcquireStatus>() {
             @Override
-            public void run() {
-                moviesDatabase.moviesDao().insertMovie(item);
+            public void onChanged(@Nullable DataAcquireStatus dataAcquireStatus) {
+                mDataAcquireStatus = dataAcquireStatus;
             }
         });
-        Log.i(LOG_TAG, "TEST: Movie Entered to Database");
-    }
 
-    private void configureDagger(){
-        AndroidSupportInjection.inject(this);
-    }
-
-    private void configureViewModel(){
-        moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
-        moviesViewModel.getMovies(prefs.getOrderPref()).removeObservers(this);
-        moviesViewModel.getMovies(prefs.getOrderPref()).observe(this, new Observer<ArrayList<MovieItem>>() {
+        // Secondly, fetch our data observables.
+        moviesViewModel.getMovies(prefs.getOrderPref(),
+                MoviesViewModel.REFRESH_DATA).observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
                 if((movieItems != null) && (!movieItems.isEmpty())) {
                     Log.i(LOG_TAG, "TEST Observer changed");
                     mAdapter.setMovieEntries(movieItems);
                     Log.i(LOG_TAG, "TEST Set Adapter");
+                    mProgressRing.setVisibility(View.INVISIBLE);
                     mAdapter.notifyDataSetChanged();
                     Log.i(LOG_TAG, "TEST Notify Data changed.");
                 }
             }
         });
+    }
+
+    /**
+     * A simple helper method for setting up dagger with this fragment.
+     */
+    private void configureDagger(){
+        AndroidSupportInjection.inject(this);
     }
 }

@@ -8,7 +8,6 @@ import android.arch.lifecycle.MutableLiveData;
 import android.util.Log;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -21,20 +20,24 @@ import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
-import io.lundie.michael.viewcue.utilities.NetworkStatus;
+import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.utilities.RunnableInterface;
+import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.API_FETCH_COMPLETE;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.FETCHING_FROM_DATABASE;
 
 public class MovieRepository {
 
     private static final String LOG_TAG = MovieRepository.class.getSimpleName();
 
     private final AppConstants constants;
-
     private final TheMovieDbApi theMovieDbApi;
     private final MoviesDao moviesDao;
     private final Prefs prefs;
@@ -54,64 +57,90 @@ public class MovieRepository {
 
     private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
 
-    private MutableLiveData<NetworkStatus> networkStatus = new MutableLiveData<>();
+    private MutableLiveData<DataAcquireStatus> dataStatus = new MutableLiveData<>();
 
     ArrayList<MovieItem> movieItems;
 
     MoviesList moviesList;
 
+    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder , byte refreshCase) {
+        switch(refreshCase) {
+            case(MoviesViewModel.REFRESH_DATA):
 
-    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder) {
-
-        // Let's check to see if the refresh time is over the defined limit.
-        if (hasInvalidRefreshTime(sortOrder)) {
-
-            Log.i(LOG_TAG, "TEST: Refresh is 0  over limit");
-            // We are over the refresh limit so we will fetch new movie results from the API and
-            // update our list of movies in the database using our MoviesDao.
-
-            theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).enqueue(new Callback<MoviesList>() {
-                @Override
-                public void onResponse(Call<MoviesList> call, Response<MoviesList> response) {
-
-                        RunnableInterface runnableInterface = new RunnableInterface() {
+                RunnableInterface runnableInterface = new RunnableInterface() {
+                    @Override
+                    public void complete() {
+                        Log.i("CALLBACK", "TEST: called complete.");
+                        setDataAquireStatus(API_FETCH_COMPLETE);
+                        AppExecutors.getInstance().mainThread().execute(new Runnable() {
                             @Override
-                            public void complete() {
-                                setNetworkStatus(NetworkStatus.LOAD_COMPLETE);
-                                Log.i(LOG_TAG, "Interface returned complete.");
-
-                                AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        movieList.setValue(movieItems);
-                                    }
-                                });
-
-                                commitItemsToDatabase(sortOrder);
+                            public void run() {
+                                movieList.setValue(movieItems);
                             }
-                        };
-                        parseMovieListResults(response, runnableInterface);
-                }
+                        });
+                        commitItemsToDatabase(sortOrder);
+                    }
+                };
 
-                @Override
-                public void onFailure(Call<MoviesList> call, Throwable t) {
-                    Log.e(LOG_TAG, "TEST: Json: Failed", t);
-                    setNetworkStatus(NetworkStatus.ERROR);
+                // Check to see if the refresh database limit has been passed. If so, we want to fetch
+                // data from our API and update everything. NOTE: refresh time is saved in a preference.
+                // If we don't need to refresh, we'll grab everything from the database.
+                if (hasInvalidRefreshTime(sortOrder)) {
+                    Log.i(LOG_TAG, "TEST: Has invalid refresh time.");
+
+                    AppExecutors.getInstance().networkIO().execute(new CallbackRunnable(runnableInterface) {
+                        @Override
+                        public void run() {
+                            try {
+                                Log.i(LOG_TAG, "TEST: Attempting to get movies from API.");
+                                Response<MoviesList> response =
+                                        theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).execute();
+
+                                // Let's make sure we have a response from the MDB API (via retrofit)
+                                if(response.isSuccessful()) {
+                                    moviesList = response.body();
+                                    if(moviesList != null) {
+                                        Log.i(LOG_TAG, "TEST: Movie list not null");
+                                        movieItems = moviesList.getResults();
+                                    } else {
+                                        setDataAquireStatus(ERROR);
+                                    }
+                                // Something went wrong. Let's parse the error.
+                                } else {
+
+                                }
+
+                            // Catch any IO errors - likely there is no network access.
+                            } catch (IOException e) {
+                                //TODO: Check if phone is offline. Inform the user of the problem.
+                                Log.e(LOG_TAG, "Network failure", e);
+                                setDataAquireStatus(ERROR);
+                                e.printStackTrace();
+                            }
+
+                            // All is well. Lets call super.run() which will trigger our callback.
+                            super.run();
+                        }
+                    });
+
+                // Refresh limit hasn't passed, so we're going to return everything from our database.
+                } else {
+                    Log.i(LOG_TAG, "TEST: Returning movie items: ");
+                    setDataAquireStatus(FETCHING_FROM_DATABASE);
+                    fetchItemsFromDatabase(sortOrder);
                 }
-            });
-        } else {
-            // Display the offline data from our database
-            fetchItemsFromDatabase(sortOrder);
+                break;
+
+            // This case exists primarily to prevent get movies from being called, when we unlist
+            // any LiveData observables. This won't be required once we are using singleton observers.
+            case(MoviesViewModel.DO_NOT_REFRESH_DATA):
+                break;
         }
-        Log.i(LOG_TAG, "TEST: Returning movie items: ");
         return movieList;
     }
 
     private void commitItemsToDatabase(final String sortOrder) {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                Log.i(LOG_TAG, "TEST: Getting App Executors");
+
                 if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
                     Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
                     for (int i = 0; i < movieItems.size(); i++) {
@@ -129,8 +158,7 @@ public class MovieRepository {
                     }
                     prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
                 }
-            }
-        });
+
     }
 
     private void fetchItemsFromDatabase(final String sortOrder) {
@@ -172,7 +200,7 @@ public class MovieRepository {
             }
         };
 
-        AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(myRunnable, runInterface));
+        AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(runInterface));
     }
 
     private ArrayList<MovieItem> parseMovieItems(Response<MoviesList> response) {
@@ -199,15 +227,15 @@ public class MovieRepository {
         } return false;
     }
 
-    public MutableLiveData<NetworkStatus> getNetworkStatusLiveData() {
-        return networkStatus;
+    public MutableLiveData<DataAcquireStatus> getDataAcquireStatusLiveData() {
+        return dataStatus;
     }
 
-    private void setNetworkStatus(final NetworkStatus status) {
+    private void setDataAquireStatus(final DataAcquireStatus status) {
         AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
             public void run() {
-                networkStatus.setValue(status);
+                dataStatus.setValue(status);
             }
         });
     }
