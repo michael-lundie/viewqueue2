@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-
 import javax.inject.Inject;
 
 import io.lundie.michael.viewcue.BuildConfig;
@@ -25,13 +24,15 @@ import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
-import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.API_FETCH_COMPLETE;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_NETWORK_FAILURE;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_NOT_FOUND;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_PARSING;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_SERVER_BROKEN;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_UNKNOWN;
 import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.FETCHING_FROM_DATABASE;
+import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.FETCH_COMPLETE;
 
 public class MovieRepository {
 
@@ -67,11 +68,13 @@ public class MovieRepository {
         switch(refreshCase) {
             case(MoviesViewModel.REFRESH_DATA):
 
+                // Let's instantiate a new interface, which will give us access
+                // to a simple callback after retrofit has 'done its thing'.
                 RunnableInterface runnableInterface = new RunnableInterface() {
                     @Override
                     public void complete() {
                         Log.i("CALLBACK", "TEST: called complete.");
-                        setDataAquireStatus(API_FETCH_COMPLETE);
+                        setDataAcquireStatus(FETCH_COMPLETE);
                         AppExecutors.getInstance().mainThread().execute(new Runnable() {
                             @Override
                             public void run() {
@@ -88,6 +91,8 @@ public class MovieRepository {
                 if (hasInvalidRefreshTime(sortOrder)) {
                     Log.i(LOG_TAG, "TEST: Has invalid refresh time.");
 
+                    // Get an instance of AppExecutors. We will run retrofit in synchronous mode so
+                    // we can micromanage some error handling / callbacks.
                     AppExecutors.getInstance().networkIO().execute(new CallbackRunnable(runnableInterface) {
                         @Override
                         public void run() {
@@ -103,19 +108,28 @@ public class MovieRepository {
                                         Log.i(LOG_TAG, "TEST: Movie list not null");
                                         movieItems = moviesList.getResults();
                                     } else {
-                                        setDataAquireStatus(ERROR);
+                                        setDataAcquireStatus(ERROR_PARSING);
                                     }
                                 // Something went wrong. Let's parse the error.
                                 } else {
-
+                                    switch (response.code()) {
+                                        case 404:
+                                            setDataAcquireStatus(ERROR_NOT_FOUND);
+                                            break;
+                                        case 500:
+                                            setDataAcquireStatus(ERROR_SERVER_BROKEN);
+                                            break;
+                                        default:
+                                            setDataAcquireStatus(ERROR_UNKNOWN);
+                                            break;
+                                    }
                                 }
 
                             // Catch any IO errors - likely there is no network access.
                             } catch (IOException e) {
                                 //TODO: Check if phone is offline. Inform the user of the problem.
-                                Log.e(LOG_TAG, "Network failure", e);
-                                setDataAquireStatus(ERROR);
-                                e.printStackTrace();
+                                Log.e(LOG_TAG, "Network failure: ", e);
+                                setDataAcquireStatus(ERROR_NETWORK_FAILURE);
                             }
 
                             // All is well. Lets call super.run() which will trigger our callback.
@@ -126,7 +140,7 @@ public class MovieRepository {
                 // Refresh limit hasn't passed, so we're going to return everything from our database.
                 } else {
                     Log.i(LOG_TAG, "TEST: Returning movie items: ");
-                    setDataAquireStatus(FETCHING_FROM_DATABASE);
+                    setDataAcquireStatus(FETCHING_FROM_DATABASE);
                     fetchItemsFromDatabase(sortOrder);
                 }
                 break;
@@ -141,24 +155,23 @@ public class MovieRepository {
 
     private void commitItemsToDatabase(final String sortOrder) {
 
-                if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
-                    Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
-                    for (int i = 0; i < movieItems.size(); i++) {
-                        Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
-                        movieItems.get(i).setPopular((i+1));
-                        moviesDao.insertMovie(movieItems.get(i));
-                    }
-                    prefs.updatePopularDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
-                } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
-                    Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
-                    for (int i = 0; i < movieItems.size(); i++) {
-                        Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
-                        movieItems.get(i).setHighRated((i+1));
-                        moviesDao.insertMovie(movieItems.get(i));
-                    }
-                    prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
-                }
-
+        if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+            Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
+            for (int i = 0; i < movieItems.size(); i++) {
+                Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
+                movieItems.get(i).setPopular((i+1));
+                moviesDao.insertMovie(movieItems.get(i));
+            }
+            prefs.updatePopularDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+        } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+            Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
+            for (int i = 0; i < movieItems.size(); i++) {
+                Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
+                movieItems.get(i).setHighRated((i+1));
+                moviesDao.insertMovie(movieItems.get(i));
+            }
+            prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+        }
     }
 
     private void fetchItemsFromDatabase(final String sortOrder) {
@@ -169,46 +182,26 @@ public class MovieRepository {
                 if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
                     Log.i(LOG_TAG, "TEST: Retrieving items from database: POPULAR");
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadPopularMovies();
-                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i(LOG_TAG, "TEST - movieItems: " + movieItems);
-                            movieList.setValue(movieItems);
-                        }
-                    });
+                    setMovieItems();
                 } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
                     Log.i(LOG_TAG, "TEST: Retrieving items from database: HIGH RATED");
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadHighRatedMovies();
-                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i(LOG_TAG, "TEST - movieItems: " + movieItems);
-                            movieList.setValue(movieItems);
-                        }
-                    });
+                    setMovieItems();
                 }
             }
         });
     }
 
-    private void parseMovieListResults(final Response<MoviesList> response, RunnableInterface runInterface) {
-        Runnable myRunnable = new Runnable() {
+    private void setMovieItems() {
+        AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
             public void run() {
-                Log.i(LOG_TAG, "TEST: Parsing results");
-                movieItems = response.body().getResults();
+                Log.i(LOG_TAG, "TEST - movieItems: " + movieItems);
+                movieList.setValue(movieItems);
             }
-        };
-
-        AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(runInterface));
+        });
     }
 
-    private ArrayList<MovieItem> parseMovieItems(Response<MoviesList> response) {
-        Log.i(LOG_TAG, "TEST: INITIAL Response: " + response);
-        MoviesList moviesList = response.body();
-        Log.i(LOG_TAG, "TEST: NEXT Response: " + response.body());
-        return moviesList.getResults();
-    }
 
     private boolean hasInvalidRefreshTime(String sortOrder) {
         long lastRefreshTime = 0;
@@ -231,7 +224,7 @@ public class MovieRepository {
         return dataStatus;
     }
 
-    private void setDataAquireStatus(final DataAcquireStatus status) {
+    private void setDataAcquireStatus(final DataAcquireStatus status) {
         AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
             public void run() {

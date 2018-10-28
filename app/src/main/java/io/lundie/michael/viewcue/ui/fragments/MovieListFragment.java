@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -43,6 +44,7 @@ import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
@@ -66,6 +68,7 @@ public class MovieListFragment extends Fragment {
     private MoviesViewModel moviesViewModel;
     private MovieResultsViewAdapter mAdapter;
     private DataAcquireStatus mDataAcquireStatus;
+    private static String mRequestSortOrder;
 
     // Instantiate our ArrayList of MovieItems.
     private ArrayList<MovieItem> mList = new ArrayList<>();
@@ -82,9 +85,10 @@ public class MovieListFragment extends Fragment {
         public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
             Log.i(LOG_TAG, "TEST: Prefs changed");
             if (key.equals(getString(R.string.settings_orderby_key))) {
+                mRequestSortOrder = prefs.getOrderPref();
                 mList.clear();
                 mAdapter.notifyDataSetChanged();
-                moviesViewModel.getMovies(prefs.getOrderPref(), MoviesViewModel.REFRESH_DATA);
+                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
             }
         }
     };
@@ -114,6 +118,14 @@ public class MovieListFragment extends Fragment {
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
+
+        if (savedInstanceState != null) {
+            Log.i(LOG_TAG, "TEST: retrieving parcelable");
+            mList = savedInstanceState.getParcelableArrayList("mList");
+            if (mList == null ) {
+                mList = new ArrayList<>();
+            }
+        }
 
         // Initiate our custom recycler adapter and set layout manager.
         mAdapter = new MovieResultsViewAdapter(mList, new MovieResultsViewAdapter.OnItemClickListener() {
@@ -154,10 +166,20 @@ public class MovieListFragment extends Fragment {
         Log.i(LOG_TAG, "TEST: ON activity created - configuring dagger and viewMODEL");
         super.onActivityCreated(savedInstanceState);
         this.configureDagger();
-        this.configureViewModel();
+        if(savedInstanceState == null) {
+            Log.i(LOG_TAG, "TEST: saved instance state is null");
+            this.configureViewModel();
+        }
     }
 
-    //TODO: Implement savedInstanceState?
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        if (!mList.isEmpty()){
+            Log.i(LOG_TAG, "TEST: Saving parcelable!!!!");
+            outState.putParcelableArrayList("mList", mList);
+        }
+        super.onSaveInstanceState(outState);
+    }
 
     @Override
     public void onDestroy() {
@@ -181,15 +203,19 @@ public class MovieListFragment extends Fragment {
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
                 return true;
             case R.id.action_sort_popular:
-                moviesViewModel.getMovies(getString(R.string.settings_orderby_most_popular),
-                        MoviesViewModel.REFRESH_DATA);
-                mProgressRing.setVisibility(View.VISIBLE);
+                mRequestSortOrder = AppConstants.SORT_ORDER_POPULAR;
+                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
+                    mProgressRing.setVisibility(View.VISIBLE);
+                }
+
                 return true;
             case R.id.action_sort_rating:
-                //TODO: We need a data network listener interface here somehow
-                moviesViewModel.getMovies(getString(R.string.settings_orderby_high_rated),
-                        MoviesViewModel.REFRESH_DATA);
-                mProgressRing.setVisibility(View.VISIBLE);
+                mRequestSortOrder = AppConstants.SORT_ORDER_HIGHRATED;
+                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
+                    mProgressRing.setVisibility(View.VISIBLE);
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -202,6 +228,9 @@ public class MovieListFragment extends Fragment {
     private void configureViewModel(){
         Log.i(LOG_TAG, "TEST: Configure view model called.");
 
+        if (mRequestSortOrder == null) {
+            mRequestSortOrder = prefs.getOrderPref();
+        }
         // Get our view model provider.
         moviesViewModel = ViewModelProviders.of(getActivity(),
                 moviesViewModelFactory).get(MoviesViewModel.class);
@@ -210,7 +239,7 @@ public class MovieListFragment extends Fragment {
         // (This can be done with a singleton observe class and injection, but I haven't been
         // able to get this to work successfully yet.
         moviesViewModel.getDataAcquireStatus().removeObservers(this);
-        moviesViewModel.getMovies(prefs.getOrderPref(),
+        moviesViewModel.getMovies(mRequestSortOrder,
                     MoviesViewModel.DO_NOT_REFRESH_DATA).removeObservers(this);
 
         // Fetch our network / data status observable first.
@@ -223,7 +252,7 @@ public class MovieListFragment extends Fragment {
         });
 
         // Secondly, fetch our data observables.
-        moviesViewModel.getMovies(prefs.getOrderPref(),
+        moviesViewModel.getMovies(mRequestSortOrder,
                 MoviesViewModel.REFRESH_DATA).observe(this, new Observer<ArrayList<MovieItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
