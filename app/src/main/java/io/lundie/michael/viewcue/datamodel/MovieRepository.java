@@ -10,12 +10,14 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MoviesItemSimple;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
@@ -157,20 +159,59 @@ public class MovieRepository {
 
         if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
             Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
+
+            // Create an array of current database objects to compare the newly  objects against.
+            // Note we are getting a simplified object for the sake of efficiency
+            List<MoviesItemSimple> oldMovieList = moviesDao.fetchSimpleListPopular();
+
+            // Loop through all the newly retrieved movie items
             for (int i = 0; i < movieItems.size(); i++) {
                 Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
+
+                checkAndSetFavorites(oldMovieList, i);
+
+                // Set the new item as popular.
                 movieItems.get(i).setPopular((i+1));
+
+                // Insert the movie to our database. See onConflictStrategy documentation (REPLACE):
+                // https://sqlite.org/lang_conflict.html
                 moviesDao.insertMovie(movieItems.get(i));
             }
             prefs.updatePopularDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
         } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
             Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
+            List<MoviesItemSimple> oldMovieList = moviesDao.fetchSimpleListHighRated();
             for (int i = 0; i < movieItems.size(); i++) {
+
                 Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
+                checkAndSetFavorites(oldMovieList, i);
+
                 movieItems.get(i).setHighRated((i+1));
+
                 moviesDao.insertMovie(movieItems.get(i));
             }
             prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+        }
+    }
+
+    private void checkAndSetFavorites(List<MoviesItemSimple> oldMovieList, int i) {
+        // Get the item ID for the newly retrieved movie object.
+        int newItemId = movieItems.get(i).getId();
+
+        // Loop through the old list of items to check if any of them were favourites.
+        for (int j = 0; j < oldMovieList.size(); j++) {
+            // Check the matching object (if it exists)
+            if (newItemId == oldMovieList.get(j).getId() ) {
+                // If the movie was a favourite, update the new list accordingly.
+                if (oldMovieList.get(j).getFavorite() == MovieItem.IS_FAVOURITE) {
+                    movieItems.get(i).setFavorite(MovieItem.IS_FAVOURITE);
+                }
+                // Remove the object from our reference list of old entries. No point in
+                // looping through the item unnecessarily.
+                oldMovieList.remove(j);
+                // Kill the current loop.
+                break;
+            }
         }
     }
 

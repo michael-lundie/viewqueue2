@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MoviesItemSimple;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
@@ -33,6 +34,12 @@ public interface MoviesDao {
 
     @Query("SELECT * FROM movies WHERE id = :id")
     MovieItem fetchMovie(int id);
+
+    @Query("SELECT id, popular, high_rated, favorite FROM movies WHERE popular IS NOT NULL ORDER BY id")
+    List<MoviesItemSimple> fetchSimpleListPopular();
+
+    @Query("SELECT id, popular, high_rated, favorite FROM movies WHERE high_rated IS NOT NULL ORDER BY id")
+    List<MoviesItemSimple> fetchSimpleListHighRated();
 
     @Insert(onConflict = REPLACE)
     void insertMovie(MovieItem movieItem);

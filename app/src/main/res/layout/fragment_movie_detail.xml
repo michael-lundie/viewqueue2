@@ -98,4 +98,13 @@
 
     <include layout="@layout/navigation_animated_paralax" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_add"
+        android:layout_gravity="end|bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_padding"
+        android:baselineAlignBottom="true"
+        android:src="@drawable/ic_star" />
+
 </android.support.design.widget.CoordinatorLayout>

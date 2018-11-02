@@ -34,9 +34,8 @@ public class MovieItem implements Parcelable {
     private static final String POSTER_SIZE = "w185";
     private static final String BACKGROUND_SIZE = "w500";
 
-    //TODO: REmove constants
-    private static final int TYPE_POSTER = 0;
-    private static final int TYPE_BACKGROUND = 1;
+    public static final int IS_FAVOURITE = 1;
+    public static final int IS_NOT_FAVOURITE = 0;
 
     @PrimaryKey
     @SerializedName("id")
@@ -180,27 +179,6 @@ public class MovieItem implements Parcelable {
     public int getFavorite() { return favorite; }
 
     public void setFavorite(int favorite) { this.favorite = favorite; }
-
-    //TODO: Remove this method.
-    private String setURL(int requestType, String path) {
-
-        // Image resource URL is set accordingly.
-        // TYPE_POSTER Loads a lower resolution image than TYPE_BACKGROUND
-        String size = "w185"; // == TYPE_POSTER, Lower Resolution
-
-        if (requestType == TYPE_BACKGROUND) {
-            size = "w500"; // Higher resolution than TYPE_POSTER
-        }
-
-        Uri.Builder posterUrlBuilder = new Uri.Builder();
-        posterUrlBuilder.scheme("http")
-                .authority("image.tmdb.org")
-                .appendPath("t")
-                .appendPath("p")
-                .appendPath(size)
-                .appendPath(path.substring(1));
-        return posterUrlBuilder.toString();
-    }
 
     private String buildImageURL(String requestSize, String path) {
         Uri.Builder posterUrlBuilder = new Uri.Builder();

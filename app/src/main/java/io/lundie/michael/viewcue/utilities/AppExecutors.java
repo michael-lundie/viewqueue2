@@ -8,6 +8,7 @@ package io.lundie.michael.viewcue.utilities;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -57,6 +58,8 @@ public class AppExecutors {
 
         @Override
         public void execute(@NonNull Runnable command) {
+
+            Log.i("AppExecutor", "Running this task: " + command);
             mainThreadHandler.post(command);
         }
 

@@ -20,16 +20,20 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -52,11 +56,15 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
+import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.AppUtils;
+import io.lundie.michael.viewcue.utilities.CallbackRunnable;
+import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
 public class MovieDetailFragment extends Fragment {
@@ -68,6 +76,9 @@ public class MovieDetailFragment extends Fragment {
 
     @Inject
     AppUtils appUtils;
+
+    @Inject
+    MoviesDao moviesDao;
 
     private MoviesViewModel moviesViewModel;
 
@@ -82,6 +93,7 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.detail_view_poster) ImageView mPosterView;
     @BindView(R.id.backdrop_iv) PercentageCropImageView backdrop;
     @BindView(R.id.progressbar) ProgressBar progressBar;
+    @BindView(R.id.fab_add) FloatingActionButton favButton;
 
     // References to views displaying text.
     @BindView(R.id.title) TextView title;
@@ -126,6 +138,8 @@ public class MovieDetailFragment extends Fragment {
 
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
+
+
         return detailFragmentView;
     }
 
@@ -150,6 +164,8 @@ public class MovieDetailFragment extends Fragment {
                         getActivity().getString(R.string.date_unknown), LOG_TAG));
                 voteAverageTv.setText(Double.toString(movieItem.getVoteAverage()));
                 synopsisTv.setText(movieItem.getOverview());
+
+                configureFavsButton(favButton, movieItem);
                 // Load background and poster images using glide library.
                 loadImageWithPicasso(movieItem.getBackgroundURL(), progressBar, backdrop);
                 loadImageWithPicasso(movieItem.getPosterURL(), null, mPosterView);
@@ -221,4 +237,38 @@ public class MovieDetailFragment extends Fragment {
             });
         }
     }
+
+    private void configureFavsButton(final FloatingActionButton favButton, final MovieItem item) {
+
+        if (item.getFavorite() == MovieItem.IS_FAVOURITE) {
+            favButton.setImageResource(R.drawable.ic_star_filled);
+        } else {
+            favButton.setImageResource(R.drawable.ic_star);
+        }
+        favButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+
+                final String toastText;
+                if (item.getFavorite() == MovieItem.IS_NOT_FAVOURITE) {
+                    item.setFavorite(MovieItem.IS_FAVOURITE);
+                    favButton.setImageResource(R.drawable.ic_star_filled);
+                    toastText = "Made fav.";
+                } else {
+                    item.setFavorite(MovieItem.IS_NOT_FAVOURITE);
+                    favButton.setImageResource(R.drawable.ic_star);
+                    toastText = "Removed fav";
+                }
+                AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(LOG_TAG, "Running action" + moviesDao);
+                        moviesDao.updateMovie(item);
+                    }
+                });
+
+            }
+        });
+    }
+
 }

@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -30,8 +31,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -122,6 +125,7 @@ public class MovieListFragment extends Fragment {
         if (savedInstanceState != null) {
             Log.i(LOG_TAG, "TEST: retrieving parcelable");
             mList = savedInstanceState.getParcelableArrayList("mList");
+            //TODO: Configure view model without refresh.
             if (mList == null ) {
                 mList = new ArrayList<>();
             }
