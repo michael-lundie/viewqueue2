@@ -25,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,6 +44,7 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
+import io.lundie.michael.viewcue.App;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
@@ -56,9 +58,14 @@ import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MovieListFragment extends Fragment {
+public class MovieListFragment extends Fragment implements View.OnClickListener{
 
     private static final String LOG_TAG = MovieListFragment.class.getName();
+
+    // Setting up some static variables
+    private static final int POPULAR_BTN = 0;
+    private static final int HIGH_RATED_BTN = 1;
+    private static final int FAV_BTN = 2;
 
     // In a fragment, constructor injection is not possible. Let's use field injection.
     @Inject
@@ -67,11 +74,14 @@ public class MovieListFragment extends Fragment {
     @Inject
     Prefs prefs;
 
+    @Inject
+    AppConstants constants;
+
     // Declaring private variables.
     private MoviesViewModel moviesViewModel;
     private MovieResultsViewAdapter mAdapter;
     private DataAcquireStatus mDataAcquireStatus;
-    private static String mRequestSortOrder;
+    private static String mRequestSortOrder = null;
 
     // Instantiate our ArrayList of MovieItems.
     private ArrayList<MovieItem> mList = new ArrayList<>();
@@ -81,6 +91,11 @@ public class MovieListFragment extends Fragment {
     @BindView(R.id.list_empty) TextView mEmptyStateTextView;
     @BindView(R.id.movie_list) RecycleViewWithSetEmpty mRecyclerView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
+
+    // Bind textView buttons
+    @BindView(R.id.popular_btn) TextView mPopularBtn;
+    @BindView(R.id.high_rated_btn) TextView mHighRatedBtn;
+    @BindView(R.id.favourites_btn) TextView mFavouritesBtn;
 
     // Setting up our shared preference listener. If any preferences change, we'll know about it.
     SharedPreferences.OnSharedPreferenceChangeListener listener
@@ -122,6 +137,12 @@ public class MovieListFragment extends Fragment {
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
 
+        mRecyclerView.setPadding(0,
+                mToolbar.getLayoutParams().height +
+                        (int) getActivity().getResources().getDimension(R.dimen.button_layout_height),
+                0,
+                0);
+
         if (savedInstanceState != null) {
             Log.i(LOG_TAG, "TEST: retrieving parcelable");
             mList = savedInstanceState.getParcelableArrayList("mList");
@@ -162,7 +183,6 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -174,6 +194,9 @@ public class MovieListFragment extends Fragment {
             Log.i(LOG_TAG, "TEST: saved instance state is null");
             this.configureViewModel();
         }
+        mPopularBtn.setOnClickListener(this);
+        mHighRatedBtn.setOnClickListener(this);
+        mFavouritesBtn.setOnClickListener(this);
     }
 
     @Override
@@ -199,27 +222,40 @@ public class MovieListFragment extends Fragment {
     }
 
     @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.popular_btn:
+                mRequestSortOrder = AppConstants.SORT_ORDER_POPULAR;
+                setSelectedButton();
+                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
+                    mProgressRing.setVisibility(View.VISIBLE);
+                }
+                break;
+            case R.id.high_rated_btn:
+                mRequestSortOrder = AppConstants.SORT_ORDER_HIGHRATED;
+                setSelectedButton();
+                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+
+                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
+                    mProgressRing.setVisibility(View.VISIBLE);
+                }
+                break;
+            case R.id.favourites_btn:
+                mRequestSortOrder = AppConstants.SORT_ORDER_FAVS;
+                setSelectedButton();
+                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                break;
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         // Simple switch statement for accessing items from our AppSupportBar.
         switch(id) {
             case R.id.action_settings:
                 startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            case R.id.action_sort_popular:
-                mRequestSortOrder = AppConstants.SORT_ORDER_POPULAR;
-                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
-                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
-                    mProgressRing.setVisibility(View.VISIBLE);
-                }
-
-                return true;
-            case R.id.action_sort_rating:
-                mRequestSortOrder = AppConstants.SORT_ORDER_HIGHRATED;
-                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
-                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
-                    mProgressRing.setVisibility(View.VISIBLE);
-                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -235,6 +271,10 @@ public class MovieListFragment extends Fragment {
         if (mRequestSortOrder == null) {
             mRequestSortOrder = prefs.getOrderPref();
         }
+        Log.v(LOG_TAG, "TEST: ORDER is: " + mRequestSortOrder);
+
+        setSelectedButton();
+
         // Get our view model provider.
         moviesViewModel = ViewModelProviders.of(getActivity(),
                 moviesViewModelFactory).get(MoviesViewModel.class);
@@ -277,5 +317,23 @@ public class MovieListFragment extends Fragment {
      */
     private void configureDagger(){
         AndroidSupportInjection.inject(this);
+    }
+
+    private void setSelectedButton() {
+        Log.v(LOG_TAG, "TEST: " + AppConstants.SORT_ORDER_POPULAR);
+
+        if (mRequestSortOrder.equals(AppConstants.SORT_ORDER_POPULAR)) {
+            mPopularBtn.setTextColor(getResources().getColor(R.color.colorAccent));
+            mHighRatedBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
+            mFavouritesBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
+        } else if (mRequestSortOrder.equals(AppConstants.SORT_ORDER_HIGHRATED)) {
+            mPopularBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
+            mHighRatedBtn.setTextColor(getResources().getColor(R.color.colorAccent));
+            mFavouritesBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
+        } else {
+            mPopularBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
+            mHighRatedBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
+            mFavouritesBtn.setTextColor(getResources().getColor(R.color.colorAccent));
+        }
     }
 }

@@ -11,6 +11,7 @@ public class AppConstants {
     Application mApplication;
     public static String SORT_ORDER_POPULAR;
     public static String SORT_ORDER_HIGHRATED ;
+    public static String SORT_ORDER_FAVS;
 
     @Inject
     public AppConstants(Application application) {
@@ -18,6 +19,7 @@ public class AppConstants {
 
         SORT_ORDER_POPULAR = mApplication.getString(R.string.settings_orderby_most_popular);
         SORT_ORDER_HIGHRATED = mApplication.getString(R.string.settings_orderby_high_rated);
+        SORT_ORDER_FAVS = mApplication.getString(R.string.settings_order_favorites);
     }
 
 }

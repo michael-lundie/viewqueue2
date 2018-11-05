@@ -7,34 +7,4 @@
         android:icon="@drawable/ic_settings_accent_24dp"
         android:orderInCategory="1"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/sort_menu"
-        android:icon="@drawable/ic_reorder_accent_24dp"
-        android:orderInCategory="2"
-        android:title="@string/menu_sort_order"
-        app:showAsAction="ifRoom">
-        <menu>
-            <item
-                android:id="@+id/action_sort_popular"
-                android:title="@string/menu_sort_popular" />
-            <item
-                android:id="@+id/action_sort_rating"
-                android:title="@string/menu_sort_rated" />
-        </menu>
-    </item>
-    <item
-        android:id="@+id/data_test"
-        android:icon="@drawable/ic_reorder_accent_24dp"
-        android:orderInCategory="2"
-        android:title="@string/menu_sort_order"
-        app:showAsAction="ifRoom">
-        <menu>
-            <item
-                android:id="@+id/action_save"
-                android:title="Save Item" />
-            <item
-                android:id="@+id/action_test"
-                android:title="Test Saved" />
-        </menu>
-    </item>
 </menu>

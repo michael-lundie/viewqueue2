@@ -32,6 +32,9 @@ public interface MoviesDao {
     @Query("SELECT * FROM movies WHERE high_rated IS NOT 0 ORDER BY high_rated")
     List<MovieItem> loadHighRatedMovies();
 
+    @Query("SELECT * FROM movies WHERE favorite IS NOT 0 ORDER BY high_rated")
+    List<MovieItem> loadFavoriteMovies();
+
     @Query("SELECT * FROM movies WHERE id = :id")
     MovieItem fetchMovie(int id);
 

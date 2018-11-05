@@ -12,6 +12,11 @@
     <string name="menu_sort_popular">Show most popular</string>
     <string name="menu_sort_rated">Show highest rated</string>
 
+    <!-- List Activity Buttons -->
+    <string name="button_popular">Popular</string>
+    <string name="button_high_rated">High Rated</string>
+    <string name="button_favourites">Favourites</string>
+
     <!-- Detail Activity Text -->
     <string name="detail_average_user_rating">Average User Rating</string>
     <string name="detail_release">Release Date</string>
@@ -31,6 +36,7 @@
     </string-array>
     <string name="settings_orderby_most_popular" translatable="false">popular</string>
     <string name="settings_orderby_high_rated" translatable="false">top_rated</string>
+    <string name="settings_order_favorites" translatable="false">favorites</string>
 
     <!-- Last Updated Preference (non-editable) -->
     <string name="settings_db_update_time_key">dbupdate</string>

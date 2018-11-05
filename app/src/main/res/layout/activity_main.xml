@@ -5,40 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark">
 
-    <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
-        android:id="@+id/movie_list"
+    <include layout="@layout/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:padding="@dimen/half_padding"/>
-
-    <TextView
-        android:id="@+id/list_empty"
-        android:layout_width="@dimen/list_empty_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:gravity="center"
-        android:padding="@dimen/half_padding"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/text_default_tiny"
-        android:visibility="gone"/>
-
-    <ProgressBar
-        android:id="@+id/progressRing"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_width="@dimen/detail_progressbar_dimen"
-        android:layout_height="@dimen/detail_progressbar_dimen"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:visibility="visible" />
-
-    <android.support.design.widget.AppBarLayout
-        style="@style/OverlayAppBarStyle"
-        app:elevation="0dp">
-
-        <android.support.v7.widget.Toolbar
-            style="@style/ToolbarStyle"
-            android:background="@color/colorTransparent"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>
+        android:layout_height="match_parent" />
 </FrameLayout>

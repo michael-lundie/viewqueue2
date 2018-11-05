@@ -12,7 +12,7 @@
 
     <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
         android:id="@+id/movie_list"
-        android:paddingTop="?attr/actionBarSize"
+        android:paddingBottom="@dimen/button_layout_height"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingLeft="@dimen/half_padding"
@@ -36,6 +36,26 @@
         android:layout_height="@dimen/detail_progressbar_dimen"
         android:layout_gravity="center_vertical|center_horizontal"
         android:visibility="visible" />
-
     <include layout="@layout/navigation_simple" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_marginBottom="4dp"
+        android:gravity="center"
+        android:layout_height="@dimen/button_layout_height">
+        <TextView
+            android:text="@string/button_popular"
+            android:id="@+id/popular_btn"
+            style="@style/listBarButton"/>
+        <TextView
+            android:text="@string/button_high_rated"
+            android:id="@+id/high_rated_btn"
+            style="@style/listBarButton"/>
+        <TextView
+            android:text="@string/button_favourites"
+            android:id="@+id/favourites_btn"
+            style="@style/listBarButton"/>
+    </LinearLayout>
+
 </FrameLayout>

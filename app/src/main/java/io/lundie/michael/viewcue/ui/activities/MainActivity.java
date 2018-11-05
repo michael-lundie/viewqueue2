@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
         //TODO: Remove
         Stetho.initializeWithDefaults(this);
 
-        setContentView(R.layout.activity_test);
+        setContentView(R.layout.activity_main);
         this.configureDagger();
         if(savedInstanceState == null) {
             MovieListFragment listFragment = new MovieListFragment();

@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.lundie.michael.viewcue.App;
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
@@ -44,9 +45,6 @@ public class MovieRepository {
     private final TheMovieDbApi theMovieDbApi;
     private final MoviesDao moviesDao;
     private final Prefs prefs;
-
-    /*// Declare our singleton variable of which we will get an instance
-    private static MovieRepository movieRepository;*/
 
     // Add requirement for client in method params, and use api.getClient.
     @Inject
@@ -87,10 +85,16 @@ public class MovieRepository {
                     }
                 };
 
+                if(sortOrder.equals(AppConstants.SORT_ORDER_FAVS)) {
+
+                    fetchItemsFromDatabase(sortOrder);
+
+                } else if (hasInvalidRefreshTime(sortOrder)) {
+
                 // Check to see if the refresh database limit has been passed. If so, we want to fetch
                 // data from our API and update everything. NOTE: refresh time is saved in a preference.
                 // If we don't need to refresh, we'll grab everything from the database.
-                if (hasInvalidRefreshTime(sortOrder)) {
+
                     Log.i(LOG_TAG, "TEST: Has invalid refresh time.");
 
                     // Get an instance of AppExecutors. We will run retrofit in synchronous mode so
@@ -220,13 +224,16 @@ public class MovieRepository {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
-                if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+                if (sortOrder.equals(AppConstants.SORT_ORDER_POPULAR)) {
                     Log.i(LOG_TAG, "TEST: Retrieving items from database: POPULAR");
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadPopularMovies();
                     setMovieItems();
-                } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+                } else if (sortOrder.equals(AppConstants.SORT_ORDER_HIGHRATED)) {
                     Log.i(LOG_TAG, "TEST: Retrieving items from database: HIGH RATED");
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadHighRatedMovies();
+                    setMovieItems();
+                } else {
+                    movieItems = (ArrayList<MovieItem>) moviesDao.loadFavoriteMovies();
                     setMovieItems();
                 }
             }
