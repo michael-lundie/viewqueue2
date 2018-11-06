@@ -1,5 +1,6 @@
 package io.lundie.michael.viewcue.utilities;
 
+import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -84,6 +85,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
         final View mView;
         @BindView(R.id.title) TextView mTitleView;
         @BindView(R.id.poster) ImageView mPosterView;
+        @BindView(R.id.favicon) ImageView mFavicon;
 
         ViewHolder(View view) {
             super(view);
@@ -93,6 +95,15 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
         void bind(final MovieItem item, final OnItemClickListener listener) {
             mTitleView.setText(item.getTitle());
+
+            if(item.getFavorite() == 1) {
+                mFavicon.setImageResource(R.drawable.ic_star_filled);
+            } else {
+                // Even though this is the default card view favicon, we programmatically set the
+                // resource or recycler view won't display the correct icon when recycling views.
+                mFavicon.setImageResource(R.drawable.ic_star);
+            }
+
             Picasso.get()
                     .load(item.getPosterURL())
                    .into(mPosterView, new Callback() {

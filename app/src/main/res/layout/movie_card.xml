@@ -10,6 +10,7 @@
     android:padding="1dp">
             <FrameLayout
                 android:layout_width="match_parent"
+                android:layout_gravity="top"
                 android:layout_height="150dp">
                 <ImageView
                     android:id="@+id/poster"
@@ -23,11 +24,14 @@
                     android:layout_height="100dp"
                     android:layout_gravity="bottom"
                     android:background="@drawable/gradient_gray"/>
+
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_gravity="top|left"
-                    android:src="@drawable/triangle_left"/>
+                    android:id="@+id/favicon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:layout_gravity="bottom|end"
+                    android:src="@drawable/ic_star"/>
             </FrameLayout>
 
                 <TextView

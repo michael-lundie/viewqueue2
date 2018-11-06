@@ -137,6 +137,7 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
         mRecyclerView.setHasFixedSize(false);
         mRecyclerView.setEmptyView(mEmptyStateTextView);
 
+        // Set the padding of our recycler view to compensate for the buttons list.
         mRecyclerView.setPadding(0,
                 mToolbar.getLayoutParams().height +
                         (int) getActivity().getResources().getDimension(R.dimen.button_layout_height),
@@ -192,8 +193,8 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
         this.configureDagger();
         if(savedInstanceState == null) {
             Log.i(LOG_TAG, "TEST: saved instance state is null");
-            this.configureViewModel();
-        }
+
+        }this.configureViewModel();
         mPopularBtn.setOnClickListener(this);
         mHighRatedBtn.setOnClickListener(this);
         mFavouritesBtn.setOnClickListener(this);
@@ -236,7 +237,6 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
                 mRequestSortOrder = AppConstants.SORT_ORDER_HIGHRATED;
                 setSelectedButton();
                 moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
-
                 if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
                     mProgressRing.setVisibility(View.VISIBLE);
                 }
