@@ -22,6 +22,7 @@ import dagger.android.AndroidInjection;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.HasSupportFragmentInjector;
 import io.lundie.michael.viewcue.R;
+import io.lundie.michael.viewcue.ui.fragments.MovieDetailFragment;
 import io.lundie.michael.viewcue.ui.fragments.MovieListFragment;
 
 /**

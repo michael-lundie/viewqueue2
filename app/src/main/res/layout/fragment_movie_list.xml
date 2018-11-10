@@ -36,6 +36,7 @@
         android:layout_height="@dimen/detail_progressbar_dimen"
         android:layout_gravity="center_vertical|center_horizontal"
         android:visibility="visible" />
+
     <include layout="@layout/navigation_simple" />
 
     <LinearLayout

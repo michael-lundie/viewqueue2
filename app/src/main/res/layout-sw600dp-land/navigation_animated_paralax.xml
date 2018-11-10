@@ -46,12 +46,7 @@
             android:layout_height="@dimen/background_progressbar_dimen"
             android:layout_gravity="center"
             android:background="@color/grayTransparent" />
-
-        <android.support.v7.widget.Toolbar
-            style="@style/ToolbarStyle"
-            android:id="@+id/toolbar_detail"
-            app:layout_collapseMode="pin"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        
     </android.support.design.widget.CollapsingToolbarLayout>
 
     <FrameLayout

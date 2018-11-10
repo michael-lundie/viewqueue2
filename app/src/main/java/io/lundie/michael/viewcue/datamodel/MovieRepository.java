@@ -5,6 +5,7 @@
 package io.lundie.michael.viewcue.datamodel;
 
 import android.arch.lifecycle.MutableLiveData;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.IOException;
@@ -64,7 +65,8 @@ public class MovieRepository {
 
     MoviesList moviesList;
 
-    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder , byte refreshCase) {
+    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder ,
+                                                              byte refreshCase) {
         switch(refreshCase) {
             case(MoviesViewModel.REFRESH_DATA):
 
@@ -144,11 +146,18 @@ public class MovieRepository {
                     });
 
                 // Refresh limit hasn't passed, so we're going to return everything from our database.
+                    //TODO: Remove this else statement and don't break the case.
                 } else {
                     Log.i(LOG_TAG, "TEST: Returning movie items: ");
                     setDataAcquireStatus(FETCHING_FROM_DATABASE);
                     fetchItemsFromDatabase(sortOrder);
                 }
+                break;
+
+            case (MoviesViewModel.REFRESH_DATABASE):
+                Log.i(LOG_TAG, "TEST: Returning movie items: ");
+                setDataAcquireStatus(FETCHING_FROM_DATABASE);
+                fetchItemsFromDatabase(sortOrder);
                 break;
 
             // This case exists primarily to prevent get movies from being called, when we unlist
@@ -249,6 +258,8 @@ public class MovieRepository {
             }
         });
     }
+
+
 
 
     private boolean hasInvalidRefreshTime(String sortOrder) {

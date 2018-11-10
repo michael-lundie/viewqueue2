@@ -11,6 +11,7 @@
 
     <android.support.v7.widget.Toolbar
         style="@style/ToolbarStyle"
+        android:id="@+id/toolbar"
         android:background="@color/colorTransparent"
         app:popupTheme="@style/AppTheme.PopupOverlay" />
 

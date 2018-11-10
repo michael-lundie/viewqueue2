@@ -8,6 +8,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingRight="@dimen/half_padding"
+    android:paddingLeft="@dimen/half_padding"
     tools:context=".ui.fragments.MovieListFragment">
 
     <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
@@ -15,8 +17,8 @@
         android:paddingBottom="@dimen/button_layout_height"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/half_padding"
-        android:paddingRight="@dimen/half_padding" />
+        android:paddingLeft="@dimen/default_padding"
+        android:paddingRight="@dimen/default_padding" />
 
     <TextView
         android:id="@+id/list_empty"
@@ -36,6 +38,7 @@
         android:layout_height="@dimen/detail_progressbar_dimen"
         android:layout_gravity="center_vertical|center_horizontal"
         android:visibility="visible" />
+
     <include layout="@layout/navigation_simple" />
 
     <LinearLayout

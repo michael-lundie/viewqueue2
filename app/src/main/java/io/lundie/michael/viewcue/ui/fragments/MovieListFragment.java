@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -66,6 +67,8 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     private static final int POPULAR_BTN = 0;
     private static final int HIGH_RATED_BTN = 1;
     private static final int FAV_BTN = 2;
+    private static boolean IS_LANDSCAPE_TABLET;
+    private static boolean IS_TABLET;
 
     // In a fragment, constructor injection is not possible. Let's use field injection.
     @Inject
@@ -119,6 +122,10 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        // Check what kind of device we are viewing on
+        IS_LANDSCAPE_TABLET = getResources().getBoolean(R.bool.isLandscapeTablet);
+        IS_TABLET = getResources().getBoolean(R.bool.isTablet);
+
         // Inflate the layout for this fragment
         View listFragmentView =  inflater.inflate(R.layout.fragment_movie_list, container, false);
 
@@ -159,23 +166,33 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             public void onItemClick(MovieItem item) {
                 Log.i(LOG_TAG, "TEST: Returning item: " + item);
                 moviesViewModel.selectMovieItem(item);
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame,
-                                new MovieDetailFragment(), "MovieDetailFragment")
-                        .addToBackStack(null)
-                        .commit();
+                Bundle toDetailFragment = new Bundle();
+                toDetailFragment.putString("sortOrder", mRequestSortOrder);
+                MovieDetailFragment detailFragment = new MovieDetailFragment();
+                detailFragment.setArguments(toDetailFragment);
+                if(!IS_LANDSCAPE_TABLET) {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.content_frame, detailFragment, "MovieDetailFragment")
+                            .addToBackStack(null)
+                            .commit();
+                } else {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.detail_frame, detailFragment, "MovieDetailFragment")
+                            .addToBackStack(null)
+                            .commit();
+                }
             }
         });
 
         //Check for screen orientation
         int orientation = getResources().getConfiguration().orientation;
 
-        if (orientation == 1) {
-            // If portrait mode set our grid layout to 3 columns
-            mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        } else {
+        if (orientation == 2 || IS_TABLET) {
             // If landscape mode set our grid layout to 4 columns
             mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
+        } else {
+            // If portrait mode set our grid layout to 3 columns
+            mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         } mRecyclerView.setAdapter(mAdapter);
 
         return listFragmentView;

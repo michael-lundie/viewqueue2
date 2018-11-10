@@ -23,6 +23,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -71,6 +72,9 @@ public class MovieDetailFragment extends Fragment {
 
     private static final String LOG_TAG = MovieDetailFragment.class.getName();
 
+    // Setting up some static variables
+    private static boolean IS_LANDSCAPE_TABLET;
+
     @Inject
     ViewModelProvider.Factory moviesViewModelFactory;
 
@@ -82,11 +86,13 @@ public class MovieDetailFragment extends Fragment {
 
     private MoviesViewModel moviesViewModel;
 
+    private String mRequestSortOrder;
+
     // Coordinator layout and tool/appbar view references.
     @BindView(R.id.main_content) CoordinatorLayout mRootDetailLayout;
     @BindView(R.id.appbar) AppBarLayout appBarLayout;
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbar;
-    @BindView(R.id.toolbar) Toolbar mToolbar;
+    @Nullable @BindView(R.id.toolbar_detail) Toolbar mToolbarDetail;
 
     // Image/UI misc display view references.
     @BindView(R.id.title_background) View titleBackgroundView;
@@ -103,14 +109,26 @@ public class MovieDetailFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        // Check what kind of device we are viewing on
+        IS_LANDSCAPE_TABLET = getResources().getBoolean(R.bool.isLandscapeTablet);
+
+        // Get bundle data.
+
+        mRequestSortOrder = getArguments().getString("sortOrder");
+
+        // Inflate the layout for this fragment
         View detailFragmentView =  inflater.inflate(R.layout.fragment_movie_detail, container, false);
+
         // Bind view references with butterknife library.
         ButterKnife.bind(this, detailFragmentView);
 
-        // Set-up toolbar.
-
-        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(!IS_LANDSCAPE_TABLET) {
+            // Set-up toolbar.
+            ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbarDetail);
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            setHasOptionsMenu(true);
+        }
 
         //Make the title invisible - we have our own TextView for that. Maybe there is a better
         // way to do this?
@@ -259,11 +277,25 @@ public class MovieDetailFragment extends Fragment {
                     favButton.setImageResource(R.drawable.ic_star);
                     toastText = "Removed fav";
                 }
-                AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(new RunnableInterface() {
+                    @Override
+                    public void complete() {
+                        Log.i(LOG_TAG, "Running task complete. Update database.");
+                        moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATABASE);
+                    }
+                }) {
                     @Override
                     public void run() {
                         Log.i(LOG_TAG, "Running action" + moviesDao);
                         moviesDao.updateMovie(item);
+
+                        // Let's trigger our callback if we are running in tablet + landscape mode.
+                        // (If we are not running in this mode, these is no need to update the list UI.
+                        if(IS_LANDSCAPE_TABLET) {
+                            // All is well. Lets call super.run() which will trigger our callback.
+                            super.run();
+                        }
+
                     }
                 });
 

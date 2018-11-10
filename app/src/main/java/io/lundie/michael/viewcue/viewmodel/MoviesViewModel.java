@@ -25,6 +25,7 @@ public class MoviesViewModel extends ViewModel {
     // Defining model access constants.
     public static final byte REFRESH_DATA = 0;
     public static final byte DO_NOT_REFRESH_DATA = 1;
+    public static final byte REFRESH_DATABASE = 2;
 
     public MoviesViewModel() {}
 
@@ -56,4 +57,7 @@ public class MoviesViewModel extends ViewModel {
         dataStatusObservable = movieRepository.getDataAcquireStatusLiveData();
         return dataStatusObservable;
     }
+
+    ArrayList<MovieItem> tempItem = movieListObservable.getValue();
+
 }
