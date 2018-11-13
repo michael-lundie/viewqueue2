@@ -65,6 +65,7 @@ import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
+import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
@@ -84,9 +85,14 @@ public class MovieDetailFragment extends Fragment {
     @Inject
     MoviesDao moviesDao;
 
+    @Inject
+    Prefs prefs;
+
     private MoviesViewModel moviesViewModel;
 
     private String mRequestSortOrder;
+
+    private boolean addFavorite;
 
     // Coordinator layout and tool/appbar view references.
     @BindView(R.id.main_content) CoordinatorLayout mRootDetailLayout;
@@ -184,7 +190,7 @@ public class MovieDetailFragment extends Fragment {
                 synopsisTv.setText(movieItem.getOverview());
 
                 configureFavsButton(favButton, movieItem);
-                // Load background and poster images using glide library.
+                // Load background and poster images using picasso library.
                 loadImageWithPicasso(movieItem.getBackgroundURL(), progressBar, backdrop);
                 loadImageWithPicasso(movieItem.getPosterURL(), null, mPosterView);
 
@@ -270,37 +276,48 @@ public class MovieDetailFragment extends Fragment {
                 final String toastText;
                 if (item.getFavorite() == MovieItem.IS_NOT_FAVOURITE) {
                     item.setFavorite(MovieItem.IS_FAVOURITE);
+                    addFavorite = true;
                     favButton.setImageResource(R.drawable.ic_star_filled);
                     toastText = "Made fav.";
                 } else {
                     item.setFavorite(MovieItem.IS_NOT_FAVOURITE);
                     favButton.setImageResource(R.drawable.ic_star);
+                    addFavorite = false;
                     toastText = "Removed fav";
                 }
+
                 AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(new RunnableInterface() {
                     @Override
-                    public void complete() {
-                        Log.i(LOG_TAG, "Running task complete. Update database.");
-                        moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATABASE);
+                    public void onRunCompletion() {
+                        Log.i(LOG_TAG, "Running task onRunCompletion. Update database.");
+                        if (addFavorite) {
+                            prefs.incrementFavoriteCount();
+                        } else {
+                            prefs.decrementFavoriteCount();
+                        }
+
+                        // Let's avoid janky UI and check if the user is still looking at the originating
+                        // item list. We don't want to trigger an observable update if the user is
+                        // not looking at that category list anymore.
+                        if(IS_LANDSCAPE_TABLET && mRequestSortOrder != null) {
+                            if (moviesViewModel.getCurrentSortOrder().getValue().equals(mRequestSortOrder)) {
+                                Log.v(LOG_TAG, "SortOrder: sort order IS CURRENT. SO: " + mRequestSortOrder);
+                                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATABASE);
+                            } else {
+                                Log.v(LOG_TAG, "SortOrder: sort order IS NOT CURRENT. SO: " + mRequestSortOrder);
+                            }
+                        }
                     }
                 }) {
                     @Override
                     public void run() {
                         Log.i(LOG_TAG, "Running action" + moviesDao);
                         moviesDao.updateMovie(item);
-
-                        // Let's trigger our callback if we are running in tablet + landscape mode.
-                        // (If we are not running in this mode, these is no need to update the list UI.
-                        if(IS_LANDSCAPE_TABLET) {
-                            // All is well. Lets call super.run() which will trigger our callback.
-                            super.run();
-                        }
-
+                        // Let's trigger our callback once the database is successfully updated.
+                        super.run();
                     }
                 });
-
             }
         });
     }
-
 }

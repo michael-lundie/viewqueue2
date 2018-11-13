@@ -18,5 +18,9 @@ public interface TheMovieDbApi {
     Call<MoviesList> getListOfMovies(@Path("sort_order") String sortOrder,
                                      @Query("api_key") String apiKey);
 
-
+    // End point for retrieving reviews from a specific movie
+    @GET("movie/{movie_id}")
+    Call<MoviesList> getMovieReviews(@Path("movie_id") String movieID,
+                                     @Query("api_key") String apiKey);
+    
 }

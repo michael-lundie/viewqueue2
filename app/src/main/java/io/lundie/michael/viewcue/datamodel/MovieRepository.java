@@ -74,8 +74,8 @@ public class MovieRepository {
                 // to a simple callback after retrofit has 'done its thing'.
                 RunnableInterface runnableInterface = new RunnableInterface() {
                     @Override
-                    public void complete() {
-                        Log.i("CALLBACK", "TEST: called complete.");
+                    public void onRunCompletion() {
+                        Log.i("CALLBACK", "TEST: called onRunCompletion.");
                         setDataAcquireStatus(FETCH_COMPLETE);
                         AppExecutors.getInstance().mainThread().execute(new Runnable() {
                             @Override
@@ -87,8 +87,9 @@ public class MovieRepository {
                     }
                 };
 
+                // If our sort order is set to favorites, we want to return directly from the database.
                 if(sortOrder.equals(AppConstants.SORT_ORDER_FAVS)) {
-
+                    //TODO: Add null value here to account for no favs
                     fetchItemsFromDatabase(sortOrder);
 
                 } else if (hasInvalidRefreshTime(sortOrder)) {
@@ -118,6 +119,7 @@ public class MovieRepository {
                                     } else {
                                         setDataAcquireStatus(ERROR_PARSING);
                                     }
+
                                 // Something went wrong. Let's parse the error.
                                 } else {
                                     switch (response.code()) {
@@ -144,15 +146,11 @@ public class MovieRepository {
                             super.run();
                         }
                     });
-
-                // Refresh limit hasn't passed, so we're going to return everything from our database.
-                    //TODO: Remove this else statement and don't break the case.
-                } else {
-                    Log.i(LOG_TAG, "TEST: Returning movie items: ");
-                    setDataAcquireStatus(FETCHING_FROM_DATABASE);
-                    fetchItemsFromDatabase(sortOrder);
+                    break;
                 }
-                break;
+
+                // NOTE that to avoid code repetition here, as opposed to an else condition for the
+                // above code, we are just running into the next case (no break statement).
 
             case (MoviesViewModel.REFRESH_DATABASE):
                 Log.i(LOG_TAG, "TEST: Returning movie items: ");
@@ -160,8 +158,9 @@ public class MovieRepository {
                 fetchItemsFromDatabase(sortOrder);
                 break;
 
-            // This case exists primarily to prevent get movies from being called, when we unlist
-            // any LiveData observables. This won't be required once we are using singleton observers.
+            // The following case exists primarily to prevent getMovies from being called, when we
+            // unlist any LiveData observables.
+            // Hopefully, this won't be required once we are using singleton observers.
             case(MoviesViewModel.DO_NOT_REFRESH_DATA):
                 break;
         }
@@ -259,9 +258,6 @@ public class MovieRepository {
         });
     }
 
-
-
-
     private boolean hasInvalidRefreshTime(String sortOrder) {
         long lastRefreshTime = 0;
 
@@ -284,11 +280,7 @@ public class MovieRepository {
     }
 
     private void setDataAcquireStatus(final DataAcquireStatus status) {
-        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-            @Override
-            public void run() {
-                dataStatus.setValue(status);
-            }
-        });
+        dataStatus.postValue(status);
+
     }
 }

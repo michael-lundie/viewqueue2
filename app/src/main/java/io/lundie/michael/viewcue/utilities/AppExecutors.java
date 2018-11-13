@@ -62,7 +62,5 @@ public class AppExecutors {
             Log.i("AppExecutor", "Running this task: " + command);
             mainThreadHandler.post(command);
         }
-
-
     }
 }

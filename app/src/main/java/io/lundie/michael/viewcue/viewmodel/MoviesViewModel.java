@@ -18,9 +18,10 @@ public class MoviesViewModel extends ViewModel {
     private static final String LOG_TAG = MoviesViewModel.class.getName();
 
     private MovieRepository movieRepository;
-    private MutableLiveData<ArrayList<MovieItem>> movieListObservable = new MutableLiveData<>();
-    private MutableLiveData<MovieItem> selectedMovieItem = new MutableLiveData<>();
-    private MutableLiveData<DataAcquireStatus> dataStatusObservable = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<MovieItem>> movieListObservable;
+    private MutableLiveData<MovieItem> selectedMovieItem;
+    private MutableLiveData<DataAcquireStatus> dataStatusObservable;
+    private MutableLiveData<String> mCurrentSortOrder;
 
     // Defining model access constants.
     public static final byte REFRESH_DATA = 0;
@@ -37,7 +38,11 @@ public class MoviesViewModel extends ViewModel {
     // Getter method for fetching data
     public LiveData<ArrayList<MovieItem>> getMovies(String sortOrder, byte refreshCase) {
         Log.i("TEST", "ViewModel get movies called");
+        if (movieListObservable == null) {
+            movieListObservable = new MutableLiveData<>();
+        }
 
+        setCurrentSortOrder(sortOrder);
         movieListObservable = movieRepository.getMovieList(sortOrder, refreshCase);
         // Return our movies array list
         return movieListObservable;
@@ -50,14 +55,28 @@ public class MoviesViewModel extends ViewModel {
 
     public void selectMovieItem(MovieItem item) {
         Log.i(LOG_TAG, "TEST Selecting Item:" + item);
+        if (selectedMovieItem == null) {
+            selectedMovieItem = new MutableLiveData<>();
+        }
         selectedMovieItem.setValue(item);
     }
 
     public LiveData<DataAcquireStatus> getDataAcquireStatus() {
+        if(dataStatusObservable == null) {
+            dataStatusObservable = new MutableLiveData<>();
+        }
         dataStatusObservable = movieRepository.getDataAcquireStatusLiveData();
         return dataStatusObservable;
     }
 
-    ArrayList<MovieItem> tempItem = movieListObservable.getValue();
+    public LiveData<String> getCurrentSortOrder() {
+        return mCurrentSortOrder;
+    }
 
+    public void setCurrentSortOrder(String sortOrder) {
+        if (mCurrentSortOrder == null) {
+            mCurrentSortOrder = new MutableLiveData<>();
+        }
+        mCurrentSortOrder.postValue(sortOrder);
+    }
 }

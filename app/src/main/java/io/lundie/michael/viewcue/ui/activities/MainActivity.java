@@ -24,6 +24,7 @@ import dagger.android.support.HasSupportFragmentInjector;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.fragments.MovieDetailFragment;
 import io.lundie.michael.viewcue.ui.fragments.MovieListFragment;
+import io.lundie.michael.viewcue.utilities.AppConstants;
 
 /**
  * Main / Root activity of ViewQueue
@@ -45,12 +46,19 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
         setContentView(R.layout.activity_main);
         this.configureDagger();
         if(savedInstanceState == null) {
-            MovieListFragment listFragment = new MovieListFragment();
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.content_frame, listFragment, listFragment.getTag())
-                    .commit();
+            setUpListFragment();
+        } else {
+            if(getResources().getBoolean(R.bool.isLandscapeTablet)) {
+                setUpListFragment();
+            }
         }
+    }
+
+    private void setUpListFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.content_frame, new MovieListFragment(), AppConstants.FRAGTAG_LIST)
+                .commit();
     }
 
     @Override

@@ -22,6 +22,15 @@
     <string name="detail_release">Release Date</string>
     <string name="date_unknown">Unknown Date</string>
 
+    <!-- Snackbars Activity Text -->
+    <string name="snack_no_favs">Oops! You don\'t have any favorites yet.</string>
+    <string name="snack_dismiss_polite">Ok, thanks!</string>
+
+    <!-- Fragment Tags -->
+    <string name="fragtag_content">frag_content</string>
+    <string name="fragtag_detail">frag_detail</string>
+    <string name="fragtag_favs_empty">frag_empty_favs</string>
+
     <!--// PREFS/SETTINGS VALUES \\-->
     <!-- Movie order preferences -->
     <string name="settings_orderby_key" translatable="false">orderby</string>
@@ -41,5 +50,8 @@
     <!-- Last Updated Preference (non-editable) -->
     <string name="settings_db_update_time_key">dbupdate</string>
     <string name="settings_db_update_time_label">Movie List Updated at:</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

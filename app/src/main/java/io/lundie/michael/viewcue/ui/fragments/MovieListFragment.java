@@ -15,25 +15,25 @@ import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,7 +45,6 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
-import io.lundie.michael.viewcue.App;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
@@ -64,9 +63,6 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     private static final String LOG_TAG = MovieListFragment.class.getName();
 
     // Setting up some static variables
-    private static final int POPULAR_BTN = 0;
-    private static final int HIGH_RATED_BTN = 1;
-    private static final int FAV_BTN = 2;
     private static boolean IS_LANDSCAPE_TABLET;
     private static boolean IS_TABLET;
 
@@ -85,6 +81,9 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     private MovieResultsViewAdapter mAdapter;
     private DataAcquireStatus mDataAcquireStatus;
     private static String mRequestSortOrder = null;
+    private int favCount;
+    private int detailContentFrameID;
+    private String detailContentFrameTag;
 
     // Instantiate our ArrayList of MovieItems.
     private ArrayList<MovieItem> mList = new ArrayList<>();
@@ -99,6 +98,9 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     @BindView(R.id.popular_btn) TextView mPopularBtn;
     @BindView(R.id.high_rated_btn) TextView mHighRatedBtn;
     @BindView(R.id.favourites_btn) TextView mFavouritesBtn;
+
+    // Orientation event listener
+    OrientationEventListener orientationListener;
 
     // Setting up our shared preference listener. If any preferences change, we'll know about it.
     SharedPreferences.OnSharedPreferenceChangeListener listener
@@ -158,6 +160,8 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             if (mList == null ) {
                 mList = new ArrayList<>();
             }
+
+
         }
 
         // Initiate our custom recycler adapter and set layout manager.
@@ -170,30 +174,17 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
                 toDetailFragment.putString("sortOrder", mRequestSortOrder);
                 MovieDetailFragment detailFragment = new MovieDetailFragment();
                 detailFragment.setArguments(toDetailFragment);
-                if(!IS_LANDSCAPE_TABLET) {
-                    getFragmentManager().beginTransaction()
-                            .replace(R.id.content_frame, detailFragment, "MovieDetailFragment")
-                            .addToBackStack(null)
-                            .commit();
-                } else {
-                    getFragmentManager().beginTransaction()
-                            .replace(R.id.detail_frame, detailFragment, "MovieDetailFragment")
-                            .addToBackStack(null)
-                            .commit();
-                }
+                // Let's set/reset the content frame details.
+                setContentFrameDetails();
+                getFragmentManager().beginTransaction()
+                        .replace(detailContentFrameID, detailFragment, AppConstants.FRAGTAG_DETAIL)
+                        .addToBackStack(null)
+                        .commit();
             }
         });
 
-        //Check for screen orientation
-        int orientation = getResources().getConfiguration().orientation;
-
-        if (orientation == 2 || IS_TABLET) {
-            // If landscape mode set our grid layout to 4 columns
-            mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4));
-        } else {
-            // If portrait mode set our grid layout to 3 columns
-            mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
-        } mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), getListSpanCount()));
+        mRecyclerView.setAdapter(mAdapter);
 
         return listFragmentView;
     }
@@ -219,6 +210,13 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
+        if(!IS_LANDSCAPE_TABLET &&
+                getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //getFragmentManager().popBackStack();
+            //MovieDetailFragment detailFragment = (MovieDetailFragment) getFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_CONTENT);
+            //MovieListFragment listFragment = (MovieListFragment) getFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_CONTENT);
+            //getFragmentManager().beginTransaction().remove(detailFragment);
+        }
         if (!mList.isEmpty()){
             Log.i(LOG_TAG, "TEST: Saving parcelable!!!!");
             outState.putParcelableArrayList("mList", mList);
@@ -260,8 +258,20 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.favourites_btn:
                 mRequestSortOrder = AppConstants.SORT_ORDER_FAVS;
-                setSelectedButton();
-                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                Log.v(LOG_TAG, "TEST: Fav count " + prefs.getFavoritesCount());
+                if (prefs.getFavoritesCount() > 0) {
+                    setSelectedButton();
+                    moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                } else {
+                    Snackbar.make(getView(), R.string.snack_no_favs, Snackbar.LENGTH_LONG)
+                            .setAction(R.string.snack_dismiss_polite, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                }
+                            })
+                    .show();
+                }
                 break;
         }
     }
@@ -318,12 +328,20 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onChanged(@Nullable ArrayList<MovieItem> movieItems) {
                 if((movieItems != null) && (!movieItems.isEmpty())) {
-                    Log.i(LOG_TAG, "TEST Observer changed");
-                    mAdapter.setMovieEntries(movieItems);
-                    Log.i(LOG_TAG, "TEST Set Adapter");
-                    mProgressRing.setVisibility(View.INVISIBLE);
-                    mAdapter.notifyDataSetChanged();
-                    Log.i(LOG_TAG, "TEST Notify Data changed.");
+                    Log.v(LOG_TAG, "TEST: Fav count: " + prefs.getFavoritesCount());
+                    if(mRequestSortOrder.equals(AppConstants.SORT_ORDER_FAVS) &&
+                            prefs.getFavoritesCount() == 0) {
+                        Log.v(LOG_TAG, "TEST: Fav count: " + prefs.getFavoritesCount());
+                        mRequestSortOrder = AppConstants.SORT_ORDER_POPULAR;
+                        moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                    }
+                        Log.i(LOG_TAG, "TEST Observer changed");
+                        mAdapter.setMovieEntries(movieItems);
+                        Log.i(LOG_TAG, "TEST Set Adapter");
+                        mProgressRing.setVisibility(View.INVISIBLE);
+                        mAdapter.notifyDataSetChanged();
+                        Log.i(LOG_TAG, "TEST Notify Data changed.");
+
                 }
             }
         });
@@ -337,8 +355,6 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     }
 
     private void setSelectedButton() {
-        Log.v(LOG_TAG, "TEST: " + AppConstants.SORT_ORDER_POPULAR);
-
         if (mRequestSortOrder.equals(AppConstants.SORT_ORDER_POPULAR)) {
             mPopularBtn.setTextColor(getResources().getColor(R.color.colorAccent));
             mHighRatedBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
@@ -351,6 +367,22 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             mPopularBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
             mHighRatedBtn.setTextColor(getResources().getColor(R.color.colorPrimaryLight));
             mFavouritesBtn.setTextColor(getResources().getColor(R.color.colorAccent));
+        }
+    }
+
+    private void setContentFrameDetails() {
+        if(IS_LANDSCAPE_TABLET) {
+            detailContentFrameID = R.id.detail_frame;
+        } else {
+            detailContentFrameID = R.id.content_frame;
+        }
+    }
+
+    private int getListSpanCount() {
+        if (getResources().getConfiguration().orientation == 2 || IS_TABLET) {
+            return 4;
+        } else {
+            return 3;
         }
     }
 }

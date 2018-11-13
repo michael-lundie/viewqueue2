@@ -12,6 +12,9 @@ public class AppConstants {
     public static String SORT_ORDER_POPULAR;
     public static String SORT_ORDER_HIGHRATED ;
     public static String SORT_ORDER_FAVS;
+    public static String FRAGTAG_DETAIL;
+    public static String FRAGTAG_LIST;
+    public static String FRAGTAG_EMPTY_FAVS;
 
     @Inject
     public AppConstants(Application application) {
@@ -20,6 +23,9 @@ public class AppConstants {
         SORT_ORDER_POPULAR = mApplication.getString(R.string.settings_orderby_most_popular);
         SORT_ORDER_HIGHRATED = mApplication.getString(R.string.settings_orderby_high_rated);
         SORT_ORDER_FAVS = mApplication.getString(R.string.settings_order_favorites);
-    }
 
+        FRAGTAG_LIST = mApplication.getString(R.string.fragtag_content);
+        FRAGTAG_DETAIL = mApplication.getString(R.string.fragtag_detail);
+        FRAGTAG_EMPTY_FAVS = mApplication.getString(R.string.fragtag_favs_empty);
+    }
 }
