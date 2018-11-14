@@ -1,5 +1,6 @@
 package io.lundie.michael.viewcue.datamodel;
 
+import io.lundie.michael.viewcue.datamodel.models.MovieReviewsList;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -19,8 +20,8 @@ public interface TheMovieDbApi {
                                      @Query("api_key") String apiKey);
 
     // End point for retrieving reviews from a specific movie
-    @GET("movie/{movie_id}")
-    Call<MoviesList> getMovieReviews(@Path("movie_id") String movieID,
-                                     @Query("api_key") String apiKey);
+    @GET("movie/{movie_id}/videos")
+    Call<MovieReviewsList> getMovieReviews(@Path("movie_id") int movieID,
+                                           @Query("api_key") String apiKey);
     
 }

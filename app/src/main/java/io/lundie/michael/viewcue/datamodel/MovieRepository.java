@@ -19,6 +19,8 @@ import io.lundie.michael.viewcue.App;
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
+import io.lundie.michael.viewcue.datamodel.models.MovieReviewsList;
 import io.lundie.michael.viewcue.datamodel.models.MoviesItemSimple;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
@@ -59,20 +61,23 @@ public class MovieRepository {
 
     private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
 
+    private MutableLiveData<ArrayList<MovieReviewItem>> movieReviewItems;
+
     private MutableLiveData<DataAcquireStatus> dataStatus = new MutableLiveData<>();
 
     ArrayList<MovieItem> movieItems;
 
-    MoviesList moviesList;
+    ArrayList<MovieReviewItem> reviewItems;
 
     public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder ,
                                                               byte refreshCase) {
+
         switch(refreshCase) {
             case(MoviesViewModel.REFRESH_DATA):
 
                 // Let's instantiate a new interface, which will give us access
                 // to a simple callback after retrofit has 'done its thing'.
-                RunnableInterface runnableInterface = new RunnableInterface() {
+                RunnableInterface listRequestRunInterface = new RunnableInterface() {
                     @Override
                     public void onRunCompletion() {
                         Log.i("CALLBACK", "TEST: called onRunCompletion.");
@@ -102,7 +107,7 @@ public class MovieRepository {
 
                     // Get an instance of AppExecutors. We will run retrofit in synchronous mode so
                     // we can micromanage some error handling / callbacks.
-                    AppExecutors.getInstance().networkIO().execute(new CallbackRunnable(runnableInterface) {
+                    AppExecutors.getInstance().networkIO().execute(new CallbackRunnable(listRequestRunInterface) {
                         @Override
                         public void run() {
                             try {
@@ -112,7 +117,7 @@ public class MovieRepository {
 
                                 // Let's make sure we have a response from the MDB API (via retrofit)
                                 if(response.isSuccessful()) {
-                                    moviesList = response.body();
+                                    MoviesList moviesList = response.body();
                                     if(moviesList != null) {
                                         Log.i(LOG_TAG, "TEST: Movie list not null");
                                         movieItems = moviesList.getResults();
@@ -122,17 +127,7 @@ public class MovieRepository {
 
                                 // Something went wrong. Let's parse the error.
                                 } else {
-                                    switch (response.code()) {
-                                        case 404:
-                                            setDataAcquireStatus(ERROR_NOT_FOUND);
-                                            break;
-                                        case 500:
-                                            setDataAcquireStatus(ERROR_SERVER_BROKEN);
-                                            break;
-                                        default:
-                                            setDataAcquireStatus(ERROR_UNKNOWN);
-                                            break;
-                                    }
+                                    handleRequestErrors(response.code());
                                 }
 
                             // Catch any IO errors - likely there is no network access.
@@ -165,6 +160,73 @@ public class MovieRepository {
                 break;
         }
         return movieList;
+    }
+
+    public MutableLiveData<ArrayList<MovieReviewItem>> getReviewItems(final int id) {
+
+        Log.v(LOG_TAG, "TEST: Fetching review items.");
+
+        if(movieReviewItems == null) { movieReviewItems = new MutableLiveData<>(); }
+
+        // Let's instantiate a new interface, which will give us access
+        // to a simple callback after retrofit has 'done its thing'.
+        RunnableInterface reviewsRequestRunInterface = new RunnableInterface() {
+            @Override
+            public void onRunCompletion() {
+                Log.i("CALLBACK", "TEST: called onRunCompletion.");
+                setDataAcquireStatus(FETCH_COMPLETE);
+                movieReviewItems.postValue(reviewItems);
+                Log.v(LOG_TAG, "TEST: Review items are:" + reviewItems);
+            }
+        };
+
+        AppExecutors.getInstance().networkIO().execute(new CallbackRunnable(reviewsRequestRunInterface) {
+            @Override
+            public void run() {
+                try {
+                    Log.i(LOG_TAG, "TEST: Attempting to get movies from API.");
+                    Response<MovieReviewsList> response =
+                            theMovieDbApi.getMovieReviews(id, BuildConfig.API_KEY).execute();
+
+                    // Let's make sure we have a response from the MDB API (via retrofit)
+                    if(response.isSuccessful()) {
+                        MovieReviewsList reviewsList = response.body();
+                        if(reviewsList != null) {
+                            Log.i(LOG_TAG, "TEST: Movie list not null");
+                            reviewItems = reviewsList.getResults();
+                        } else {
+                            setDataAcquireStatus(ERROR_PARSING);
+                        }
+                        // Something went wrong. Let's parse the error.
+                    } else {
+                        handleRequestErrors(response.code());
+                    }
+
+                    // Catch any IO errors - likely there is no network access.
+                } catch (IOException e) {
+                    //TODO: Check if phone is offline. Inform the user of the problem.
+                    Log.e(LOG_TAG, "Network failure: ", e);
+                    setDataAcquireStatus(ERROR_NETWORK_FAILURE);
+                }
+                // All is well. Lets call super.run() which will trigger our callback.
+                super.run();
+            }
+        });
+        return movieReviewItems;
+    }
+
+    private void handleRequestErrors(int responseCode) {
+        switch (responseCode) {
+            case 404:
+                setDataAcquireStatus(ERROR_NOT_FOUND);
+                break;
+            case 500:
+                setDataAcquireStatus(ERROR_SERVER_BROKEN);
+                break;
+            default:
+                setDataAcquireStatus(ERROR_UNKNOWN);
+                break;
+        }
     }
 
     private void commitItemsToDatabase(final String sortOrder) {

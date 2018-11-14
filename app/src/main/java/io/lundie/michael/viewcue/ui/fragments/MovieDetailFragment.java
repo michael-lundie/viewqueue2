@@ -58,6 +58,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
+import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
@@ -112,6 +113,9 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.released_text_tv) TextView releasedDateTv;
     @BindView(R.id.vote_average_text_tv) TextView voteAverageTv;
     @BindView(R.id.synopsis_tv) TextView synopsisTv;
+    @BindView(R.id.review_tv) TextView reviewsTV;
+
+    private ArrayList<MovieReviewItem> reviewItems;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -162,8 +166,6 @@ public class MovieDetailFragment extends Fragment {
 
         appBarLayout.addOnOffsetChangedListener(new SolidScrollShrinker(titleBackgroundView));
 
-
-
         return detailFragmentView;
     }
 
@@ -194,6 +196,18 @@ public class MovieDetailFragment extends Fragment {
                 loadImageWithPicasso(movieItem.getBackgroundURL(), progressBar, backdrop);
                 loadImageWithPicasso(movieItem.getPosterURL(), null, mPosterView);
 
+            }
+        });
+        moviesViewModel.getReviewItems().observe(this, new Observer<ArrayList<MovieReviewItem>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<MovieReviewItem> movieReviewItems) {
+                String text = null;
+                for(int i = 0; i < movieReviewItems.size(); i++) {
+                    MovieReviewItem item = movieReviewItems.get(i);
+                    text = text + item.getContent();
+                    Log.v(LOG_TAG, "TEST: Author" + item.getAuthor());
+                }
+                reviewsTV.setText(text);
             }
         });
     }

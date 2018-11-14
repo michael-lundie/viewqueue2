@@ -92,7 +92,15 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
+
+            <TextView
+                android:id="@+id/review_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv" />
         </android.support.constraint.ConstraintLayout>
+
+
 
     </android.support.v4.widget.NestedScrollView>
 

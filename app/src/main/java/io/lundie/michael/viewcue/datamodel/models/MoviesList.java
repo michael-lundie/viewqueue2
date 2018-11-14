@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 public class MoviesList {
 
+    //TODO: Remove page variable
     @SerializedName("page")
     @Expose
     private Integer page;

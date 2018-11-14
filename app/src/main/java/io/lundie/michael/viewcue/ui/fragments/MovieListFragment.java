@@ -16,7 +16,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -36,7 +35,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -50,7 +48,7 @@ import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
 import io.lundie.michael.viewcue.utilities.AppConstants;
-import io.lundie.michael.viewcue.utilities.MovieResultsViewAdapter;
+import io.lundie.michael.viewcue.ui.adapters.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
@@ -267,7 +265,7 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
                             .setAction(R.string.snack_dismiss_polite, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-
+                                    // Required override method
                                 }
                             })
                     .show();
@@ -309,8 +307,10 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
         // We want to remove any observers that current exist.
         // (This can be done with a singleton observe class and injection, but I haven't been
         // able to get this to work successfully yet.
-        moviesViewModel.getDataAcquireStatus().removeObservers(this);
-        moviesViewModel.getMovies(mRequestSortOrder,
+
+            moviesViewModel.getDataAcquireStatus().removeObservers(this);
+
+            moviesViewModel.getMovies(mRequestSortOrder,
                     MoviesViewModel.DO_NOT_REFRESH_DATA).removeObservers(this);
 
         // Fetch our network / data status observable first.
