@@ -18,15 +18,14 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.lundie.michael.viewcue.datamodel.MovieRepository;
-import io.lundie.michael.viewcue.datamodel.TheMovieDbApi;
+import io.lundie.michael.viewcue.network.TheMovieDbApi;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDatabase;
+import io.lundie.michael.viewcue.network.ApiClient;
 import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.utilities.Prefs;
-import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Tutorial followed from:
@@ -88,10 +87,7 @@ public class AppModule {
 
     @Provides
     Retrofit provideRetrofit(Gson gson) {
-        return new Retrofit.Builder()
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .baseUrl(TheMovieDbApi.HTTPS_THEMOVIEDB_API_URL)
-                .build();
+        return ApiClient.getClient(gson);
     }
 
     @Provides

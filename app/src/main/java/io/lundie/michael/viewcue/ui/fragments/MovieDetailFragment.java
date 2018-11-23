@@ -13,10 +13,12 @@ package io.lundie.michael.viewcue.ui.fragments;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
@@ -25,6 +27,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +36,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +65,7 @@ import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
+import io.lundie.michael.viewcue.ui.adapters.MovieReviewsViewAdapter;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
@@ -113,9 +120,10 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.released_text_tv) TextView releasedDateTv;
     @BindView(R.id.vote_average_text_tv) TextView voteAverageTv;
     @BindView(R.id.synopsis_tv) TextView synopsisTv;
-    @BindView(R.id.review_tv) TextView reviewsTV;
 
-    private ArrayList<MovieReviewItem> reviewItems;
+    @BindView(R.id.review_list_view) RecyclerView reviewList;
+
+    private MovieReviewsViewAdapter reviewsAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -198,16 +206,26 @@ public class MovieDetailFragment extends Fragment {
 
             }
         });
+
         moviesViewModel.getReviewItems().observe(this, new Observer<ArrayList<MovieReviewItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieReviewItem> movieReviewItems) {
-                String text = null;
-                for(int i = 0; i < movieReviewItems.size(); i++) {
-                    MovieReviewItem item = movieReviewItems.get(i);
-                    text = text + item.getContent();
-                    Log.v(LOG_TAG, "TEST: Author" + item.getAuthor());
+                if (movieReviewItems != null) {
+                    if(reviewsAdapter == null) {
+                        // Create a review adapter. This will eventually be replaced using dagger injection.
+                        // (I'm still learning the intricacies of it.)
+                        reviewsAdapter = new MovieReviewsViewAdapter(
+                                movieReviewItems,
+                                getActivity().getString(R.string.button_txt_read_more),
+                                getActivity().getString(R.string.button_txt_hide));
+                        reviewList.setLayoutManager(new GridLayoutManager(getContext(), 1));
+                    } else {
+                        reviewList.removeAllViews();
+                    }
+                    reviewList.setAdapter(reviewsAdapter);
+                    reviewList.setNestedScrollingEnabled(false);
+                    reviewsAdapter.notifyDataSetChanged();
                 }
-                reviewsTV.setText(text);
             }
         });
     }

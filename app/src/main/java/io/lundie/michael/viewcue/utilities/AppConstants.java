@@ -12,6 +12,7 @@ public class AppConstants {
     public static String SORT_ORDER_POPULAR;
     public static String SORT_ORDER_HIGHRATED ;
     public static String SORT_ORDER_FAVS;
+
     public static String FRAGTAG_DETAIL;
     public static String FRAGTAG_LIST;
     public static String FRAGTAG_EMPTY_FAVS;

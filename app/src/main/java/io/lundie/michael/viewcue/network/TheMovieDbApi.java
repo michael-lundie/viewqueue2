@@ -1,4 +1,4 @@
-package io.lundie.michael.viewcue.datamodel;
+package io.lundie.michael.viewcue.network;
 
 import io.lundie.michael.viewcue.datamodel.models.MovieReviewsList;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
@@ -20,7 +20,7 @@ public interface TheMovieDbApi {
                                      @Query("api_key") String apiKey);
 
     // End point for retrieving reviews from a specific movie
-    @GET("movie/{movie_id}/videos")
+    @GET("movie/{movie_id}/reviews")
     Call<MovieReviewsList> getMovieReviews(@Path("movie_id") int movieID,
                                            @Query("api_key") String apiKey);
     

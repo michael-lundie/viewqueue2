@@ -12,8 +12,8 @@ public class Prefs {
     private final static String REFRESH_TIME_HIGH_RATED = "settings_db_update_time_hr_key";
     private final static String FAVORITES_COUNT = "settings_favorites_count";
 
-    SharedPreferences mSharedPrefs;
-    Application mApplication;
+    private SharedPreferences mSharedPrefs;
+    private Application mApplication;
 
     @Inject
     public Prefs(Application application, SharedPreferences sharedPrefs) {
@@ -36,10 +36,6 @@ public class Prefs {
 
     public long getHighRatedRefreshTime() {
         return mSharedPrefs.getLong(REFRESH_TIME_HIGH_RATED, 0);
-    }
-
-    public void updateFavoriteCount(int newQuantity) {
-        mSharedPrefs.edit().putInt(FAVORITES_COUNT, newQuantity).apply();
     }
 
     public void incrementFavoriteCount() {

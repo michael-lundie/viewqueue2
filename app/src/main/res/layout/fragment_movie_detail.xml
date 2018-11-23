@@ -16,6 +16,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <android.support.constraint.ConstraintLayout
+            android:id="@+id/main_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/default_padding"
@@ -93,11 +94,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
-            <TextView
-                android:id="@+id/review_tv"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv" />
+                android:orientation="horizontal"
+                android:id="@+id/reviews_layout"
+                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv">
+
+            </LinearLayout>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/review_list_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv"/>
+
         </android.support.constraint.ConstraintLayout>
 
 

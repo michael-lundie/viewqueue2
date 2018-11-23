@@ -5,7 +5,6 @@
 package io.lundie.michael.viewcue.datamodel;
 
 import android.arch.lifecycle.MutableLiveData;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.lundie.michael.viewcue.App;
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
 import io.lundie.michael.viewcue.datamodel.models.MovieItem;
@@ -23,6 +21,7 @@ import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
 import io.lundie.michael.viewcue.datamodel.models.MovieReviewsList;
 import io.lundie.michael.viewcue.datamodel.models.MoviesItemSimple;
 import io.lundie.michael.viewcue.datamodel.models.MoviesList;
+import io.lundie.michael.viewcue.network.TheMovieDbApi;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
 import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
@@ -176,7 +175,11 @@ public class MovieRepository {
                 Log.i("CALLBACK", "TEST: called onRunCompletion.");
                 setDataAcquireStatus(FETCH_COMPLETE);
                 movieReviewItems.postValue(reviewItems);
-                Log.v(LOG_TAG, "TEST: Review items are:" + reviewItems);
+                Log.v(LOG_TAG, "REVIEWS: Review items are:");
+                for (int i = 0; i < reviewItems.size(); i++) {
+                    MovieReviewItem item = reviewItems.get(i);
+                    Log.v(LOG_TAG, "REVIEWS... " + item.getContent());
+                }
             }
         };
 
@@ -192,8 +195,9 @@ public class MovieRepository {
                     if(response.isSuccessful()) {
                         MovieReviewsList reviewsList = response.body();
                         if(reviewsList != null) {
-                            Log.i(LOG_TAG, "TEST: Movie list not null");
+                            Log.i(LOG_TAG, "REVIEWS: Movie list not null");
                             reviewItems = reviewsList.getResults();
+                            Log.v(LOG_TAG, "REVIEWS: Results: " + reviewsList.getTotalResults());
                         } else {
                             setDataAcquireStatus(ERROR_PARSING);
                         }

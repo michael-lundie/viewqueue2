@@ -14,7 +14,7 @@ public class MovieReviewsList {
 
     @SerializedName("total_results")
     @Expose
-    private Integer totalResults;
+    private int totalResults;
 
     public ArrayList<MovieReviewItem> getResults() { return results; }
 

@@ -61,6 +61,9 @@ public class MoviesViewModel extends ViewModel {
             selectedMovieItem = new MutableLiveData<>();
         }
         selectedMovieItem.setValue(item);
+        if(movieReviewItems != null) {
+            clearReviewItems();
+        }
         fetchReviewItems(item.getId());
     }
 
@@ -87,6 +90,7 @@ public class MoviesViewModel extends ViewModel {
         movieReviewItems = movieRepository.getReviewItems(id);
     }
 
+    private void clearReviewItems() { movieReviewItems.setValue(null); }
     /**
      * Simple setter method to update a LiveData variable with a reference to the most recently
      * used sort order - ie: the current movie list being viewed by the user. This is managed
