@@ -3,7 +3,7 @@
  * Last Modified 29/09/18 16:21
  */
 
-package io.lundie.michael.viewcue.datamodel.models;
+package io.lundie.michael.viewcue.datamodel.models.item;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -11,11 +11,6 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 
 public class MoviesList {
-
-    //TODO: Remove page variable
-    @SerializedName("page")
-    @Expose
-    private Integer page;
 
     @SerializedName("results")
     @Expose

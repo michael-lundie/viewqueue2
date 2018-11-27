@@ -9,9 +9,10 @@ import java.util.ArrayList;
 
 import javax.inject.Inject;
 
-import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.datamodel.MovieRepository;
-import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
+import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
+import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
 import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
 
 public class MoviesViewModel extends ViewModel {
@@ -22,6 +23,7 @@ public class MoviesViewModel extends ViewModel {
     private MutableLiveData<ArrayList<MovieItem>> movieListObservable;
     private MutableLiveData<MovieItem> selectedMovieItem;
     private MutableLiveData<ArrayList<MovieReviewItem>> movieReviewItems;
+    private MutableLiveData<ArrayList<RelatedVideos>> relatedVideoItems;
     private MutableLiveData<DataAcquireStatus> dataStatusObservable;
     private MutableLiveData<String> mCurrentSortOrder;
 
@@ -61,10 +63,9 @@ public class MoviesViewModel extends ViewModel {
             selectedMovieItem = new MutableLiveData<>();
         }
         selectedMovieItem.setValue(item);
-        if(movieReviewItems != null) {
-            clearReviewItems();
-        }
-        fetchReviewItems(item.getId());
+
+        getExtras(item.getId());
+
     }
 
     /**
@@ -79,12 +80,34 @@ public class MoviesViewModel extends ViewModel {
         return movieReviewItems;
     }
 
+    public LiveData<ArrayList<RelatedVideos>> getRelatedVideoItems() {
+        return relatedVideoItems;
+    }
+
     /**
      * @return The sortOrder value in our most recent repository request.
      */
     public LiveData<String> getCurrentSortOrder() {
         return mCurrentSortOrder;
     }
+
+    private void getExtras(int itemID) {
+        if(relatedVideoItems != null) {
+            clearRelatedVideoItems();
+        }
+        fetchRelatedVideoItems(itemID);
+
+        if(movieReviewItems != null) {
+            clearReviewItems();
+        }
+        fetchReviewItems(itemID);
+    }
+
+    private void fetchRelatedVideoItems(int id) {
+        relatedVideoItems = movieRepository.getRelatedVideos(id);
+    }
+
+    private void clearRelatedVideoItems() { relatedVideoItems.setValue(null); }
 
     private void fetchReviewItems(int id) {
         movieReviewItems = movieRepository.getReviewItems(id);

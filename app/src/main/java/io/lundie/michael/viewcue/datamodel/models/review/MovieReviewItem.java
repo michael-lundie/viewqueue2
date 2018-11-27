@@ -1,4 +1,4 @@
-package io.lundie.michael.viewcue.datamodel.models;
+package io.lundie.michael.viewcue.datamodel.models.review;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

@@ -46,7 +46,7 @@ import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
-import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.ui.adapters.MovieResultsViewAdapter;
 import io.lundie.michael.viewcue.utilities.DataAcquireStatus;

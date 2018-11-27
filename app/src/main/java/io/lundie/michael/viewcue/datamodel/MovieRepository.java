@@ -16,11 +16,13 @@ import javax.inject.Inject;
 
 import io.lundie.michael.viewcue.BuildConfig;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
-import io.lundie.michael.viewcue.datamodel.models.MovieItem;
-import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
-import io.lundie.michael.viewcue.datamodel.models.MovieReviewsList;
-import io.lundie.michael.viewcue.datamodel.models.MoviesItemSimple;
-import io.lundie.michael.viewcue.datamodel.models.MoviesList;
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
+import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewsList;
+import io.lundie.michael.viewcue.datamodel.models.item.MoviesItemSimple;
+import io.lundie.michael.viewcue.datamodel.models.item.MoviesList;
+import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
+import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideosList;
 import io.lundie.michael.viewcue.network.TheMovieDbApi;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
@@ -62,11 +64,15 @@ public class MovieRepository {
 
     private MutableLiveData<ArrayList<MovieReviewItem>> movieReviewItems;
 
+    private MutableLiveData<ArrayList<RelatedVideos>> relatedVideosLd;
+
     private MutableLiveData<DataAcquireStatus> dataStatus = new MutableLiveData<>();
 
     ArrayList<MovieItem> movieItems;
 
     ArrayList<MovieReviewItem> reviewItems;
+
+    ArrayList<RelatedVideos> relatedVideos;
 
     public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder ,
                                                               byte refreshCase) {
@@ -217,6 +223,60 @@ public class MovieRepository {
             }
         });
         return movieReviewItems;
+    }
+
+    public MutableLiveData<ArrayList<RelatedVideos>> getRelatedVideos(final int id) {
+
+        Log.v(LOG_TAG, "TEST: Fetching review items.");
+
+        if(relatedVideosLd == null) { relatedVideosLd = new MutableLiveData<>(); }
+
+        // Let's instantiate a new interface, which will give us access
+        // to a simple callback after retrofit has 'done its thing'.
+        RunnableInterface relatedItemsRequestRunInterface = new RunnableInterface() {
+            @Override
+            public void onRunCompletion() {
+                relatedVideosLd.postValue(relatedVideos);
+                Log.v(LOG_TAG, "RELATED: Review items are:");
+                for (int i = 0; i < relatedVideos.size(); i++) {
+                    RelatedVideos item = relatedVideos.get(i);
+                    Log.v(LOG_TAG, "RELATED... " + item.getName());
+                }
+            }
+        };
+
+        AppExecutors.getInstance().networkIO().execute(new CallbackRunnable(relatedItemsRequestRunInterface) {
+            @Override
+            public void run() {
+                try {
+                    Log.i(LOG_TAG, "TEST: Attempting to get movies from API.");
+                    Response<RelatedVideosList> response =
+                            theMovieDbApi.getRelatedVideos(id, BuildConfig.API_KEY).execute();
+
+                    // Let's make sure we have a response from the MDB API (via retrofit)
+                    if(response.isSuccessful()) {
+                        RelatedVideosList relatedVideosList = response.body();
+                        if(relatedVideosList != null) {
+                            Log.i(LOG_TAG, "REVIEWS: Movie list not null");
+                            relatedVideos = relatedVideosList.getResults();
+                        } else {
+                            relatedVideos = null;
+                        }
+                        // Something went wrong. Let's parse the error.
+                    } else {
+                        handleRequestErrors(response.code());
+                    }
+
+                    // Catch any IO errors - likely there is no network access.
+                } catch (IOException e) {
+                    //TODO: Check if phone is offline. Inform the user of the problem.
+                    Log.e(LOG_TAG, "Network failure: ", e);
+                }
+                // All is well. Lets call super.run() which will trigger our callback.
+                super.run();
+            }
+        });
+        return relatedVideosLd;
     }
 
     private void handleRequestErrors(int responseCode) {

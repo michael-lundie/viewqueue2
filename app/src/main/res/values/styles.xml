@@ -48,6 +48,14 @@
         <item name="android:theme">@style/AppTheme.AppBarOverlay</item>
     </style>
 
+    <!-- Card Layout detail text view style -->
+    <style name="cardViewDefaultTv">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginRight">@dimen/default_padding</item>
+        <item name="android:layout_marginLeft">@dimen/default_padding</item>
+    </style>
+
     <!-- List bar button style -->
     <style name="listBarButton">
         <item name="android:layout_width">0dp</item>
@@ -57,5 +65,12 @@
         <item name="android:paddingBottom">10dp</item>
         <item name="android:textColor">@color/colorPrimaryLight</item>
         <item name="android:textSize">@dimen/text_default_small</item>
+    </style>
+
+    <!-- Button styles -->
+    <style name="ButtonFlat" parent="Theme.AppCompat.Light">
+        <item name="android:buttonStyle">@style/Widget.AppCompat.Button.Borderless.Colored</item>
+        <item name="colorControlHighlight">@color/colorAccent</item>
+        <item name="colorAccent">@color/colorPrimary</item>
     </style>
 </resources>

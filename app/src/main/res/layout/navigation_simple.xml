@@ -1,17 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Crafted by Michael R Lundie (2018)
   ~ Last Modified 02/10/18 22:28
   -->
 
-<android.support.design.widget.AppBarLayout style="@style/OverlayAppBarStyle"
-    app:elevation="0dp"
+<android.support.design.widget.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    style="@style/OverlayAppBarStyle"
+    app:elevation="0dp">
 
     <android.support.v7.widget.Toolbar
-        style="@style/ToolbarStyle"
         android:id="@+id/toolbar"
+        style="@style/ToolbarStyle"
         android:background="@color/colorTransparent"
         app:popupTheme="@style/AppTheme.PopupOverlay" />
 

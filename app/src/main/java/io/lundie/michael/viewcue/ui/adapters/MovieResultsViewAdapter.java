@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.R;
 
 /**
@@ -116,7 +116,7 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
                    });
 
             //Set up our onClickListener interface up.
-            itemView.setOnClickListener(new View.OnClickListener() {
+            mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     listener.onItemClick(item);

@@ -21,6 +21,8 @@
     <string name="detail_average_user_rating">Average User Rating</string>
     <string name="detail_release">Release Date</string>
     <string name="date_unknown">Unknown Date</string>
+    <string name="title_trailers">Trailers and Videos</string>
+    <string name="title_reviews">Reviews</string>
     <string name="button_txt_read_more">Read More</string>
     <string name="button_txt_hide">Show Less</string>
 

@@ -6,12 +6,9 @@
 package io.lundie.michael.viewcue.datamodel.database;
 
 import android.arch.persistence.room.Database;
-import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
-import android.content.Context;
-import android.util.Log;
 
-import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 
 @Database(entities = {MovieItem.class}, version = 1, exportSchema = false)
 public abstract class MoviesDatabase extends RoomDatabase {

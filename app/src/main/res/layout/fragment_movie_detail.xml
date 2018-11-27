@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Crafted by Michael R Lundie (2018)
   ~ Last Modified 07/10/18 09:52
   -->
@@ -19,8 +18,7 @@
             android:id="@+id/main_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/default_padding"
-            android:background="#CFD8DC"
+            android:background="@color/colorPrimaryLight"
             android:fillViewport="true"
             android:paddingBottom="?android:attr/actionBarSize">
 
@@ -28,6 +26,7 @@
                 android:id="@+id/released_label_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_margin="@dimen/default_padding"
                 android:text="@string/detail_release"
                 android:textColor="@color/colorPrimaryStep"
                 android:textSize="@dimen/text_default_large"
@@ -42,7 +41,8 @@
                 android:id="@+id/released_text_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/half_padding"
+
+                android:layout_margin="@dimen/default_padding"
                 android:textSize="@dimen/text_default_small"
                 app:layout_constraintBottom_toTopOf="@+id/synopsis_tv"
                 app:layout_constraintStart_toStartOf="parent"
@@ -52,7 +52,7 @@
                 android:id="@+id/vote_average_text_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/half_padding"
+                android:layout_margin="@dimen/default_padding"
                 android:textSize="@dimen/text_default_small"
                 app:layout_constraintBottom_toTopOf="@+id/released_label_tv"
                 app:layout_constraintStart_toStartOf="parent"
@@ -62,21 +62,25 @@
                 android:id="@+id/detail_view_poster"
                 android:layout_width="0dp"
                 android:layout_height="200dp"
+                android:layout_margin="@dimen/default_padding"
                 android:scaleType="fitCenter"
                 app:layout_constraintLeft_toRightOf="@id/released_label_tv"
-                app:layout_constraintRight_toRightOf="parent" />
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
 
             <TextView
                 android:id="@+id/vote_average_label_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_margin="@dimen/default_padding"
                 android:text="@string/detail_average_user_rating"
                 android:textColor="@color/colorPrimaryStep"
                 android:textSize="@dimen/text_default_large"
                 app:layout_constraintBottom_toTopOf="@+id/vote_average_text_tv"
+                app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:layout_editor_absoluteX="0dp" />
+                tools:layout_editor_absoluteX="@dimen/default_padding" />
 
             <android.support.constraint.Barrier
                 android:id="@+id/barrier"
@@ -89,40 +93,65 @@
                 android:id="@+id/synopsis_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/default_padding"
+                android:layout_margin="@dimen/default_padding"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
             <LinearLayout
+                android:id="@+id/reviews_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:id="@+id/reviews_layout"
                 app:layout_constraintTop_toBottomOf="@+id/synopsis_tv">
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/related_title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/half_padding"
+                android:text="@string/title_trailers"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="@dimen/text_default_huge"
+                app:fontFamily="sans-serif-condensed"
+                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/related_video_lv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/related_title_tv" />
+
+            <TextView
+                android:id="@+id/review_title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/half_padding"
+                android:text="@string/title_reviews"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="@dimen/text_default_huge"
+                app:fontFamily="sans-serif-condensed"
+                app:layout_constraintTop_toBottomOf="@+id/related_video_lv" />
+
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/review_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv"/>
+                app:layout_constraintTop_toBottomOf="@+id/review_title_tv" />
 
         </android.support.constraint.ConstraintLayout>
-
-
-
     </android.support.v4.widget.NestedScrollView>
 
     <include layout="@layout/navigation_animated_paralax" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_add"
-        android:layout_gravity="end|bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/default_padding"
         android:baselineAlignBottom="true"
         android:src="@drawable/ic_star" />
-
 </android.support.design.widget.CoordinatorLayout>

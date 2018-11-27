@@ -8,7 +8,7 @@
  * Last Modified 29/09/18 16:14
  */
 
-package io.lundie.michael.viewcue.datamodel.models;
+package io.lundie.michael.viewcue.datamodel.models.item;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;

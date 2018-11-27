@@ -13,19 +13,17 @@ package io.lundie.michael.viewcue.ui.fragments;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,29 +32,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.inject.Inject;
 
@@ -64,12 +49,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.datamodel.database.MoviesDao;
-import io.lundie.michael.viewcue.datamodel.models.MovieReviewItem;
+import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
+import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
 import io.lundie.michael.viewcue.ui.adapters.MovieReviewsViewAdapter;
+import io.lundie.michael.viewcue.ui.adapters.RelatedVideosViewAdapter;
 import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
-import io.lundie.michael.viewcue.datamodel.models.MovieItem;
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
@@ -121,9 +108,11 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.vote_average_text_tv) TextView voteAverageTv;
     @BindView(R.id.synopsis_tv) TextView synopsisTv;
 
-    @BindView(R.id.review_list_view) RecyclerView reviewList;
+    @BindView(R.id.review_list_view) RecyclerView reviewLv;
+    @BindView(R.id.related_video_lv) RecyclerView relatedVideoLv;
 
     private MovieReviewsViewAdapter reviewsAdapter;
+    private RelatedVideosViewAdapter relatedVideosAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -207,6 +196,47 @@ public class MovieDetailFragment extends Fragment {
             }
         });
 
+        moviesViewModel.getRelatedVideoItems().observe(this, new Observer<ArrayList<RelatedVideos>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<RelatedVideos> relatedVideoItems) {
+                if (relatedVideoItems != null) {
+                    if(relatedVideosAdapter == null) {
+                        // Create an adapter to display related videos.
+                        // This will eventually be replaced using dagger injection.
+                        relatedVideosAdapter = new RelatedVideosViewAdapter(relatedVideoItems,
+                                new RelatedVideosViewAdapter.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(String key) {
+                                Log.v(LOG_TAG,"TEST: Onclick triggered");
+                                //Let's generate our URI from the item values
+                                //NOTE: themoviedb api uses only youtube links for their videos,
+                                //hence we are only parsing a youtube url.
+                                try {
+                                    // We will try to open the link in a the youtube app
+                                    getActivity().startActivity(new Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("vnd.youtube:" + key)
+                                    ));
+                                } catch (ActivityNotFoundException ex) {
+                                    // if there is no app we will load through a browser
+                                    getActivity().startActivity(new Intent(
+                                            Intent.ACTION_VIEW,
+                                            Uri.parse("http://www.youtube.com/watch?v=" + key)
+                                    ));
+                                }
+                            }
+                        });
+                        relatedVideoLv.setLayoutManager(new GridLayoutManager(getContext(), 1));
+                    } else {
+                        relatedVideoLv.removeAllViews();
+                    }
+                    relatedVideoLv.setAdapter(relatedVideosAdapter);
+                    relatedVideoLv.setNestedScrollingEnabled(false);
+                    relatedVideosAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+
         moviesViewModel.getReviewItems().observe(this, new Observer<ArrayList<MovieReviewItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieReviewItem> movieReviewItems) {
@@ -214,16 +244,17 @@ public class MovieDetailFragment extends Fragment {
                     if(reviewsAdapter == null) {
                         // Create a review adapter. This will eventually be replaced using dagger injection.
                         // (I'm still learning the intricacies of it.)
+
                         reviewsAdapter = new MovieReviewsViewAdapter(
                                 movieReviewItems,
                                 getActivity().getString(R.string.button_txt_read_more),
                                 getActivity().getString(R.string.button_txt_hide));
-                        reviewList.setLayoutManager(new GridLayoutManager(getContext(), 1));
+                        reviewLv.setLayoutManager(new GridLayoutManager(getContext(), 1));
                     } else {
-                        reviewList.removeAllViews();
+                        reviewLv.removeAllViews();
                     }
-                    reviewList.setAdapter(reviewsAdapter);
-                    reviewList.setNestedScrollingEnabled(false);
+                    reviewLv.setAdapter(reviewsAdapter);
+                    reviewLv.setNestedScrollingEnabled(false);
                     reviewsAdapter.notifyDataSetChanged();
                 }
             }
