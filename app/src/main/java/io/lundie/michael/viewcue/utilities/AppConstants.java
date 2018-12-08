@@ -16,6 +16,7 @@ public class AppConstants {
     public static String FRAGTAG_DETAIL;
     public static String FRAGTAG_LIST;
     public static String FRAGTAG_EMPTY_FAVS;
+    public static String FRAGTAG_EMPTY_DETAIL;
 
     @Inject
     public AppConstants(Application application) {
@@ -28,5 +29,6 @@ public class AppConstants {
         FRAGTAG_LIST = mApplication.getString(R.string.fragtag_content);
         FRAGTAG_DETAIL = mApplication.getString(R.string.fragtag_detail);
         FRAGTAG_EMPTY_FAVS = mApplication.getString(R.string.fragtag_favs_empty);
+        FRAGTAG_EMPTY_DETAIL = mApplication.getString(R.string.frag_empty_detail);
     }
 }

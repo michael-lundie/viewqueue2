@@ -19,14 +19,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -57,9 +56,11 @@ import io.lundie.michael.viewcue.ui.views.PercentageCropImageView;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.ui.helpers.SolidScrollShrinker;
 import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
+import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
 import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
+import io.lundie.michael.viewcue.utilities.DataStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
@@ -90,7 +91,7 @@ public class MovieDetailFragment extends Fragment {
     private boolean addFavorite;
 
     // Coordinator layout and tool/appbar view references.
-    @BindView(R.id.main_content) CoordinatorLayout mRootDetailLayout;
+    @BindView(R.id.main_layout) ConstraintLayout mRootDetailLayout;
     @BindView(R.id.appbar) AppBarLayout appBarLayout;
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbar;
     @Nullable @BindView(R.id.toolbar_detail) Toolbar mToolbarDetail;
@@ -108,11 +109,18 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.vote_average_text_tv) TextView voteAverageTv;
     @BindView(R.id.synopsis_tv) TextView synopsisTv;
 
-    @BindView(R.id.review_list_view) RecyclerView reviewLv;
-    @BindView(R.id.related_video_lv) RecyclerView relatedVideoLv;
+    @BindView(R.id.review_list_lv) RecycleViewWithSetEmpty reviewLv;
+    @BindView(R.id.related_video_lv) RecycleViewWithSetEmpty relatedVideoLv;
+
+    private MovieItem mMovieItem;
+    private ArrayList<MovieReviewItem> mReviewItems;
+    private ArrayList<RelatedVideos> mRelatedVideoItems;
 
     private MovieReviewsViewAdapter reviewsAdapter;
     private RelatedVideosViewAdapter relatedVideosAdapter;
+
+    @BindView(R.id.review_empty_tv) TextView emptyReviewTv;
+    @BindView(R.id.videos_empty_tv) TextView emptyVideosTv;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -121,8 +129,9 @@ public class MovieDetailFragment extends Fragment {
         IS_LANDSCAPE_TABLET = getResources().getBoolean(R.bool.isLandscapeTablet);
 
         // Get bundle data.
-
-        mRequestSortOrder = getArguments().getString("sortOrder");
+        if(getArguments() != null) {
+         mRequestSortOrder = getArguments().getString("sortOrder");
+        }
 
         // Inflate the layout for this fragment
         View detailFragmentView =  inflater.inflate(R.layout.fragment_movie_detail, container, false);
@@ -149,6 +158,21 @@ public class MovieDetailFragment extends Fragment {
         // this fragments parent activity.
         moviesViewModel = ViewModelProviders.of(getActivity()).get(MoviesViewModel.class);
 
+        if(savedInstanceState != null) {
+            mMovieItem = savedInstanceState.getParcelable("mMovieItem");
+            if (mMovieItem != null) {
+                // We could resume our fragment from the saved movie item state,
+                // however we want to 'refetch' data from our view model.
+                // Re-selecting the item through the viewmodel method allows us to do this.
+                moviesViewModel.selectMovieItem(mMovieItem);
+            } else {
+                // else - the app will crash
+                Log.e(LOG_TAG, "The movie item could not be recovered from saved instance.");
+            }
+        }
+
+        setUpRelatedVideosList();
+        setUpReviewList();
 
         // Set up our 'fake parallax' transition.
         // Solution for scaling transition from 'bottom': https://stackoverflow.com/a/22144862
@@ -170,29 +194,51 @@ public class MovieDetailFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.configureDagger();
-        Log.i(LOG_TAG, "TEST: onActivityCreated, configureDagger");
         this.configureViewModel();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+
+        if (mMovieItem != null){
+            Log.i(LOG_TAG, "TEST: Saving parcelable!!!!");
+            outState.putParcelable("mMovieItem", mMovieItem);
+        }
+
+        super.onSaveInstanceState(outState);
     }
 
     private void configureDagger(){ AndroidSupportInjection.inject(this); }
 
     private void configureViewModel(){
         moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
+
+        moviesViewModel.getSelectedItem().removeObservers(this);
+        moviesViewModel.getDetailDataAcquireStatus().removeObservers(this);
+        moviesViewModel.getReviewItems().removeObservers(this);
+        moviesViewModel.getRelatedVideoItems().removeObservers(this);
+
         moviesViewModel.getSelectedItem().observe(this, new Observer<MovieItem>() {
             @Override
             public void onChanged(@Nullable MovieItem movieItem) {
-                title.setText(movieItem.getTitle());
-                releasedDateTv.setText(AppUtils.formatDate(new SimpleDateFormat("yyyy-MM-dd"),
-                        movieItem.getReleaseDate(),
-                        getActivity().getString(R.string.date_unknown), LOG_TAG));
-                voteAverageTv.setText(Double.toString(movieItem.getVoteAverage()));
-                synopsisTv.setText(movieItem.getOverview());
+                mMovieItem = movieItem;
+                setUpDetailView();
+            }
+        });
 
-                configureFavsButton(favButton, movieItem);
-                // Load background and poster images using picasso library.
-                loadImageWithPicasso(movieItem.getBackgroundURL(), progressBar, backdrop);
-                loadImageWithPicasso(movieItem.getPosterURL(), null, mPosterView);
-
+        moviesViewModel.getDetailDataAcquireStatus().observe(this, new Observer<DataStatus>() {
+            @Override
+            public void onChanged(@Nullable DataStatus dataStatus) {
+                if(dataStatus != null) {
+                    switch (dataStatus) {
+                        case ERROR_UNAVAILABLE_OFFLINE:
+                            emptyReviewTv.setText(getText(R.string.unavailable_offline));
+                            emptyVideosTv.setText(getText(R.string.unavailable_offline));
+                        case FETCH_COMPLETE:
+                            emptyReviewTv.setText(getText(R.string.reviews_empty_text));
+                            emptyVideosTv.setText(getText(R.string.videos_empty_text));
+                    }
+                }
             }
         });
 
@@ -200,65 +246,97 @@ public class MovieDetailFragment extends Fragment {
             @Override
             public void onChanged(@Nullable ArrayList<RelatedVideos> relatedVideoItems) {
                 if (relatedVideoItems != null) {
-                    if(relatedVideosAdapter == null) {
-                        // Create an adapter to display related videos.
-                        // This will eventually be replaced using dagger injection.
-                        relatedVideosAdapter = new RelatedVideosViewAdapter(relatedVideoItems,
-                                new RelatedVideosViewAdapter.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(String key) {
-                                Log.v(LOG_TAG,"TEST: Onclick triggered");
-                                //Let's generate our URI from the item values
-                                //NOTE: themoviedb api uses only youtube links for their videos,
-                                //hence we are only parsing a youtube url.
-                                try {
-                                    // We will try to open the link in a the youtube app
-                                    getActivity().startActivity(new Intent(
-                                            Intent.ACTION_VIEW,
-                                            Uri.parse("vnd.youtube:" + key)
-                                    ));
-                                } catch (ActivityNotFoundException ex) {
-                                    // if there is no app we will load through a browser
-                                    getActivity().startActivity(new Intent(
-                                            Intent.ACTION_VIEW,
-                                            Uri.parse("http://www.youtube.com/watch?v=" + key)
-                                    ));
-                                }
-                            }
-                        });
-                        relatedVideoLv.setLayoutManager(new GridLayoutManager(getContext(), 1));
-                    } else {
-                        relatedVideoLv.removeAllViews();
-                    }
-                    relatedVideoLv.setAdapter(relatedVideosAdapter);
-                    relatedVideoLv.setNestedScrollingEnabled(false);
-                    relatedVideosAdapter.notifyDataSetChanged();
+                    mRelatedVideoItems.addAll(relatedVideoItems);
+                     relatedVideosAdapter.notifyDataSetChanged();
                 }
             }
         });
 
+        Log.v(LOG_TAG, "REVIEWS: GettingREVIEWS OBSERVER");
         moviesViewModel.getReviewItems().observe(this, new Observer<ArrayList<MovieReviewItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieReviewItem> movieReviewItems) {
                 if (movieReviewItems != null) {
-                    if(reviewsAdapter == null) {
-                        // Create a review adapter. This will eventually be replaced using dagger injection.
-                        // (I'm still learning the intricacies of it.)
-
-                        reviewsAdapter = new MovieReviewsViewAdapter(
-                                movieReviewItems,
-                                getActivity().getString(R.string.button_txt_read_more),
-                                getActivity().getString(R.string.button_txt_hide));
-                        reviewLv.setLayoutManager(new GridLayoutManager(getContext(), 1));
-                    } else {
-                        reviewLv.removeAllViews();
-                    }
-                    reviewLv.setAdapter(reviewsAdapter);
-                    reviewLv.setNestedScrollingEnabled(false);
+                    mReviewItems.addAll(movieReviewItems);
+                    Log.v(LOG_TAG, "REVIEWS: Notifying adapter changed observer");
                     reviewsAdapter.notifyDataSetChanged();
                 }
             }
         });
+    }
+
+    private void setUpDetailView(){
+
+        title.setText(mMovieItem.getTitle());
+
+        releasedDateTv.setText(AppUtils.formatDate(new SimpleDateFormat("yyyy-MM-dd"),
+                mMovieItem.getReleaseDate(),
+                getActivity().getString(R.string.date_unknown), LOG_TAG));
+
+        voteAverageTv.setText(Double.toString(mMovieItem.getVoteAverage()));
+
+        synopsisTv.setText(mMovieItem.getOverview());
+
+        configureFavsButton(favButton, mMovieItem);
+
+        // Load background and poster images using picasso library.
+        loadImageWithPicasso(mMovieItem.getBackgroundURL(), progressBar, backdrop);
+        loadImageWithPicasso(mMovieItem.getPosterURL(), null, mPosterView);
+    }
+
+    private void setUpRelatedVideosList() {
+        if(relatedVideosAdapter == null) {
+            if(mRelatedVideoItems == null) {
+                mRelatedVideoItems = new ArrayList<>();
+            }
+            // Create an adapter to display related videos.
+            // This will eventually be replaced using dagger injection.
+            relatedVideosAdapter = new RelatedVideosViewAdapter(mRelatedVideoItems,
+                    new RelatedVideosViewAdapter.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(String key) {
+                            //Let's generate our URI from the item values
+                            //NOTE: themoviedb api uses only youtube links for their videos,
+                            //hence we are only parsing a youtube url.
+                            try {
+                                // We will try to open the link in a the youtube app
+                                getActivity().startActivity(new Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("vnd.youtube:" + key)
+                                ));
+                            } catch (ActivityNotFoundException ex) {
+                                // if there is no app we will load through a browser
+                                getActivity().startActivity(new Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("http://www.youtube.com/watch?v=" + key)
+                                ));
+                            }
+                        }
+                    });
+        }
+        relatedVideoLv.setLayoutManager(new GridLayoutManager(getContext(), 1));
+        relatedVideoLv.setAdapter(relatedVideosAdapter);
+        relatedVideoLv.setEmptyView(emptyVideosTv);
+        relatedVideoLv.setNestedScrollingEnabled(false);
+    }
+
+    private void setUpReviewList() {
+        if(reviewsAdapter == null) {
+            Log.v(LOG_TAG, "REVIEWS: Review Adapter is NULL");
+            // Create a review adapter. This will eventually be replaced using dagger injection.
+            // (I'm still learning the intricacies of it.)
+            if(mReviewItems == null){
+                mReviewItems = new ArrayList<>();
+            }
+            reviewsAdapter = new MovieReviewsViewAdapter(
+                    mReviewItems,
+                    getActivity().getString(R.string.button_txt_read_more),
+                    getActivity().getString(R.string.button_txt_hide));
+        }
+        reviewLv.setLayoutManager(new GridLayoutManager(getContext(), 1));
+        reviewLv.setAdapter(reviewsAdapter);
+        reviewLv.setEmptyView(emptyReviewTv);
+        reviewLv.setNestedScrollingEnabled(false);
     }
 
     /**
@@ -268,7 +346,7 @@ public class MovieDetailFragment extends Fragment {
      * @param displayView The reference ID for the image view.
      */
     private void loadImageWithPicasso(String url, final ProgressBar progressViewId, final ImageView displayView) {
-        if (appUtils.checkNetworkAccess()) {
+        if (appUtils.hasNetworkAccess()) {
             Log.i(LOG_TAG, "TEST: We have network access");
             Picasso.get().load(url)
                     .into(displayView, new Callback() {
@@ -365,7 +443,7 @@ public class MovieDetailFragment extends Fragment {
                         if(IS_LANDSCAPE_TABLET && mRequestSortOrder != null) {
                             if (moviesViewModel.getCurrentSortOrder().getValue().equals(mRequestSortOrder)) {
                                 Log.v(LOG_TAG, "SortOrder: sort order IS CURRENT. SO: " + mRequestSortOrder);
-                                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATABASE);
+                                moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_FROM_DATABASE);
                             } else {
                                 Log.v(LOG_TAG, "SortOrder: sort order IS NOT CURRENT. SO: " + mRequestSortOrder);
                             }

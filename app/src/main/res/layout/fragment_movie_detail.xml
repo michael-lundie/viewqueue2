@@ -106,40 +106,60 @@
                 app:layout_constraintTop_toBottomOf="@+id/synopsis_tv">
 
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/related_title_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/half_padding"
-                android:text="@string/title_trailers"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="@dimen/text_default_huge"
-                app:fontFamily="sans-serif-condensed"
-                app:layout_constraintTop_toBottomOf="@+id/synopsis_tv" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/related_video_lv"
+            <LinearLayout
+                android:id="@+id/related_videos_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/related_title_tv" />
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/reviews_layout">
+                <TextView
+                    android:id="@+id/related_title_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/half_padding"
+                    android:text="@string/title_trailers"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/text_default_huge"
+                    app:fontFamily="sans-serif-condensed" />
 
-            <TextView
-                android:id="@+id/review_title_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/half_padding"
-                android:text="@string/title_reviews"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="@dimen/text_default_huge"
-                app:fontFamily="sans-serif-condensed"
-                app:layout_constraintTop_toBottomOf="@+id/related_video_lv" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/review_list_view"
+                <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
+                    android:id="@+id/related_video_lv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/videos_empty_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/half_padding"
+                    android:text="@string/videos_empty_text" />
+            </LinearLayout>
+            <LinearLayout
+                app:layout_constraintTop_toBottomOf="@+id/related_videos_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/review_title_tv" />
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/review_title_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/half_padding"
+                    android:text="@string/title_reviews"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/text_default_huge"
+                    app:fontFamily="sans-serif-condensed" />
+
+                <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
+                    android:id="@+id/review_list_lv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/review_empty_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/half_padding"
+                    android:text="@string/reviews_empty_text" />
+            </LinearLayout>
+
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>

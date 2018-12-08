@@ -72,9 +72,9 @@ public class AppModule {
     @Provides
     @Singleton
     MovieRepository provideMovieRepository(TheMovieDbApi theMovieDbApi, MoviesDao moviesDao,
-                                           Prefs prefs, AppConstants constants) {
+                                           Prefs prefs, AppConstants constants, AppUtils appUtils) {
         Log.i(LOG_TAG, "TEST: REPOSITORY INJECTION");
-        return new MovieRepository(theMovieDbApi, moviesDao, prefs, constants);
+        return new MovieRepository(theMovieDbApi, moviesDao, prefs, constants, appUtils);
     }
 
     // API Injection

@@ -5,6 +5,8 @@
 
 package io.lundie.michael.viewcue.injection.modules;
 
+import javax.inject.Singleton;
+
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
@@ -19,6 +21,6 @@ public abstract class FragmentModule {
     @ContributesAndroidInjector
     abstract MovieDetailFragment contributeMovieDetailFragment();
 
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = {SharedPreferencesModule.class})
     abstract SettingsActivity.QueryPreferenceFragment contributeQueryPrefsFragment();
 }

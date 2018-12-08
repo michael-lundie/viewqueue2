@@ -3,7 +3,7 @@ package io.lundie.michael.viewcue.network;
 import com.google.gson.Gson;
 
 import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
+//import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -16,17 +16,18 @@ public class ApiClient {
 
     public static Retrofit getClient(Gson gson){
 
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        //TODO: Remove interceptor
+        /**HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
-                .build();
+                .build();*/
 
         if(retrofit==null){
             retrofit = new Retrofit.Builder()
                     .baseUrl(TheMovieDbApi.HTTPS_THEMOVIEDB_API_URL)
                     .addConverterFactory(GsonConverterFactory.create(gson))
-                    .client(client)
+                    .client(new OkHttpClient.Builder().build())
                     .build();
         }
         return retrofit;

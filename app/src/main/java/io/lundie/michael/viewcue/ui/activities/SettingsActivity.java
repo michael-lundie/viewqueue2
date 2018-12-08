@@ -13,10 +13,18 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.android.AndroidInjection;
+import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.R;
 
 /**
@@ -26,12 +34,11 @@ public class SettingsActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SettingsActivity.class.getSimpleName();
 
-    private static boolean settingsChanged = false;
-
-
     private static String movieOrderInitialValue;
 
-    @BindView(R.id.toolbar) Toolbar mToolbar;
+
+
+    @BindView(R.id.settings_toolbar) Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +67,33 @@ public class SettingsActivity extends AppCompatActivity {
     public static class QueryPreferenceFragment extends PreferenceFragmentCompat
             implements Preference.OnPreferenceChangeListener {
 
+        @Inject
+        SharedPreferences sharedPrefs;
+
         Preference movieOrder;
+
+        public QueryPreferenceFragment(){}
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            Log.i(LOG_TAG, "Configure dagger called");
+            configureDagger();
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            this.configureDagger();
+            return super.onCreateView(inflater, container, savedInstanceState);
+
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            Log.i(LOG_TAG, "Configure dagger called");
+            //configureDagger();
+        }
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -75,40 +108,46 @@ public class SettingsActivity extends AppCompatActivity {
          * @param preference A preference object to bind
          */
         private void bindPreferenceSummaryToValue(Preference preference) {
+            this.configureDagger();
+
             preference.setOnPreferenceChangeListener(this);
             getPreferenceManager().setSharedPreferencesName("vq_prefs");
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            //SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
             String preferenceValue = sharedPrefs.getString(preference.getKey(), "");
 
             if (preference == movieOrder) {
+                Log.i(LOG_TAG, "Preference is MOVIE ORDER");
                 movieOrderInitialValue = preferenceValue;
-            } onPreferenceChange(preference, preferenceValue);
+                Log.i(LOG_TAG, "Pref is now:" + preferenceValue);
+            }
+            onPreferenceChange(preference, preferenceValue);
         }
 
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
+            Log.v(LOG_TAG, "Shared Pref changes");
             String stringValue = value.toString();
             if (preference instanceof ListPreference) {
+                Log.i(LOG_TAG, "Preference is List");
                 ListPreference listPreference = (ListPreference) preference;
                 int prefIndex = listPreference.findIndexOfValue(stringValue);
-                if (prefIndex >= 0) {
-                    CharSequence[] labels = listPreference.getEntries();
-                    preference.setSummary(labels[prefIndex]);
-                }
+
+                preference.setSummary(
+                        prefIndex >= 0 ? listPreference.getEntries()[prefIndex] : null);
+
             } else {
                 preference.setSummary(stringValue);
             }
 
             String key = preference.getKey();  // Check this returns string and not id
 
-            if (key.equals(getString(R.string.settings_orderby_key))) {
-                if (value.equals(movieOrderInitialValue)) {
-                    settingsChanged = false;
-                } else {
-                    settingsChanged = true;
-                }
-            } return true;
+            return true;
         }
 
+        private void configureDagger(){
+            AndroidSupportInjection.inject(this);
+        }
     }
+
+
 }

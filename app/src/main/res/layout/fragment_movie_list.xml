@@ -7,6 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
     tools:context=".ui.fragments.MovieListFragment">
 
     <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
@@ -17,16 +18,30 @@
         android:paddingLeft="@dimen/half_padding"
         android:paddingRight="@dimen/half_padding" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/list_empty"
-        android:layout_width="@dimen/list_empty_width"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/default_padding"
         android:layout_gravity="center_vertical|center_horizontal"
         android:gravity="center"
-        android:padding="@dimen/half_padding"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/text_default_tiny"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        android:visibility="visible"
+        android:padding="@dimen/half_padding">
+        <ImageView
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_error_accent_65dp"/>
+        <TextView
+            android:id="@+id/list_empty_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/no_connection"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_default_large" />
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/progressRing"

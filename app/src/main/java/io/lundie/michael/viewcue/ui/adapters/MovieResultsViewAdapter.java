@@ -17,6 +17,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.R;
+import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
 /**
  * RecycleView adapter linking our data to the recycler view and determining view holders required
@@ -111,7 +112,6 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
                     }
                     @Override
                        public void onError(Exception e) {
-
                     }
                    });
 

@@ -15,7 +15,6 @@ import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -24,15 +23,16 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -44,12 +44,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.AndroidSupportInjection;
 import io.lundie.michael.viewcue.R;
-import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 import io.lundie.michael.viewcue.ui.activities.SettingsActivity;
 import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.ui.adapters.MovieResultsViewAdapter;
-import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
+import io.lundie.michael.viewcue.utilities.AppUtils;
+import io.lundie.michael.viewcue.utilities.DataStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
@@ -74,31 +74,29 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
     @Inject
     AppConstants constants;
 
+    @Inject
+    AppUtils appUtils;
+
     // Declaring private variables.
     private MoviesViewModel moviesViewModel;
     private MovieResultsViewAdapter mAdapter;
-    private DataAcquireStatus mDataAcquireStatus;
     private static String mRequestSortOrder = null;
-    private int favCount;
     private int detailContentFrameID;
-    private String detailContentFrameTag;
 
     // Instantiate our ArrayList of MovieItems.
     private ArrayList<MovieItem> mList = new ArrayList<>();
 
     // Declaring annotated view variables for butterknife to bind references.
     @BindView(R.id.progressRing) ProgressBar mProgressRing;
-    @BindView(R.id.list_empty) TextView mEmptyStateTextView;
-    @BindView(R.id.movie_list) RecycleViewWithSetEmpty mRecyclerView;
+    @BindView(R.id.empty_icon_iv) ImageView mErrorIcon;
+    @BindView(R.id.empty_message_tv) TextView mEmptyTv;
+    @BindView(R.id.movie_list) RecyclerView mRecyclerView;
     @BindView(R.id.toolbar) Toolbar mToolbar;
 
     // Bind textView buttons
     @BindView(R.id.popular_btn) TextView mPopularBtn;
     @BindView(R.id.high_rated_btn) TextView mHighRatedBtn;
     @BindView(R.id.favourites_btn) TextView mFavouritesBtn;
-
-    // Orientation event listener
-    OrientationEventListener orientationListener;
 
     // Setting up our shared preference listener. If any preferences change, we'll know about it.
     SharedPreferences.OnSharedPreferenceChangeListener listener
@@ -142,7 +140,6 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
 
         // Set up Recycler view
         mRecyclerView.setHasFixedSize(false);
-        mRecyclerView.setEmptyView(mEmptyStateTextView);
 
         // Set the padding of our recycler view to compensate for the buttons list.
         mRecyclerView.setPadding(0,
@@ -158,8 +155,6 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             if (mList == null ) {
                 mList = new ArrayList<>();
             }
-
-
         }
 
         // Initiate our custom recycler adapter and set layout manager.
@@ -167,17 +162,37 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onItemClick(MovieItem item) {
                 Log.i(LOG_TAG, "TEST: Returning item: " + item);
+                // Let's set up our detail fragment
+
+                // Note: This was previously done by updating an observable, and only
+                // creating the details fragment when required. However, due
+                // to inconsistency in content, the view is required to be remeasured.
+                // Replacing the fragment is so far the only way I could figure out how to do this
+                // without any 'flicker;
+
                 moviesViewModel.selectMovieItem(item);
-                Bundle toDetailFragment = new Bundle();
-                toDetailFragment.putString("sortOrder", mRequestSortOrder);
+
                 MovieDetailFragment detailFragment = new MovieDetailFragment();
+                Bundle toDetailFragment = new Bundle();
+
+                toDetailFragment.putString("sortOrder", mRequestSortOrder);
                 detailFragment.setArguments(toDetailFragment);
+
                 // Let's set/reset the content frame details.
-                setContentFrameDetails();
-                getFragmentManager().beginTransaction()
-                        .replace(detailContentFrameID, detailFragment, AppConstants.FRAGTAG_DETAIL)
-                        .addToBackStack(null)
-                        .commit();
+                setDetailContentFrameID();
+                Fragment currentDetailFragment = getFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_DETAIL);
+                if(currentDetailFragment ==null) {
+                    getFragmentManager().beginTransaction()
+                            .add(detailContentFrameID, detailFragment, AppConstants.FRAGTAG_DETAIL)
+                            //.addToBackStack(null)
+                            .commit();
+                } else {
+                    getFragmentManager()
+                            .beginTransaction()
+                            .remove(currentDetailFragment)
+                            .add(detailContentFrameID, detailFragment, AppConstants.FRAGTAG_DETAIL)
+                            .commit();
+                }
             }
         });
 
@@ -199,8 +214,9 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
         this.configureDagger();
         if(savedInstanceState == null) {
             Log.i(LOG_TAG, "TEST: saved instance state is null");
-
-        }this.configureViewModel();
+            prefs.setShowOfflineNotice(true);
+        }
+        this.configureViewModel();
         mPopularBtn.setOnClickListener(this);
         mHighRatedBtn.setOnClickListener(this);
         mFavouritesBtn.setOnClickListener(this);
@@ -208,18 +224,23 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        if(!IS_LANDSCAPE_TABLET &&
-                getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            //getFragmentManager().popBackStack();
-            //MovieDetailFragment detailFragment = (MovieDetailFragment) getFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_CONTENT);
-            //MovieListFragment listFragment = (MovieListFragment) getFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_CONTENT);
-            //getFragmentManager().beginTransaction().remove(detailFragment);
-        }
         if (!mList.isEmpty()){
-            Log.i(LOG_TAG, "TEST: Saving parcelable!!!!");
             outState.putParcelableArrayList("mList", mList);
         }
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(moviesViewModel == null || prefs.attemptRefreshOnResume()) {
+            Log.v(LOG_TAG, "Attempting REFRESH");
+            configureViewModel();
+            prefs.setAttemptRefreshOnResume(false);
+        } else {
+            // We'll just double check here to see if the user has gone offline.
+            isUserBrowsingOFfline();
+        }
     }
 
     @Override
@@ -242,24 +263,20 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
                 mRequestSortOrder = AppConstants.SORT_ORDER_POPULAR;
                 setSelectedButton();
                 moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
-                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
-                    mProgressRing.setVisibility(View.VISIBLE);
-                }
+
                 break;
             case R.id.high_rated_btn:
                 mRequestSortOrder = AppConstants.SORT_ORDER_HIGHRATED;
                 setSelectedButton();
                 moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
-                if (mDataAcquireStatus != DataAcquireStatus.FETCHING_FROM_DATABASE) {
-                    mProgressRing.setVisibility(View.VISIBLE);
-                }
+
                 break;
             case R.id.favourites_btn:
                 mRequestSortOrder = AppConstants.SORT_ORDER_FAVS;
                 Log.v(LOG_TAG, "TEST: Fav count " + prefs.getFavoritesCount());
                 if (prefs.getFavoritesCount() > 0) {
                     setSelectedButton();
-                    moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                    moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_FROM_DATABASE);
                 } else {
                     Snackbar.make(getView(), R.string.snack_no_favs, Snackbar.LENGTH_LONG)
                             .setAction(R.string.snack_dismiss_polite, new View.OnClickListener() {
@@ -304,21 +321,25 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
         moviesViewModel = ViewModelProviders.of(getActivity(),
                 moviesViewModelFactory).get(MoviesViewModel.class);
 
-        // We want to remove any observers that current exist.
+        // We want to remove any observers that currently exist.
         // (This can be done with a singleton observe class and injection, but I haven't been
         // able to get this to work successfully yet.
 
-            moviesViewModel.getDataAcquireStatus().removeObservers(this);
+        moviesViewModel.getListDataAcquireStatus().removeObservers(this);
 
-            moviesViewModel.getMovies(mRequestSortOrder,
-                    MoviesViewModel.DO_NOT_REFRESH_DATA).removeObservers(this);
+        moviesViewModel.getMovies(mRequestSortOrder,
+                MoviesViewModel.DO_NOT_REFRESH_DATA).removeObservers(this);
 
         // Fetch our network / data status observable first.
         // This will allow us some feedback so we can handle errors in our UI better.
-        moviesViewModel.getDataAcquireStatus().observe(this, new Observer<DataAcquireStatus>() {
+        moviesViewModel.getListDataAcquireStatus().observe(this, new Observer<DataStatus>() {
             @Override
-            public void onChanged(@Nullable DataAcquireStatus dataAcquireStatus) {
-                mDataAcquireStatus = dataAcquireStatus;
+            public void onChanged(@Nullable DataStatus dataStatus) {
+                // We can make use of our error/status reporting  from our view model / repo
+                // here by using a switch case.
+                if(dataStatus != null) {
+                    processDataStatus(dataStatus);
+                }
             }
         });
 
@@ -341,10 +362,59 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
                         mProgressRing.setVisibility(View.INVISIBLE);
                         mAdapter.notifyDataSetChanged();
                         Log.i(LOG_TAG, "TEST Notify Data changed.");
-
                 }
             }
         });
+    }
+
+    private void processDataStatus(DataStatus status) {
+        switch (status) {
+            case ATTEMPTING_API_FETCH:
+            case FETCHING_FROM_DATABASE:
+                mProgressRing.setVisibility(View.VISIBLE);
+                break;
+            case FETCH_COMPLETE:
+                Log.i(LOG_TAG, "Data: FETCH COMPLETE");
+                mProgressRing.setVisibility(View.INVISIBLE);
+                showErrorViews(false);
+                if(mList != null) {
+                    Log.v(LOG_TAG, "USER OFFLINE");
+                    isUserBrowsingOFfline();
+                }
+                break;
+            case DATABASE_EMPTY:
+                if(mRequestSortOrder.equals(AppConstants.SORT_ORDER_FAVS)) {
+                    mRequestSortOrder = AppConstants.SORT_ORDER_POPULAR;
+                    setSelectedButton();
+                    moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_DATA);
+                    break;
+                }
+            case ERROR_NETWORK_FAILURE:
+                mProgressRing.setVisibility(View.INVISIBLE);
+                mEmptyTv.setText(getText(R.string.unavailable_offline));
+                showErrorViews(true);
+                prefs.setAttemptRefreshOnResume(true);
+                break;
+            case ERROR_PARSING:
+            case ERROR_SERVER_BROKEN:
+            case ERROR_UNKNOWN:
+            case ERROR_NOT_FOUND:
+                mErrorIcon.setVisibility(View.VISIBLE);
+                mProgressRing.setVisibility(View.INVISIBLE);
+                mEmptyTv.setText(R.string.error_unknown);
+                showErrorViews(true);
+                break;
+        }
+    }
+
+    private void showErrorViews(Boolean setVisibility) {
+        if(setVisibility) {
+            mErrorIcon.setVisibility(View.VISIBLE);
+            mEmptyTv.setVisibility(View.VISIBLE);
+        } else {
+            mErrorIcon.setVisibility(View.INVISIBLE);
+            mEmptyTv.setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -370,7 +440,7 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
         }
     }
 
-    private void setContentFrameDetails() {
+    private void setDetailContentFrameID() {
         if(IS_LANDSCAPE_TABLET) {
             detailContentFrameID = R.id.detail_frame;
         } else {
@@ -383,6 +453,20 @@ public class MovieListFragment extends Fragment implements View.OnClickListener{
             return 4;
         } else {
             return 3;
+        }
+    }
+
+    public void isUserBrowsingOFfline() {
+        if (!appUtils.hasNetworkAccess() && getView() != null && prefs.getShowOfflineNotice()) {
+            prefs.setShowOfflineNotice(false);
+            Snackbar.make(getView(), R.string.snack_offline_browsing, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.snack_dismiss_polite, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // Required override method
+                        }
+                    })
+                    .show();
         }
     }
 }

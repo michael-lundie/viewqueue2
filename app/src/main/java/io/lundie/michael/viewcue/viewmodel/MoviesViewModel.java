@@ -13,7 +13,7 @@ import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.datamodel.MovieRepository;
 import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
 import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
-import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
+import io.lundie.michael.viewcue.utilities.DataStatus;
 
 public class MoviesViewModel extends ViewModel {
 
@@ -24,13 +24,14 @@ public class MoviesViewModel extends ViewModel {
     private MutableLiveData<MovieItem> selectedMovieItem;
     private MutableLiveData<ArrayList<MovieReviewItem>> movieReviewItems;
     private MutableLiveData<ArrayList<RelatedVideos>> relatedVideoItems;
-    private MutableLiveData<DataAcquireStatus> dataStatusObservable;
+    private MutableLiveData<DataStatus> listDataStatusLive;
+    private MutableLiveData<DataStatus> detailDataStatusLive;
     private MutableLiveData<String> mCurrentSortOrder;
 
     // Defining model access constants.
     public static final byte REFRESH_DATA = 0;
     public static final byte DO_NOT_REFRESH_DATA = 1;
-    public static final byte REFRESH_DATABASE = 2;
+    public static final byte REFRESH_FROM_DATABASE = 2;
 
     public MoviesViewModel() {}
 
@@ -65,9 +66,8 @@ public class MoviesViewModel extends ViewModel {
         selectedMovieItem.setValue(item);
 
         getExtras(item.getId());
-
     }
-
+    
     /**
      * @return a reference to a MovieItem object which should be set through the selectMovieItem method.
      */
@@ -131,13 +131,21 @@ public class MoviesViewModel extends ViewModel {
      * This is a simple getter method, which is used to access a LiveData object containing the
      * status of our network/api access calls and other data comms made by the repository.
      * This is used in lieu of an interface.
-     * @return a reference to our LiveData<DataAcquireStatus> object.
+     * @return a reference to our LiveData<DataStatus> object.
      */
-    public LiveData<DataAcquireStatus> getDataAcquireStatus() {
-        if(dataStatusObservable == null) {
-            dataStatusObservable = new MutableLiveData<>();
+    public LiveData<DataStatus> getListDataAcquireStatus() {
+        if(listDataStatusLive == null) {
+            listDataStatusLive = new MutableLiveData<>();
         }
-        dataStatusObservable = movieRepository.getDataAcquireStatusLiveData();
-        return dataStatusObservable;
+        listDataStatusLive = movieRepository.getListDataStatus();
+        return listDataStatusLive;
+    }
+
+    public LiveData<DataStatus> getDetailDataAcquireStatus() {
+        if(detailDataStatusLive == null) {
+            detailDataStatusLive = new MutableLiveData<DataStatus>();
+        }
+        detailDataStatusLive = movieRepository.getDetailDataStatus();
+        return detailDataStatusLive;
     }
 }

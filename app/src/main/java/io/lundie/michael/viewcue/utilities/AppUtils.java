@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,10 +23,9 @@ public class AppUtils {
     }
     /**
      * Checks to make sure the smart phone has access to the internet.
-     * @param context the application context
      * @return boolean
      */
-    public boolean checkNetworkAccess() {
+    public boolean hasNetworkAccess() {
         ConnectivityManager connMgr =
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
         // Check the connectivity manager is not null first to avoid NPE.
@@ -36,6 +36,21 @@ public class AppUtils {
         }
         //Connectivity manager is null so returning false.
         return false;
+    }
+
+    /**
+     * Method for checking internet access availability from: https://stackoverflow.com/a/9570292
+     * @return
+     */
+    public static boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("google.com");
+            //You can replace it with your name
+            return !ipAddr.equals("");
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

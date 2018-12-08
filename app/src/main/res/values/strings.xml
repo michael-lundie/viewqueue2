@@ -5,6 +5,7 @@
 
     <!-- String text for empty recycle view: no internet connection -->
     <string name="no_connection">Please check you are connected to the internet.</string>
+    <string name="error_unknown">An error occurred. Please try again later.</string>
 
     <!-- Menu titles/labels -->
     <string name="menu_settings">Settings</string>
@@ -17,7 +18,8 @@
     <string name="button_high_rated">High Rated</string>
     <string name="button_favourites">Favourites</string>
 
-    <!-- Detail Activity Text -->
+    <!-- Detail Fragment Text -->
+    <string name="detail_empty_view_text">Click a movie to get started!</string>
     <string name="detail_average_user_rating">Average User Rating</string>
     <string name="detail_release">Release Date</string>
     <string name="date_unknown">Unknown Date</string>
@@ -25,15 +27,21 @@
     <string name="title_reviews">Reviews</string>
     <string name="button_txt_read_more">Read More</string>
     <string name="button_txt_hide">Show Less</string>
+    <string name="reviews_empty_text">Sorry, no reviews available.</string>
+    <string name="videos_empty_text">Sorry, no trailers or videos available.</string>
+    <string name="unavailable_offline">Sorry, this content is unavailable offline.</string>
 
     <!-- Snackbars Activity Text -->
     <string name="snack_no_favs">Oops! You don\'t have any favorites yet.</string>
     <string name="snack_dismiss_polite">Ok, thanks!</string>
+    <string name="snack_offline_browsing">Sorry to interrupt! You\'re browsing offline. Some content
+        unavailable.</string>
 
     <!-- Fragment Tags -->
     <string name="fragtag_content">frag_content</string>
     <string name="fragtag_detail">frag_detail</string>
     <string name="fragtag_favs_empty">frag_empty_favs</string>
+    <string name="frag_empty_detail">frag_empty_detail</string>
 
     <!--// PREFS/SETTINGS VALUES \\-->
     <!-- Movie order preferences -->

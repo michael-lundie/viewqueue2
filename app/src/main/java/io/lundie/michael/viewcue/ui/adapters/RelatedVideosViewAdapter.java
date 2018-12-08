@@ -18,8 +18,9 @@ import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
+import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
-public class RelatedVideosViewAdapter extends RecyclerView.Adapter<RelatedVideosViewAdapter.ViewHolder>{
+public class RelatedVideosViewAdapter extends RecycleViewWithSetEmpty.Adapter<RelatedVideosViewAdapter.ViewHolder>{
 
     private static final String LOG_TAG = RelatedVideosViewAdapter.class.getName();
 
@@ -52,7 +53,7 @@ public class RelatedVideosViewAdapter extends RecyclerView.Adapter<RelatedVideos
         return mValues.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecycleViewWithSetEmpty.ViewHolder {
 
         final View mView;
         @BindView(R.id.video_link) Button mVideoLink;

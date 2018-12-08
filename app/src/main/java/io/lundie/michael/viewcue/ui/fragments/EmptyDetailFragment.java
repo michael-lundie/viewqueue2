@@ -8,9 +8,9 @@ import android.view.ViewGroup;
 
 import io.lundie.michael.viewcue.R;
 
-public class EmptyFavsFragment extends Fragment {
+public class EmptyDetailFragment extends Fragment {
 
-    public EmptyFavsFragment() {
+    public EmptyDetailFragment() {
         // Required empty public constructor
     }
 
@@ -18,6 +18,6 @@ public class EmptyFavsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_empty_favs, container, false);
+        return inflater.inflate(R.layout.fragment_empty_detail, container, false);
     }
 }

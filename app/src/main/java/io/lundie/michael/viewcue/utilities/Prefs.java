@@ -11,6 +11,8 @@ public class Prefs {
     private final static String REFRESH_TIME_POPULAR = "settings_db_update_time_pop_key";
     private final static String REFRESH_TIME_HIGH_RATED = "settings_db_update_time_hr_key";
     private final static String FAVORITES_COUNT = "settings_favorites_count";
+    private final static String ATTEMPT_REFRESH_ON_RESUME = "attempt_refresh_on_resume";
+    private final static String SHOW_OFFLINE_NOTICE = "offline_notice_count";
 
     private SharedPreferences mSharedPrefs;
     private Application mApplication;
@@ -19,6 +21,22 @@ public class Prefs {
     public Prefs(Application application, SharedPreferences sharedPrefs) {
         mApplication = application;
         mSharedPrefs = sharedPrefs;
+    }
+
+    public void setAttemptRefreshOnResume(boolean b) {
+        mSharedPrefs.edit().putBoolean(ATTEMPT_REFRESH_ON_RESUME, b).apply();
+    }
+
+    public boolean attemptRefreshOnResume() {
+        return mSharedPrefs.getBoolean(ATTEMPT_REFRESH_ON_RESUME, false);
+    }
+
+    public void setShowOfflineNotice(boolean b) {
+        mSharedPrefs.edit().putBoolean(SHOW_OFFLINE_NOTICE, b).apply();
+    }
+
+    public boolean getShowOfflineNotice() {
+        return mSharedPrefs.getBoolean(SHOW_OFFLINE_NOTICE, true);
     }
 
     public void updatePopularDbRefreshTime(long time) {

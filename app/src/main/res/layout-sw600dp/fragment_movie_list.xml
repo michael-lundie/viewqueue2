@@ -8,57 +8,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingRight="@dimen/half_padding"
     android:paddingLeft="@dimen/half_padding"
+    android:paddingRight="@dimen/half_padding"
     tools:context=".ui.fragments.MovieListFragment">
 
     <io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty
         android:id="@+id/movie_list"
-        android:paddingBottom="@dimen/button_layout_height"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/default_padding"
-        android:paddingRight="@dimen/default_padding" />
+        android:paddingBottom="@dimen/button_layout_height"
+        android:paddingLeft="@dimen/half_padding"
+        android:paddingRight="@dimen/half_padding" />
 
-    <TextView
-        android:id="@+id/list_empty"
-        android:layout_width="@dimen/list_empty_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:gravity="center"
-        android:padding="@dimen/half_padding"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/text_default_tiny"
-        android:visibility="gone"/>
 
-    <ProgressBar
-        android:id="@+id/progressRing"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_width="@dimen/detail_progressbar_dimen"
-        android:layout_height="@dimen/detail_progressbar_dimen"
+    <FrameLayout
+        android:layout_width="wrap_content"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:visibility="visible" />
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/empty_icon_iv"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            android:src="@drawable/ic_error_accent_65dp"/>
+        <ProgressBar
+            android:id="@+id/progressRing"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="@dimen/detail_progressbar_dimen"
+            android:layout_height="@dimen/detail_progressbar_dimen"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:visibility="visible" />
+        <TextView
+            android:id="@+id/empty_message_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingTop="120dp"
+            android:gravity="center"
+            android:visibility="invisible"
+            android:text="@string/no_connection"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_default_large" />
+    </FrameLayout>
 
     <include layout="@layout/navigation_simple" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_height="@dimen/button_layout_height"
         android:layout_marginBottom="4dp"
-        android:gravity="center"
-        android:layout_height="@dimen/button_layout_height">
+        android:layout_marginTop="?attr/actionBarSize"
+        android:gravity="center">
         <TextView
-            android:text="@string/button_popular"
             android:id="@+id/popular_btn"
-            style="@style/listBarButton"/>
+            style="@style/listBarButton"
+            android:text="@string/button_popular"/>
         <TextView
-            android:text="@string/button_high_rated"
             android:id="@+id/high_rated_btn"
-            style="@style/listBarButton"/>
+            style="@style/listBarButton"
+            android:text="@string/button_high_rated"/>
         <TextView
-            android:text="@string/button_favourites"
             android:id="@+id/favourites_btn"
-            style="@style/listBarButton"/>
+            style="@style/listBarButton"
+            android:text="@string/button_favourites"/>
     </LinearLayout>
 
 </FrameLayout>

@@ -1,9 +1,14 @@
 package io.lundie.michael.viewcue.datamodel.models.review;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class MovieReviewItem {
+import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
+
+public class MovieReviewItem implements Parcelable {
 
     @SerializedName("author")
     @Expose
@@ -14,9 +19,35 @@ public class MovieReviewItem {
     @SerializedName("id")
     @Expose
     private String id;
-    @SerializedName("url")
-    @Expose
-    private String url;
+
+
+    private MovieReviewItem(Parcel in) {
+        this.author = in.readString();
+        this.content = in.readString();
+        this.id = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(author);
+        out.writeString(content);
+        out.writeString(id);
+    }
+
+    public static final Parcelable.Creator<MovieReviewItem> CREATOR = new Parcelable.Creator<MovieReviewItem>() {
+        @Override
+        public MovieReviewItem createFromParcel(Parcel in) {
+            return new MovieReviewItem(in);
+        }
+
+        @Override
+        public MovieReviewItem[] newArray(int size) {
+            return new MovieReviewItem[size];
+        }
+    };
+
+    @Override
+    public int describeContents() { return 0; }
 
     public String getAuthor() {
         return author;
@@ -42,11 +73,4 @@ public class MovieReviewItem {
         this.id = id;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
 }

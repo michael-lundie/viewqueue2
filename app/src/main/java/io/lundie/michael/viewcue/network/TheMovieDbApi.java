@@ -29,5 +29,4 @@ public interface TheMovieDbApi {
     @GET("movie/{movie_id}/videos")
     Call<RelatedVideosList> getRelatedVideos(@Path("movie_id") int movieID,
                                              @Query("api_key") String apiKey);
-
 }

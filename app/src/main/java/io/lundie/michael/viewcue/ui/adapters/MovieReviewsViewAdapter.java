@@ -15,8 +15,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
+import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
-public class MovieReviewsViewAdapter extends RecyclerView.Adapter<MovieReviewsViewAdapter.ViewHolder> {
+public class MovieReviewsViewAdapter extends RecycleViewWithSetEmpty.Adapter<MovieReviewsViewAdapter.ViewHolder> {
 
     private static final String LOG_TAG = MovieReviewsViewAdapter.class.getName();
 
@@ -48,7 +49,7 @@ public class MovieReviewsViewAdapter extends RecyclerView.Adapter<MovieReviewsVi
         return mValues.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecycleViewWithSetEmpty.ViewHolder {
         @BindView(R.id.review_author_tv) TextView mReviewAuthorTv;
         @BindView(R.id.review_content_tv) TextView mReviewContentTv;
         @BindView(R.id.read_more_btn) TextView mReadMoreBtn;

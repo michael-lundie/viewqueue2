@@ -25,27 +25,23 @@ import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
 import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideosList;
 import io.lundie.michael.viewcue.network.TheMovieDbApi;
 import io.lundie.michael.viewcue.utilities.AppExecutors;
+import io.lundie.michael.viewcue.utilities.AppUtils;
 import io.lundie.michael.viewcue.utilities.CallbackRunnable;
-import io.lundie.michael.viewcue.utilities.DataAcquireStatus;
+import io.lundie.michael.viewcue.utilities.DataStatus;
 import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.AppConstants;
 import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 import retrofit2.Response;
 
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_NETWORK_FAILURE;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_NOT_FOUND;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_PARSING;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_SERVER_BROKEN;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.ERROR_UNKNOWN;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.FETCHING_FROM_DATABASE;
-import static io.lundie.michael.viewcue.utilities.DataAcquireStatus.FETCH_COMPLETE;
+import static io.lundie.michael.viewcue.utilities.DataStatus.*;
 
 public class MovieRepository {
 
     private static final String LOG_TAG = MovieRepository.class.getSimpleName();
 
     private final AppConstants constants;
+    private final AppUtils appUtils;
     private final TheMovieDbApi theMovieDbApi;
     private final MoviesDao moviesDao;
     private final Prefs prefs;
@@ -53,11 +49,13 @@ public class MovieRepository {
     // Add requirement for client in method params, and use api.getClient.
     @Inject
     public MovieRepository(TheMovieDbApi theMovieDbApi,
-                           MoviesDao moviesDao, Prefs prefs, AppConstants constants) {
+                           MoviesDao moviesDao, Prefs prefs, AppConstants constants,
+                           AppUtils appUtils) {
         this.moviesDao = moviesDao;
         this.theMovieDbApi = theMovieDbApi;
         this.prefs = prefs;
         this.constants = constants;
+        this.appUtils = appUtils;
     }
 
     private MutableLiveData<ArrayList<MovieItem>> movieList = new MutableLiveData<>();
@@ -66,7 +64,9 @@ public class MovieRepository {
 
     private MutableLiveData<ArrayList<RelatedVideos>> relatedVideosLd;
 
-    private MutableLiveData<DataAcquireStatus> dataStatus = new MutableLiveData<>();
+    private MutableLiveData<DataStatus> listDataStatus = new MutableLiveData<>();
+
+    private MutableLiveData<DataStatus> detailDataStatus = new MutableLiveData<>();
 
     ArrayList<MovieItem> movieItems;
 
@@ -74,41 +74,29 @@ public class MovieRepository {
 
     ArrayList<RelatedVideos> relatedVideos;
 
-    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder ,
+    public MutableLiveData<ArrayList<MovieItem>> getMovieList(final String sortOrder,
                                                               byte refreshCase) {
+        switch (refreshCase) {
+            case (MoviesViewModel.REFRESH_DATA):
 
-        switch(refreshCase) {
-            case(MoviesViewModel.REFRESH_DATA):
+                if (hasInvalidRefreshTime(sortOrder) && appUtils.hasNetworkAccess()) {
 
-                // Let's instantiate a new interface, which will give us access
-                // to a simple callback after retrofit has 'done its thing'.
-                RunnableInterface listRequestRunInterface = new RunnableInterface() {
-                    @Override
-                    public void onRunCompletion() {
-                        Log.i("CALLBACK", "TEST: called onRunCompletion.");
-                        setDataAcquireStatus(FETCH_COMPLETE);
-                        AppExecutors.getInstance().mainThread().execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                movieList.setValue(movieItems);
-                            }
-                        });
-                        commitItemsToDatabase(sortOrder);
-                    }
-                };
+                    // Let's instantiate a new interface, which will give us access
+                    // to a simple callback after retrofit has 'done its thing'.
+                    RunnableInterface listRequestRunInterface = new RunnableInterface() {
+                        @Override
+                        public void onRunCompletion() {
+                            setListDataStatus(FETCH_COMPLETE);
+                            movieList.postValue(movieItems);
+                            commitItemsToDatabase(sortOrder);
+                        }
+                    };
 
-                // If our sort order is set to favorites, we want to return directly from the database.
-                if(sortOrder.equals(AppConstants.SORT_ORDER_FAVS)) {
-                    //TODO: Add null value here to account for no favs
-                    fetchItemsFromDatabase(sortOrder);
+                    setListDataStatus(ATTEMPTING_API_FETCH);
 
-                } else if (hasInvalidRefreshTime(sortOrder)) {
-
-                // Check to see if the refresh database limit has been passed. If so, we want to fetch
-                // data from our API and update everything. NOTE: refresh time is saved in a preference.
-                // If we don't need to refresh, we'll grab everything from the database.
-
-                    Log.i(LOG_TAG, "TEST: Has invalid refresh time.");
+                    // Check to see if the refresh database limit has been passed. If so, we want to fetch
+                    // data from our API and update everything. NOTE: refresh time is saved in a preference.
+                    // If we don't need to refresh, we'll grab everything from the database.
 
                     // Get an instance of AppExecutors. We will run retrofit in synchronous mode so
                     // we can micromanage some error handling / callbacks.
@@ -116,52 +104,64 @@ public class MovieRepository {
                         @Override
                         public void run() {
                             try {
-                                Log.i(LOG_TAG, "TEST: Attempting to get movies from API.");
+                                //Attempt to fetch our movies list from the movies db api
                                 Response<MoviesList> response =
                                         theMovieDbApi.getListOfMovies(sortOrder, BuildConfig.API_KEY).execute();
 
                                 // Let's make sure we have a response from the MDB API (via retrofit)
-                                if(response.isSuccessful()) {
+                                if (response.isSuccessful()) {
                                     MoviesList moviesList = response.body();
-                                    if(moviesList != null) {
-                                        Log.i(LOG_TAG, "TEST: Movie list not null");
+                                    if (moviesList != null) {
                                         movieItems = moviesList.getResults();
+                                        // If all has gone well, we run our callback.
+                                        super.run();
                                     } else {
-                                        setDataAcquireStatus(ERROR_PARSING);
+                                        setListDataStatus(ERROR_PARSING);
                                     }
-
-                                // Something went wrong. Let's parse the error.
                                 } else {
-                                    handleRequestErrors(response.code());
+                                    // Something went wrong. Let's parse the error using codes
+                                    // returned by the API.
+                                    switch (response.code()) {
+                                        case 404:
+                                            setListDataStatus(ERROR_NOT_FOUND);
+                                            break;
+                                        case 500:
+                                            setListDataStatus(ERROR_SERVER_BROKEN);
+                                            break;
+                                        default:
+                                            setListDataStatus(ERROR_UNKNOWN);
+                                            break;
+                                    }
                                 }
-
-                            // Catch any IO errors - likely there is no network access.
                             } catch (IOException e) {
-                                //TODO: Check if phone is offline. Inform the user of the problem.
+                                // Catch any IO errors - likely there is no network access.
                                 Log.e(LOG_TAG, "Network failure: ", e);
-                                setDataAcquireStatus(ERROR_NETWORK_FAILURE);
+                                setListDataStatus(ERROR_NETWORK_FAILURE);
                             }
-
-                            // All is well. Lets call super.run() which will trigger our callback.
-                            super.run();
+                            // All is well. Lets call super.run() which will trigger our runnable callback.
                         }
                     });
                     break;
                 }
 
-                // NOTE that to avoid code repetition here, as opposed to an else condition for the
-                // above code, we are just running into the next case (no break statement).
+            // NOTE that to avoid code repetition here, as opposed to an else condition for the
+            // above code, we are just running into the next case (no break statement).
 
-            case (MoviesViewModel.REFRESH_DATABASE):
-                Log.i(LOG_TAG, "TEST: Returning movie items: ");
-                setDataAcquireStatus(FETCHING_FROM_DATABASE);
+            // The following case will be run upon any of these conditions being met:
+            // a. Case is called directly from another class or method.
+            // b. No Network access - an attempt will be made to fetch items from the database
+            // c. sortOrder variable is set to SORT_ORDER_FAVS
+
+            case (MoviesViewModel.REFRESH_FROM_DATABASE):
+                setListDataStatus(FETCHING_FROM_DATABASE);
                 fetchItemsFromDatabase(sortOrder);
                 break;
 
             // The following case exists primarily to prevent getMovies from being called, when we
-            // unlist any LiveData observables.
+            // unregister any LiveData observables.
             // Hopefully, this won't be required once we are using singleton observers.
-            case(MoviesViewModel.DO_NOT_REFRESH_DATA):
+
+            case (MoviesViewModel.DO_NOT_REFRESH_DATA):
                 break;
         }
         return movieList;
@@ -169,23 +169,18 @@ public class MovieRepository {
 
     public MutableLiveData<ArrayList<MovieReviewItem>> getReviewItems(final int id) {
 
-        Log.v(LOG_TAG, "TEST: Fetching review items.");
-
-        if(movieReviewItems == null) { movieReviewItems = new MutableLiveData<>(); }
+        if (movieReviewItems == null) {
+            movieReviewItems = new MutableLiveData<>();
+        }
 
         // Let's instantiate a new interface, which will give us access
         // to a simple callback after retrofit has 'done its thing'.
         RunnableInterface reviewsRequestRunInterface = new RunnableInterface() {
             @Override
             public void onRunCompletion() {
-                Log.i("CALLBACK", "TEST: called onRunCompletion.");
-                setDataAcquireStatus(FETCH_COMPLETE);
+                Log.v("REVIEWS", "onRunCompletion CALLBACK success.");
+                // Note that we should never have a null value returned here.
                 movieReviewItems.postValue(reviewItems);
-                Log.v(LOG_TAG, "REVIEWS: Review items are:");
-                for (int i = 0; i < reviewItems.size(); i++) {
-                    MovieReviewItem item = reviewItems.get(i);
-                    Log.v(LOG_TAG, "REVIEWS... " + item.getContent());
-                }
             }
         };
 
@@ -193,55 +188,53 @@ public class MovieRepository {
             @Override
             public void run() {
                 try {
-                    Log.i(LOG_TAG, "TEST: Attempting to get movies from API.");
+                    Log.v(LOG_TAG, "REVIEWS: Attempting to get reviews from API.");
                     Response<MovieReviewsList> response =
                             theMovieDbApi.getMovieReviews(id, BuildConfig.API_KEY).execute();
 
                     // Let's make sure we have a response from the MDB API (via retrofit)
-                    if(response.isSuccessful()) {
+                    if (response.isSuccessful()) {
                         MovieReviewsList reviewsList = response.body();
-                        if(reviewsList != null) {
-                            Log.i(LOG_TAG, "REVIEWS: Movie list not null");
+                        if (reviewsList != null) {
+                            Log.v(LOG_TAG, "REVIEWS: List is not null - proceed");
                             reviewItems = reviewsList.getResults();
-                            Log.v(LOG_TAG, "REVIEWS: Results: " + reviewsList.getTotalResults());
+                            Log.v(LOG_TAG, "REVIEWS: Total Results: " + reviewsList.getTotalResults());
+                            // All is well. Lets call super.run() which will trigger our callback.
+                            super.run();
                         } else {
-                            setDataAcquireStatus(ERROR_PARSING);
+                            // Parsing error.
+                            Log.e(LOG_TAG, "Error parsing review items.");
                         }
-                        // Something went wrong. Let's parse the error.
                     } else {
-                        handleRequestErrors(response.code());
+                        // Something went wrong. Let's parse the error.
+                        handleDetailRequestErrors(response.code());
                     }
-
                     // Catch any IO errors - likely there is no network access.
                 } catch (IOException e) {
-                    //TODO: Check if phone is offline. Inform the user of the problem.
                     Log.e(LOG_TAG, "Network failure: ", e);
-                    setDataAcquireStatus(ERROR_NETWORK_FAILURE);
+                    if(!AppUtils.isInternetAvailable()) {
+                        setDetailDataStatus(ERROR_UNAVAILABLE_OFFLINE);
+                    }
                 }
-                // All is well. Lets call super.run() which will trigger our callback.
-                super.run();
+
             }
         });
         return movieReviewItems;
     }
 
     public MutableLiveData<ArrayList<RelatedVideos>> getRelatedVideos(final int id) {
-
-        Log.v(LOG_TAG, "TEST: Fetching review items.");
-
-        if(relatedVideosLd == null) { relatedVideosLd = new MutableLiveData<>(); }
+        if (relatedVideosLd == null) {
+            relatedVideosLd = new MutableLiveData<>();
+        }
 
         // Let's instantiate a new interface, which will give us access
         // to a simple callback after retrofit has 'done its thing'.
         RunnableInterface relatedItemsRequestRunInterface = new RunnableInterface() {
             @Override
             public void onRunCompletion() {
+                setDetailDataStatus(FETCH_COMPLETE);
+                // Note that we should never have a null value returned here.
                 relatedVideosLd.postValue(relatedVideos);
-                Log.v(LOG_TAG, "RELATED: Review items are:");
-                for (int i = 0; i < relatedVideos.size(); i++) {
-                    RelatedVideos item = relatedVideos.get(i);
-                    Log.v(LOG_TAG, "RELATED... " + item.getName());
-                }
             }
         };
 
@@ -249,86 +242,88 @@ public class MovieRepository {
             @Override
             public void run() {
                 try {
-                    Log.i(LOG_TAG, "TEST: Attempting to get movies from API.");
                     Response<RelatedVideosList> response =
                             theMovieDbApi.getRelatedVideos(id, BuildConfig.API_KEY).execute();
 
                     // Let's make sure we have a response from the MDB API (via retrofit)
-                    if(response.isSuccessful()) {
+                    if (response.isSuccessful()) {
                         RelatedVideosList relatedVideosList = response.body();
-                        if(relatedVideosList != null) {
-                            Log.i(LOG_TAG, "REVIEWS: Movie list not null");
+                        if (relatedVideosList != null) {
                             relatedVideos = relatedVideosList.getResults();
+                            // All is well. Lets call super.run() which will trigger our callback.
+                            super.run();
                         } else {
                             relatedVideos = null;
                         }
                         // Something went wrong. Let's parse the error.
                     } else {
-                        handleRequestErrors(response.code());
+                        handleDetailRequestErrors(response.code());
                     }
 
                     // Catch any IO errors - likely there is no network access.
                 } catch (IOException e) {
-                    //TODO: Check if phone is offline. Inform the user of the problem.
                     Log.e(LOG_TAG, "Network failure: ", e);
+                    if(!AppUtils.isInternetAvailable()) {
+                        setDetailDataStatus(ERROR_UNAVAILABLE_OFFLINE);
+                    }
                 }
-                // All is well. Lets call super.run() which will trigger our callback.
-                super.run();
             }
         });
+
         return relatedVideosLd;
     }
 
-    private void handleRequestErrors(int responseCode) {
+    private void handleDetailRequestErrors(int responseCode) {
         switch (responseCode) {
             case 404:
-                setDataAcquireStatus(ERROR_NOT_FOUND);
+                setListDataStatus(ERROR_NOT_FOUND);
                 break;
             case 500:
-                setDataAcquireStatus(ERROR_SERVER_BROKEN);
+                setListDataStatus(ERROR_SERVER_BROKEN);
                 break;
             default:
-                setDataAcquireStatus(ERROR_UNKNOWN);
+                setListDataStatus(ERROR_UNKNOWN);
                 break;
         }
     }
 
     private void commitItemsToDatabase(final String sortOrder) {
+        if (movieItems != null) {
+            if (sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
+                Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
 
-        if(sortOrder.equals(constants.SORT_ORDER_POPULAR)) {
-            Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_POPULAR);
+                // Create an array of current database objects to compare the newly  objects against.
+                // Note we are getting a simplified object for the sake of efficiency
+                List<MoviesItemSimple> oldMovieList = moviesDao.fetchSimpleListPopular();
 
-            // Create an array of current database objects to compare the newly  objects against.
-            // Note we are getting a simplified object for the sake of efficiency
-            List<MoviesItemSimple> oldMovieList = moviesDao.fetchSimpleListPopular();
+                // Loop through all the newly retrieved movie items
+                for (int i = 0; i < movieItems.size(); i++) {
+                    Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
 
-            // Loop through all the newly retrieved movie items
-            for (int i = 0; i < movieItems.size(); i++) {
-                Log.i(LOG_TAG, "TEST: Writing popular data item: " + i);
+                    checkAndSetFavorites(oldMovieList, i);
 
-                checkAndSetFavorites(oldMovieList, i);
+                    // Set the new item as popular.
+                    movieItems.get(i).setPopular((i + 1));
 
-                // Set the new item as popular.
-                movieItems.get(i).setPopular((i+1));
+                    // Insert the movie to our database. See onConflictStrategy documentation (REPLACE):
+                    // https://sqlite.org/lang_conflict.html
+                    moviesDao.insertMovie(movieItems.get(i));
+                }
+                prefs.updatePopularDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
+            } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
+                Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
+                List<MoviesItemSimple> oldMovieList = moviesDao.fetchSimpleListHighRated();
+                for (int i = 0; i < movieItems.size(); i++) {
 
-                // Insert the movie to our database. See onConflictStrategy documentation (REPLACE):
-                // https://sqlite.org/lang_conflict.html
-                moviesDao.insertMovie(movieItems.get(i));
+                    Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
+                    checkAndSetFavorites(oldMovieList, i);
+
+                    movieItems.get(i).setHighRated((i + 1));
+
+                    moviesDao.insertMovie(movieItems.get(i));
+                }
+                prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
             }
-            prefs.updatePopularDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
-        } else if (sortOrder.equals(constants.SORT_ORDER_HIGHRATED)) {
-            Log.i(LOG_TAG, "TEST: order EQUALS: " + constants.SORT_ORDER_HIGHRATED);
-            List<MoviesItemSimple> oldMovieList = moviesDao.fetchSimpleListHighRated();
-            for (int i = 0; i < movieItems.size(); i++) {
-
-                Log.i(LOG_TAG, "TEST: Writing high rated data item: " + i);
-                checkAndSetFavorites(oldMovieList, i);
-
-                movieItems.get(i).setHighRated((i+1));
-
-                moviesDao.insertMovie(movieItems.get(i));
-            }
-            prefs.updateHighRatedDbRefreshTime(new Date(System.currentTimeMillis()).getTime());
         }
     }
 
@@ -339,7 +334,7 @@ public class MovieRepository {
         // Loop through the old list of items to check if any of them were favourites.
         for (int j = 0; j < oldMovieList.size(); j++) {
             // Check the matching object (if it exists)
-            if (newItemId == oldMovieList.get(j).getId() ) {
+            if (newItemId == oldMovieList.get(j).getId()) {
                 // If the movie was a favourite, update the new list accordingly.
                 if (oldMovieList.get(j).getFavorite() == MovieItem.IS_FAVOURITE) {
                     movieItems.get(i).setFavorite(MovieItem.IS_FAVOURITE);
@@ -355,7 +350,16 @@ public class MovieRepository {
 
     private void fetchItemsFromDatabase(final String sortOrder) {
         Log.i(LOG_TAG, "TEST: Retrieving items from database");
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+        AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(new RunnableInterface() {
+            @Override
+            public void onRunCompletion() {
+                if (!movieItems.isEmpty()) {
+                    setListDataStatus(FETCH_COMPLETE);
+                } else {
+                    setListDataStatus(DATABASE_EMPTY);
+                }
+            }
+        }) {
             @Override
             public void run() {
                 if (sortOrder.equals(AppConstants.SORT_ORDER_POPULAR)) {
@@ -369,7 +373,7 @@ public class MovieRepository {
                 } else {
                     movieItems = (ArrayList<MovieItem>) moviesDao.loadFavoriteMovies();
                     setMovieItems();
-                }
+                } super.run();
             }
         });
     }
@@ -378,7 +382,6 @@ public class MovieRepository {
         AppExecutors.getInstance().mainThread().execute(new Runnable() {
             @Override
             public void run() {
-                Log.i(LOG_TAG, "TEST - movieItems: " + movieItems);
                 movieList.setValue(movieItems);
             }
         });
@@ -398,15 +401,23 @@ public class MovieRepository {
 
         if ((currentTimeMs - lastRefreshTime) > 240_000 || lastRefreshTime == 0) {
             return true;
-        } return false;
+        }
+        return false;
     }
 
-    public MutableLiveData<DataAcquireStatus> getDataAcquireStatusLiveData() {
-        return dataStatus;
+    public MutableLiveData<DataStatus> getListDataStatus() {
+        return listDataStatus;
     }
 
-    private void setDataAcquireStatus(final DataAcquireStatus status) {
-        dataStatus.postValue(status);
+    private void setListDataStatus(final DataStatus status) {
+        listDataStatus.postValue(status);
+    }
 
+    public MutableLiveData<DataStatus> getDetailDataStatus() {
+        return detailDataStatus;
+    }
+
+    private void setDetailDataStatus(final DataStatus status) {
+        detailDataStatus.postValue(status);
     }
 }

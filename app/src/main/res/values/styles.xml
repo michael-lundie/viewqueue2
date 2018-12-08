@@ -73,4 +73,12 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
+
+    <!-- Button styles -->
+    <style name="ButtonAccent" parent="Theme.AppCompat.Light">
+        <item name="android:buttonStyle">@style/Widget.AppCompat.Button.Colored</item>
+        <item name="colorControlHighlight">@color/colorAccent</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="colorAccent">@color/colorPrimaryDark</item>
+    </style>
 </resources>
