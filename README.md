@@ -1,10 +1,14 @@
 # Viewcue
-Udacity Android Developer Movie Stage 1 App
+Udacity Android Developer Movie Stage 2 App
 
 # Editing the API Key
-This application requires the use of an API key from [The Movie Database](https://www.themoviedb.org/). Please add your API key in one of two ways:
+This application requires the use of an API key from [The Movie Database](https://www.themoviedb.org/). Please add your own API key in your local gradle.properties file located in the application root.
 
-  - Edit the 'Strings.xml' file and insert your API key into the blank string field (labelled).
- 
-  -alternatively
-  - Upon running the application for the first time with no API key, you will be automatically taken to the app preferences. Please insert your API key in the labelled field.
+# Project Notes
+A first attempt at several things, most noteably in using injection, LiveData and following MVVM app architecture - biting of far more than one could chew in the process - but eventually learning a lot. Incredibly enjoyable and challenging process. 
+
+# Notable
+Offline access gained through the combination of a ROOM database (initially using 'one true source' methodology) and utilising Picasso image caching features.
+
+# Future Intentions
+I intend to return to this project to more fully utilise Dagger injection.
