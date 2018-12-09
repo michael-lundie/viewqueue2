@@ -19,13 +19,15 @@ import io.lundie.michael.viewcue.injection.modules.AppModule;
 import io.lundie.michael.viewcue.injection.modules.FragmentModule;
 import io.lundie.michael.viewcue.injection.modules.SharedPreferencesModule;
 
+/**
+ * App component interface for dagger injections methods.
+ */
 @Singleton
 @Component(modules = {  AndroidInjectionModule.class,
-                        FragmentModule.class,
                         SharedPreferencesModule.class,
+                        FragmentModule.class,
                         AppModule.class,
                         ActivityBuilder.class  })
-
 public interface AppComponent {
 
     @Component.Builder

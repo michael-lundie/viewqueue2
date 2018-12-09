@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:fitsSystemWindows="true"
+    android:baselineAligned="false"
     android:background="@color/colorPrimaryDark">
 
     <include layout="@layout/content_frame"
@@ -16,4 +17,5 @@
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="match_parent" />
+
 </LinearLayout>

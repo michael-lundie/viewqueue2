@@ -8,6 +8,9 @@ import com.google.gson.annotations.SerializedName;
 
 import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 
+/**
+ * POJO object implementing parcelable. Object stores review item data fetched by API.
+ */
 public class MovieReviewItem implements Parcelable {
 
     @SerializedName("author")

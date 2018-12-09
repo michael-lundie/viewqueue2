@@ -58,8 +58,6 @@ public class AppExecutors {
 
         @Override
         public void execute(@NonNull Runnable command) {
-
-            Log.i("AppExecutor", "Running this task: " + command);
             mainThreadHandler.post(command);
         }
     }

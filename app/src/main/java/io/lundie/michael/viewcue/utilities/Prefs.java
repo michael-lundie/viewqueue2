@@ -7,6 +7,10 @@ import javax.inject.Inject;
 
 import io.lundie.michael.viewcue.R;
 
+/**
+ * Gives access to shared prefs and is injected as a singleton instance via dagger (in-turn
+ * providing the application context required for retrieving prefs.
+ */
 public class Prefs {
     private final static String REFRESH_TIME_POPULAR = "settings_db_update_time_pop_key";
     private final static String REFRESH_TIME_HIGH_RATED = "settings_db_update_time_hr_key";

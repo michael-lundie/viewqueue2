@@ -96,6 +96,8 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
             if(item.getFavorite() == 1) {
                 mFavicon.setImageResource(R.drawable.ic_star_filled);
+                mFavicon.setContentDescription(
+                        mView.getContext().getString(R.string.CD_image_icon_is_fav));
             } else {
                 // Even though this is the default card view favicon, we programmatically set the
                 // resource or recycler view won't display the correct icon when recycling views.
@@ -104,14 +106,15 @@ public class MovieResultsViewAdapter extends RecyclerView.Adapter<MovieResultsVi
 
             Picasso.get()
                     .load(item.getPosterURL())
+                    .error(R.drawable.no_drawable)
                    .into(mPosterView, new Callback() {
                     @Override
                     public void onSuccess() {
-                        // Hide our progress bar view on completion of image download.
-
+                        // Required override method
                     }
                     @Override
                        public void onError(Exception e) {
+                        // Required override method
                     }
                    });
 

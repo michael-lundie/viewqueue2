@@ -1,13 +1,3 @@
-/*
- * Crafted by Michael R Lundie (2018)
- * Last Modified 08/10/18 09:34
- */
-
-/*
- * Crafted by Michael R Lundie (2018)
- * Last Modified 07/10/18 11:58
- */
-
 package io.lundie.michael.viewcue.ui.activities;
 
 import android.support.v4.app.Fragment;
@@ -30,6 +20,7 @@ import io.lundie.michael.viewcue.utilities.AppConstants;
 
 /**
  * Main / Root activity of ViewQueue
+ * All begins here.
  */
 public class MainActivity extends AppCompatActivity implements HasSupportFragmentInjector {
 
@@ -43,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        //Configure Dagger 2 injection
         this.configureDagger();
 
         if(savedInstanceState == null) {
@@ -65,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
         }
     }
 
+    /**
+     * Sets up the list fragment for displaying our list of movies.
+     */
     private void setUpListFragment() {
         getSupportFragmentManager()
                 .beginTransaction()
@@ -72,10 +68,18 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
                 .commit();
     }
 
+    /**
+     * @return the current detail fragment (if it exists)
+     */
     private MovieDetailFragment fetchDetailFragment() {
         return (MovieDetailFragment) getSupportFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_DETAIL);
     }
 
+    /**
+     * Method for swapping a fragment between content frames.
+     * @param fragment The fragment which will be swapped
+     * @param frameID the frame ID for which content frame we want to move our fragment too.
+     */
     private void swapFragment(Fragment fragment, int frameID) {
         getSupportFragmentManager()
                 .beginTransaction()
@@ -84,8 +88,10 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
                 .commit();
     }
 
+    /**
+     * Method to set up an empty detail view if we are running in landscape mode on a tablet.
+     */
     private void setUpDetailEmptyView() {
-        Log.v(LOG_TAG, "BOOLEAN LANDSCAPE IS:" + getResources().getBoolean(R.bool.isLandscapeTablet));
         if (getResources().getBoolean(R.bool.isLandscapeTablet)) {
             getSupportFragmentManager()
                     .beginTransaction()
@@ -123,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
         if (count < 1) {
             if(!getResources().getBoolean(R.bool.isLandscapeTablet) &&
                     getSupportFragmentManager().findFragmentByTag(AppConstants.FRAGTAG_DETAIL).isVisible()) {
+                Log.v(LOG_TAG, "TEST, REPORTING on back");
                 setUpListFragment();
             } else {
                 super.onBackPressed();

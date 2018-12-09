@@ -30,6 +30,9 @@
     <string name="reviews_empty_text">Sorry, no reviews available.</string>
     <string name="videos_empty_text">Sorry, no trailers or videos available.</string>
     <string name="unavailable_offline">Sorry, this content is unavailable offline.</string>
+    <string name="CD_image_icon_not_fav">Movie is not favorite.</string>
+    <string name="CD_image_icon_is_fav">Movie is not favorite.</string>
+    <string name="CD_image_poster_generic">Image of movie poster.</string>
 
     <!-- Snackbars Activity Text -->
     <string name="snack_no_favs">Oops! You don\'t have any favorites yet.</string>
@@ -46,7 +49,7 @@
     <!--// PREFS/SETTINGS VALUES \\-->
     <!-- Movie order preferences -->
     <string name="settings_orderby_key" translatable="false">orderby</string>
-    <string name="settings_orderby_label">Order news articles by</string>
+    <string name="settings_orderby_label">Show menu by default:</string>
     <string-array name="settings_orderby_array_labels">
         <item>Most Popular</item>
         <item>Highest Rated</item>
@@ -60,10 +63,6 @@
     <string name="settings_order_favorites" translatable="false">favorites</string>
 
     <!-- Last Updated Preference (non-editable) -->
-    <string name="settings_db_update_time_key">dbupdate</string>
+    <string name="settings_db_update_time_key" translatable="false">dbupdate</string>
     <string name="settings_db_update_time_label">Movie List Updated at:</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
 </resources>

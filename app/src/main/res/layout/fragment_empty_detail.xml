@@ -12,6 +12,7 @@
         android:layout_margin="@dimen/default_padding"
         android:src="@drawable/ic_movie_white"
         android:scaleType="fitXY"
+        android:contentDescription="@string/CD_image_icon_not_fav"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

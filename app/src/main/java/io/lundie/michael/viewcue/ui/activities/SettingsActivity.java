@@ -1,15 +1,10 @@
-/*
- * Crafted by Michael R Lundie (2018)
- * Last Modified 26/09/18 20:57
- */
-
 package io.lundie.michael.viewcue.ui.activities;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.Toolbar;
@@ -24,25 +19,30 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.AndroidInjection;
+import dagger.android.DispatchingAndroidInjector;
 import dagger.android.support.AndroidSupportInjection;
+import dagger.android.support.HasSupportFragmentInjector;
 import io.lundie.michael.viewcue.R;
+import io.lundie.michael.viewcue.utilities.Prefs;
 
 /**
  * Settings activity class allowing a user to alter various shared preferences.
  */
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity implements HasSupportFragmentInjector {
 
     private static final String LOG_TAG = SettingsActivity.class.getSimpleName();
 
-    private static String movieOrderInitialValue;
+    static String movieOrderInitialValue;
 
-
+    @Inject
+    DispatchingAndroidInjector<Fragment> dispatchingAndroidInjector;
 
     @BindView(R.id.settings_toolbar) Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.configureDagger();
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
         // Set up our toolbar/action bar
@@ -64,35 +64,33 @@ public class SettingsActivity extends AppCompatActivity {
         finish();
     }
 
+    @Override
+    public DispatchingAndroidInjector<Fragment> supportFragmentInjector() {
+        return dispatchingAndroidInjector;
+    }
+
+    private void configureDagger(){
+        AndroidInjection.inject(this);
+    }
+
     public static class QueryPreferenceFragment extends PreferenceFragmentCompat
             implements Preference.OnPreferenceChangeListener {
 
         @Inject
         SharedPreferences sharedPrefs;
 
+        @Inject
+        Prefs prefs;
+
         Preference movieOrder;
 
         public QueryPreferenceFragment(){}
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            Log.i(LOG_TAG, "Configure dagger called");
-            configureDagger();
-        }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             this.configureDagger();
             return super.onCreateView(inflater, container, savedInstanceState);
 
-        }
-
-        @Override
-        public void onActivityCreated(Bundle savedInstanceState) {
-            super.onActivityCreated(savedInstanceState);
-            Log.i(LOG_TAG, "Configure dagger called");
-            //configureDagger();
         }
 
         @Override
@@ -112,13 +110,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             preference.setOnPreferenceChangeListener(this);
             getPreferenceManager().setSharedPreferencesName("vq_prefs");
-            //SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
             String preferenceValue = sharedPrefs.getString(preference.getKey(), "");
 
             if (preference == movieOrder) {
-                Log.i(LOG_TAG, "Preference is MOVIE ORDER");
                 movieOrderInitialValue = preferenceValue;
-                Log.i(LOG_TAG, "Pref is now:" + preferenceValue);
             }
             onPreferenceChange(preference, preferenceValue);
         }
@@ -131,16 +126,13 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.i(LOG_TAG, "Preference is List");
                 ListPreference listPreference = (ListPreference) preference;
                 int prefIndex = listPreference.findIndexOfValue(stringValue);
-
-                preference.setSummary(
-                        prefIndex >= 0 ? listPreference.getEntries()[prefIndex] : null);
-
+                if (prefIndex >= 0) {
+                    preference.setSummary(listPreference.getEntries()[prefIndex]);
+                    sharedPrefs.edit().putString(preference.getKey(), value.toString()).apply();
+                }
             } else {
                 preference.setSummary(stringValue);
             }
-
-            String key = preference.getKey();  // Check this returns string and not id
-
             return true;
         }
 
@@ -148,6 +140,4 @@ public class SettingsActivity extends AppCompatActivity {
             AndroidSupportInjection.inject(this);
         }
     }
-
-
 }

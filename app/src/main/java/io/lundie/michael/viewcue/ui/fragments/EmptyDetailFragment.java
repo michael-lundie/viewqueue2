@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 
 import io.lundie.michael.viewcue.R;
 
+/**
+ * Provides an empty placeholder fragment for the detail view
+ */
 public class EmptyDetailFragment extends Fragment {
 
     public EmptyDetailFragment() {

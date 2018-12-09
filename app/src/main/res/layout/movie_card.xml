@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/rounded"
+            android:contentDescription="@string/CD_image_poster_generic"
             android:padding="2dp"
             android:scaleType="centerCrop" />
 
@@ -34,6 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:padding="3dp"
+            android:contentDescription="@string/CD_image_icon_not_fav"
             android:src="@drawable/ic_star" />
     </FrameLayout>
 

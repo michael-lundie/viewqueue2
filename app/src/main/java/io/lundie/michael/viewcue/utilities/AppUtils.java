@@ -14,6 +14,9 @@ import java.util.Date;
 
 import javax.inject.Inject;
 
+/**
+ * Provides some common utility methods
+ */
 public class AppUtils {
 
     Application context;
@@ -36,21 +39,6 @@ public class AppUtils {
         }
         //Connectivity manager is null so returning false.
         return false;
-    }
-
-    /**
-     * Method for checking internet access availability from: https://stackoverflow.com/a/9570292
-     * @return
-     */
-    public static boolean isInternetAvailable() {
-        try {
-            InetAddress ipAddr = InetAddress.getByName("google.com");
-            //You can replace it with your name
-            return !ipAddr.equals("");
-
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     /**

@@ -180,6 +180,12 @@ public class MovieItem implements Parcelable {
 
     public void setFavorite(int favorite) { this.favorite = favorite; }
 
+    /**
+     * Simple method to assist in building the URL of our image.
+     * @param requestSize The size of image requested from the UI.
+     * @param path The path to our image
+     * @return A complete String containing the full URL to access our image.
+     */
     private String buildImageURL(String requestSize, String path) {
         Uri.Builder posterUrlBuilder = new Uri.Builder();
         posterUrlBuilder.scheme("http")

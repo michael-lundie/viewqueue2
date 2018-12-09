@@ -21,6 +21,6 @@ public abstract class FragmentModule {
     @ContributesAndroidInjector
     abstract MovieDetailFragment contributeMovieDetailFragment();
 
-    @ContributesAndroidInjector(modules = {SharedPreferencesModule.class})
+    @ContributesAndroidInjector
     abstract SettingsActivity.QueryPreferenceFragment contributeQueryPrefsFragment();
 }

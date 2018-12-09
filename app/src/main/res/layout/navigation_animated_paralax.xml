@@ -30,7 +30,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:contentDescription="..."
+            android:contentDescription="@string/CD_image_poster_generic"
             android:fitsSystemWindows="true"
             android:scaleType="matrix"
             app:layout_collapseMode="parallax" />

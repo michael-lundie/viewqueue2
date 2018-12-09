@@ -1,8 +1,3 @@
-/*
- * Crafted by Michael R Lundie (2018)
- * Last Modified 09/10/18 22:35
- */
-
 package io.lundie.michael.viewcue.viewmodel;
 
 import android.arch.lifecycle.ViewModel;
@@ -15,6 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
+ * View model factory class.
  * Tutorial used:
  * https://blog.kotlin-academy.com/understanding-dagger-2-multibindings-viewmodel-8418eb372848
  */

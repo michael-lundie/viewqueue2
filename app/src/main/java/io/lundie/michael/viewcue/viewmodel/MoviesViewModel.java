@@ -3,7 +3,6 @@ package io.lundie.michael.viewcue.viewmodel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -15,25 +14,29 @@ import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
 import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
 import io.lundie.michael.viewcue.utilities.DataStatus;
 
+/**
+ * The all important view model acting as the go-between, for our UI and data repository.
+ */
 public class MoviesViewModel extends ViewModel {
 
     private static final String LOG_TAG = MoviesViewModel.class.getName();
 
+    //Preparing MutableLiveData reference variables
     private MovieRepository movieRepository;
-    private MutableLiveData<ArrayList<MovieItem>> movieListObservable;
-    private MutableLiveData<MovieItem> selectedMovieItem;
-    private MutableLiveData<ArrayList<MovieReviewItem>> movieReviewItems;
-    private MutableLiveData<ArrayList<RelatedVideos>> relatedVideoItems;
-    private MutableLiveData<DataStatus> listDataStatusLive;
-    private MutableLiveData<DataStatus> detailDataStatusLive;
-    private MutableLiveData<String> mCurrentSortOrder;
+    private static MutableLiveData<ArrayList<MovieItem>> movieListObservable;
+    private static MutableLiveData<MovieItem> selectedMovieItem;
+    private static MutableLiveData<ArrayList<MovieReviewItem>> movieReviewItems;
+    private static MutableLiveData<ArrayList<RelatedVideos>> relatedVideoItems;
+    private static MutableLiveData<DataStatus> listDataStatusLive;
+    private static MutableLiveData<DataStatus> detailDataStatusLive;
+    private static MutableLiveData<String> mCurrentSortOrder;
 
     // Defining model access constants.
     public static final byte REFRESH_DATA = 0;
     public static final byte DO_NOT_REFRESH_DATA = 1;
     public static final byte REFRESH_FROM_DATABASE = 2;
 
-    public MoviesViewModel() {}
+    public MoviesViewModel() { /* Required constructor. */ }
 
     @Inject
     public MoviesViewModel(MovieRepository movieRepository) {
@@ -42,7 +45,7 @@ public class MoviesViewModel extends ViewModel {
 
     // Getter method for fetching data
     public LiveData<ArrayList<MovieItem>> getMovies(String sortOrder, byte refreshCase) {
-        Log.i("TEST", "ViewModel get movies called");
+
         if (movieListObservable == null) {
             movieListObservable = new MutableLiveData<>();
         }
@@ -56,10 +59,10 @@ public class MoviesViewModel extends ViewModel {
     /**
      * A simple method used to select a specific movie from our list, and load it into a
      * live data object which can be accessed by our fragment via the view model
-     * @param item
+     * @param item MovieItem reference variable for the currently selected movie item
      */
     public void selectMovieItem(MovieItem item) {
-        Log.i(LOG_TAG, "TEST Selecting Item:" + item);
+
         if (selectedMovieItem == null) {
             selectedMovieItem = new MutableLiveData<>();
         }
@@ -72,14 +75,20 @@ public class MoviesViewModel extends ViewModel {
      * @return a reference to a MovieItem object which should be set through the selectMovieItem method.
      */
     public LiveData<MovieItem> getSelectedItem() {
-        Log.i(LOG_TAG, "TEST Getting Item:" + selectedMovieItem.getValue() );
         return selectedMovieItem;
     }
-
+    /**
+     * @return a reference to an ArrayList of  ReviewItem objects
+     * which should be set through the selectMovieItem method.
+     */
     public LiveData<ArrayList<MovieReviewItem>> getReviewItems() {
         return movieReviewItems;
     }
 
+    /**
+     * @return a reference to an ArrayList of MovieItem objects which should be set
+     * through the selectMovieItem method.
+     */
     public LiveData<ArrayList<RelatedVideos>> getRelatedVideoItems() {
         return relatedVideoItems;
     }
@@ -91,6 +100,10 @@ public class MoviesViewModel extends ViewModel {
         return mCurrentSortOrder;
     }
 
+    /**
+     * Responsible for beginning the process of fetching our review and related video items.
+     * @param itemID
+     */
     private void getExtras(int itemID) {
         if(relatedVideoItems != null) {
             clearRelatedVideoItems();
@@ -103,17 +116,32 @@ public class MoviesViewModel extends ViewModel {
         fetchReviewItems(itemID);
     }
 
+    /**
+     * Method for fetching related video items via the data repository
+     * @param id ID of required movie object for which to return related videos
+     */
     private void fetchRelatedVideoItems(int id) {
         relatedVideoItems = movieRepository.getRelatedVideos(id);
     }
 
+    /**
+     * Method for nulling the relatedVideoItems LiveData
+     */
     private void clearRelatedVideoItems() { relatedVideoItems.setValue(null); }
 
+    /**
+     * Method for fetching review items items via the data repository
+     * @param id ID of required movie object for which to return review items
+     */
     private void fetchReviewItems(int id) {
         movieReviewItems = movieRepository.getReviewItems(id);
     }
 
+    /**
+     * Method for nulling the movieReviewItems LiveData
+     */
     private void clearReviewItems() { movieReviewItems.setValue(null); }
+
     /**
      * Simple setter method to update a LiveData variable with a reference to the most recently
      * used sort order - ie: the current movie list being viewed by the user. This is managed
@@ -130,8 +158,8 @@ public class MoviesViewModel extends ViewModel {
     /**
      * This is a simple getter method, which is used to access a LiveData object containing the
      * status of our network/api access calls and other data comms made by the repository.
-     * This is used in lieu of an interface.
-     * @return a reference to our LiveData<DataStatus> object.
+     * This method returns status of LIST VIEW data requests.
+     * @return a reference to our list LiveData<DataStatus> object.
      */
     public LiveData<DataStatus> getListDataAcquireStatus() {
         if(listDataStatusLive == null) {
@@ -141,6 +169,12 @@ public class MoviesViewModel extends ViewModel {
         return listDataStatusLive;
     }
 
+    /**
+     * This is a simple getter method, which is used to access a LiveData object containing the
+     * status of our network/api access calls and other data comms made by the repository.
+     * This method returns status of DETAIL VIEW data requests.
+     * @return a reference to our detail LiveData<DataStatus> object.
+     */
     public LiveData<DataStatus> getDetailDataAcquireStatus() {
         if(detailDataStatusLive == null) {
             detailDataStatusLive = new MutableLiveData<DataStatus>();

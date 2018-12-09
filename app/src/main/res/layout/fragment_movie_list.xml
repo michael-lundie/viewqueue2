@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Crafted by Michael R Lundie (2018)
-  ~ Last Modified 07/10/18 09:52
-  -->
-
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -18,38 +14,36 @@
         android:paddingLeft="@dimen/half_padding"
         android:paddingRight="@dimen/half_padding" />
 
-    <LinearLayout
-        android:id="@+id/list_empty"
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/default_padding"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="visible"
-        android:padding="@dimen/half_padding">
+        android:layout_height="wrap_content">
         <ImageView
+            android:id="@+id/empty_icon_iv"
             android:layout_width="65dp"
             android:layout_height="65dp"
             android:layout_gravity="center"
+            android:visibility="invisible"
             android:src="@drawable/ic_error_accent_65dp"/>
+        <ProgressBar
+            android:id="@+id/progressRing"
+            style="@style/Widget.AppCompat.ProgressBar"
+            android:layout_width="@dimen/detail_progressbar_dimen"
+            android:layout_height="@dimen/detail_progressbar_dimen"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:visibility="visible" />
         <TextView
-            android:id="@+id/list_empty_tv"
+            android:id="@+id/empty_message_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingTop="120dp"
             android:gravity="center"
+            android:visibility="invisible"
             android:text="@string/no_connection"
             android:textColor="@android:color/white"
             android:textSize="@dimen/text_default_large" />
-    </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/progressRing"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_width="@dimen/detail_progressbar_dimen"
-        android:layout_height="@dimen/detail_progressbar_dimen"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:visibility="visible" />
+    </FrameLayout>
 
     <include layout="@layout/navigation_simple" />
 

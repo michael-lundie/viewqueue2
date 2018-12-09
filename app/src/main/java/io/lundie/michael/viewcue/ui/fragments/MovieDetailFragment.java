@@ -65,6 +65,9 @@ import io.lundie.michael.viewcue.utilities.Prefs;
 import io.lundie.michael.viewcue.utilities.RunnableInterface;
 import io.lundie.michael.viewcue.viewmodel.MoviesViewModel;
 
+/**
+ * Fragment object responsible for creating the UI for our movie detail view
+ */
 public class MovieDetailFragment extends Fragment {
 
     private static final String LOG_TAG = MovieDetailFragment.class.getName();
@@ -72,6 +75,7 @@ public class MovieDetailFragment extends Fragment {
     // Setting up some static variables
     private static boolean IS_LANDSCAPE_TABLET;
 
+    // Method injection with dagger 2
     @Inject
     ViewModelProvider.Factory moviesViewModelFactory;
 
@@ -84,10 +88,9 @@ public class MovieDetailFragment extends Fragment {
     @Inject
     Prefs prefs;
 
+    // Set-up required reference variables
     private MoviesViewModel moviesViewModel;
-
     private String mRequestSortOrder;
-
     private boolean addFavorite;
 
     // Coordinator layout and tool/appbar view references.
@@ -210,14 +213,25 @@ public class MovieDetailFragment extends Fragment {
 
     private void configureDagger(){ AndroidSupportInjection.inject(this); }
 
+    /**
+     * Configure and set up our view model. This method is responsible for registering
+     * and unregistering observers.
+     */
     private void configureViewModel(){
+
+        // Get our view model provider using factory method.
         moviesViewModel = ViewModelProviders.of(getActivity(), moviesViewModelFactory).get(MoviesViewModel.class);
 
-        moviesViewModel.getSelectedItem().removeObservers(this);
-        moviesViewModel.getDetailDataAcquireStatus().removeObservers(this);
-        moviesViewModel.getReviewItems().removeObservers(this);
-        moviesViewModel.getRelatedVideoItems().removeObservers(this);
+        // Remove any observers to prevent duplication, we can be relatively sure if one observer
+        // exists, so do the others.
+        if(moviesViewModel.getSelectedItem().hasObservers()) {
+            moviesViewModel.getSelectedItem().removeObservers(this);
+            moviesViewModel.getDetailDataAcquireStatus().removeObservers(this);
+            moviesViewModel.getReviewItems().removeObservers(this);
+            moviesViewModel.getRelatedVideoItems().removeObservers(this);
+        }
 
+        // Set up selected item observer.
         moviesViewModel.getSelectedItem().observe(this, new Observer<MovieItem>() {
             @Override
             public void onChanged(@Nullable MovieItem movieItem) {
@@ -226,6 +240,7 @@ public class MovieDetailFragment extends Fragment {
             }
         });
 
+        // Set up detail data status observer
         moviesViewModel.getDetailDataAcquireStatus().observe(this, new Observer<DataStatus>() {
             @Override
             public void onChanged(@Nullable DataStatus dataStatus) {
@@ -242,6 +257,7 @@ public class MovieDetailFragment extends Fragment {
             }
         });
 
+        // Set-up an observer so we can get our video item results when received.
         moviesViewModel.getRelatedVideoItems().observe(this, new Observer<ArrayList<RelatedVideos>>() {
             @Override
             public void onChanged(@Nullable ArrayList<RelatedVideos> relatedVideoItems) {
@@ -252,7 +268,7 @@ public class MovieDetailFragment extends Fragment {
             }
         });
 
-        Log.v(LOG_TAG, "REVIEWS: GettingREVIEWS OBSERVER");
+        // Set-up an observer to view the status of our
         moviesViewModel.getReviewItems().observe(this, new Observer<ArrayList<MovieReviewItem>>() {
             @Override
             public void onChanged(@Nullable ArrayList<MovieReviewItem> movieReviewItems) {
@@ -265,18 +281,18 @@ public class MovieDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Responsible for setting data to some of our views
+     */
     private void setUpDetailView(){
 
         title.setText(mMovieItem.getTitle());
-
         releasedDateTv.setText(AppUtils.formatDate(new SimpleDateFormat("yyyy-MM-dd"),
                 mMovieItem.getReleaseDate(),
                 getActivity().getString(R.string.date_unknown), LOG_TAG));
 
         voteAverageTv.setText(Double.toString(mMovieItem.getVoteAverage()));
-
         synopsisTv.setText(mMovieItem.getOverview());
-
         configureFavsButton(favButton, mMovieItem);
 
         // Load background and poster images using picasso library.
@@ -284,6 +300,9 @@ public class MovieDetailFragment extends Fragment {
         loadImageWithPicasso(mMovieItem.getPosterURL(), null, mPosterView);
     }
 
+    /**
+     * Responsible for setting up the list of related videos
+     */
     private void setUpRelatedVideosList() {
         if(relatedVideosAdapter == null) {
             if(mRelatedVideoItems == null) {
@@ -320,6 +339,9 @@ public class MovieDetailFragment extends Fragment {
         relatedVideoLv.setNestedScrollingEnabled(false);
     }
 
+    /**
+     * Responsible for setting up our list of reviews.
+     */
     private void setUpReviewList() {
         if(reviewsAdapter == null) {
             Log.v(LOG_TAG, "REVIEWS: Review Adapter is NULL");
@@ -347,7 +369,6 @@ public class MovieDetailFragment extends Fragment {
      */
     private void loadImageWithPicasso(String url, final ProgressBar progressViewId, final ImageView displayView) {
         if (appUtils.hasNetworkAccess()) {
-            Log.i(LOG_TAG, "TEST: We have network access");
             Picasso.get().load(url)
                     .into(displayView, new Callback() {
                         @Override
@@ -361,7 +382,7 @@ public class MovieDetailFragment extends Fragment {
                         }
                     });
         } else {
-            Log.i(LOG_TAG, "TEST: No network, load from cache.");
+            // Looks like we are offline, so picasso will load from cache where available
             Picasso.get().load(url).networkPolicy(NetworkPolicy.OFFLINE)
                     .into(displayView, new Callback() {
                         @Override
@@ -403,10 +424,16 @@ public class MovieDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * Configure favourites floating action button.
+     * @param favButton reference object for our FAB button
+     * @param item reference object for the currently viewed item (for which we will fav/un-fav).
+     */
     private void configureFavsButton(final FloatingActionButton favButton, final MovieItem item) {
 
         if (item.getFavorite() == MovieItem.IS_FAVOURITE) {
             favButton.setImageResource(R.drawable.ic_star_filled);
+            favButton.setContentDescription(getString(R.string.CD_image_icon_is_fav));
         } else {
             favButton.setImageResource(R.drawable.ic_star);
         }
@@ -414,23 +441,19 @@ public class MovieDetailFragment extends Fragment {
             @Override
             public void onClick(final View v) {
 
-                final String toastText;
                 if (item.getFavorite() == MovieItem.IS_NOT_FAVOURITE) {
                     item.setFavorite(MovieItem.IS_FAVOURITE);
                     addFavorite = true;
                     favButton.setImageResource(R.drawable.ic_star_filled);
-                    toastText = "Made fav.";
                 } else {
                     item.setFavorite(MovieItem.IS_NOT_FAVOURITE);
                     favButton.setImageResource(R.drawable.ic_star);
                     addFavorite = false;
-                    toastText = "Removed fav";
                 }
 
                 AppExecutors.getInstance().diskIO().execute(new CallbackRunnable(new RunnableInterface() {
                     @Override
                     public void onRunCompletion() {
-                        Log.i(LOG_TAG, "Running task onRunCompletion. Update database.");
                         if (addFavorite) {
                             prefs.incrementFavoriteCount();
                         } else {
@@ -442,17 +465,14 @@ public class MovieDetailFragment extends Fragment {
                         // not looking at that category list anymore.
                         if(IS_LANDSCAPE_TABLET && mRequestSortOrder != null) {
                             if (moviesViewModel.getCurrentSortOrder().getValue().equals(mRequestSortOrder)) {
-                                Log.v(LOG_TAG, "SortOrder: sort order IS CURRENT. SO: " + mRequestSortOrder);
                                 moviesViewModel.getMovies(mRequestSortOrder, MoviesViewModel.REFRESH_FROM_DATABASE);
                             } else {
-                                Log.v(LOG_TAG, "SortOrder: sort order IS NOT CURRENT. SO: " + mRequestSortOrder);
                             }
                         }
                     }
                 }) {
                     @Override
                     public void run() {
-                        Log.i(LOG_TAG, "Running action" + moviesDao);
                         moviesDao.updateMovie(item);
                         // Let's trigger our callback once the database is successfully updated.
                         super.run();

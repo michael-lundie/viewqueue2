@@ -28,6 +28,9 @@ import io.lundie.michael.viewcue.utilities.Prefs;
 import retrofit2.Retrofit;
 
 /**
+ * Primary AppModule allowing various classes and methods to be injected into our app.
+ * This is my first time to use dagger and I'm still learning the ins and outs. Any help/crit
+ * is greatly encouraged.
  * Tutorial followed from:
  * https://blog.mindorks.com/the-new-dagger-2-android-injector-cbe7d55afa6a
  */
@@ -42,7 +45,6 @@ public class AppModule {
     @Provides
     @Singleton
     AppUtils provideUtils(Application application) {
-        Log.i(LOG_TAG, "TEST: UTILS INJECTION");
         return new AppUtils(application);
     }
 
@@ -50,7 +52,6 @@ public class AppModule {
     @Provides
     @Singleton
     Prefs providePrefs(Application application, SharedPreferences sharedPrefs) {
-        Log.i(LOG_TAG, "TEST: PREFS INJECTION");
         return new Prefs(application, sharedPrefs);
     }
 
@@ -58,7 +59,6 @@ public class AppModule {
     @Provides
     @Singleton
     MoviesDatabase provideDatabase(Application application) {
-        Log.i(LOG_TAG, "TEST: DATABASE INJECTION");
         return Room.databaseBuilder(application,
                 MoviesDatabase.class, "movies")
                 .build();
@@ -73,14 +73,12 @@ public class AppModule {
     @Singleton
     MovieRepository provideMovieRepository(TheMovieDbApi theMovieDbApi, MoviesDao moviesDao,
                                            Prefs prefs, AppConstants constants, AppUtils appUtils) {
-        Log.i(LOG_TAG, "TEST: REPOSITORY INJECTION");
         return new MovieRepository(theMovieDbApi, moviesDao, prefs, constants, appUtils);
     }
 
     // API Injection
     @Provides
     Gson provideGson() {
-        Log.i(LOG_TAG, "TEST: API INJECTION");
         return new GsonBuilder()
             .excludeFieldsWithoutExposeAnnotation()
             .create(); }

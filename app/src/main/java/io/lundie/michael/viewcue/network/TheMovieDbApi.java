@@ -8,6 +8,9 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
+/**
+ * Class providing end points for The Movie DB API.
+ */
 public interface TheMovieDbApi {
 
     String HTTPS_THEMOVIEDB_API_URL = "https://api.themoviedb.org/3/";

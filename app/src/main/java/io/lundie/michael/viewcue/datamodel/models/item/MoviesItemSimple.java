@@ -2,6 +2,10 @@ package io.lundie.michael.viewcue.datamodel.models.item;
 
 import android.arch.persistence.room.ColumnInfo;
 
+/**
+ * A simplified and less memory hungry version of our MovieItem list, used to assist in some
+ * data operations done by the {@link io.lundie.michael.viewcue.datamodel.MovieRepository}.
+ */
 public class MoviesItemSimple {
 
     private int id;

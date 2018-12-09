@@ -20,6 +20,9 @@ import io.lundie.michael.viewcue.datamodel.models.item.MovieItem;
 import io.lundie.michael.viewcue.datamodel.models.videos.RelatedVideos;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
+/**
+ * Allows bind of related video to UI and provides a click listener interface
+ */
 public class RelatedVideosViewAdapter extends RecycleViewWithSetEmpty.Adapter<RelatedVideosViewAdapter.ViewHolder>{
 
     private static final String LOG_TAG = RelatedVideosViewAdapter.class.getName();
@@ -56,6 +59,8 @@ public class RelatedVideosViewAdapter extends RecycleViewWithSetEmpty.Adapter<Re
     public class ViewHolder extends RecycleViewWithSetEmpty.ViewHolder {
 
         final View mView;
+
+        // Bind view using butterknife.
         @BindView(R.id.video_link) Button mVideoLink;
 
         ViewHolder(View view) {
@@ -63,6 +68,12 @@ public class RelatedVideosViewAdapter extends RecycleViewWithSetEmpty.Adapter<Re
             mView = view;
             ButterKnife.bind(this, view);
         }
+
+        /**
+         * Method used to bind data to our view
+         * @param item the video item to be bound
+         * @param listener reference variable for our listener interface
+         */
         void bind(final RelatedVideos item, final OnItemClickListener listener) {
             mVideoLink.setText(item.getName());
 

@@ -17,6 +17,9 @@ import io.lundie.michael.viewcue.R;
 import io.lundie.michael.viewcue.datamodel.models.review.MovieReviewItem;
 import io.lundie.michael.viewcue.ui.views.RecycleViewWithSetEmpty;
 
+/**
+ * View adapter for binding review data with the UI
+ */
 public class MovieReviewsViewAdapter extends RecycleViewWithSetEmpty.Adapter<MovieReviewsViewAdapter.ViewHolder> {
 
     private static final String LOG_TAG = MovieReviewsViewAdapter.class.getName();
@@ -50,6 +53,8 @@ public class MovieReviewsViewAdapter extends RecycleViewWithSetEmpty.Adapter<Mov
     }
 
     public class ViewHolder extends RecycleViewWithSetEmpty.ViewHolder {
+
+        // Bind views using butterknife
         @BindView(R.id.review_author_tv) TextView mReviewAuthorTv;
         @BindView(R.id.review_content_tv) TextView mReviewContentTv;
         @BindView(R.id.read_more_btn) TextView mReadMoreBtn;
@@ -60,8 +65,11 @@ public class MovieReviewsViewAdapter extends RecycleViewWithSetEmpty.Adapter<Mov
             super(view);
             ButterKnife.bind(this, view);
         }
+        /**
+         * Method used to bind data to our view
+         * @param item the review item to be bound
+         */
         void bind(final MovieReviewItem item) {
-
 
             mReviewAuthorTv.setText(item.getAuthor());
             mReviewContentTv.setText(item.getContent());
@@ -77,22 +85,29 @@ public class MovieReviewsViewAdapter extends RecycleViewWithSetEmpty.Adapter<Mov
                 Pattern pattern = Pattern.compile("\\b.{1," + 299 + "}\\b\\W?");
                 Matcher matcher = pattern.matcher(reviewText);
                 int splitCharacterIndex = 0;
+
+                // Use pattern matcher to find an appropriate place to split review data.
                 while (matcher.find()) {
                     splitCharacterIndex = matcher.end();
                     break;
                 }
+
                 final String condensedText = reviewText.substring(0, splitCharacterIndex);
                 final String fullText = condensedText + reviewText.substring(splitCharacterIndex);
 
                 mReviewContentTv.setText(condensedText);
+
+                // Set-up click listener allowing user to display fulltext results of review.
                 mReadMoreBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if(!isFullTextVisible) {
+                            // If the full review text is visible, hide it.
                             mReviewContentTv.setText(fullText);
                             mReadMoreBtn.setText(textHide);
                             isFullTextVisible = true;
                         } else {
+                            // Show the complete review text
                             mReviewContentTv.setText(condensedText);
                             mReadMoreBtn.setText(textReadMore);
                             isFullTextVisible = false;

@@ -8,21 +8,13 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Class used from: https://stackoverflow.com/a/45646202
+ * Simple class returning an instance of a retrofit object providing access to out API
+ * Class initially used from: https://stackoverflow.com/a/45646202 to assist with debugging.
  */
 public class ApiClient {
     private static Retrofit retrofit = null;
 
-
     public static Retrofit getClient(Gson gson){
-
-        //TODO: Remove interceptor
-        /**HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
-                .build();*/
-
         if(retrofit==null){
             retrofit = new Retrofit.Builder()
                     .baseUrl(TheMovieDbApi.HTTPS_THEMOVIEDB_API_URL)

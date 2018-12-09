@@ -18,6 +18,9 @@ import io.lundie.michael.viewcue.datamodel.models.item.MoviesItemSimple;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
+/**
+ * Simple Data Access Object interface providing various methods to assist with database operations.
+ */
 @Dao
 public interface MoviesDao {
 

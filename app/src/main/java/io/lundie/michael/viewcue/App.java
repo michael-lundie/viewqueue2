@@ -29,7 +29,7 @@ public class App extends Application implements HasActivityInjector {
     @Inject
     DispatchingAndroidInjector<Activity> androidInjector;
 
-    public static Context context;
+    public Context context;
 
     @Override
     public void onCreate() {
@@ -42,5 +42,4 @@ public class App extends Application implements HasActivityInjector {
     public DispatchingAndroidInjector<Activity> activityInjector() {
         return androidInjector;
     }
-
 }

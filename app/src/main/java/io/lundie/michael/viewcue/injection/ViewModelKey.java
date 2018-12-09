@@ -1,8 +1,3 @@
-/*
- * Crafted by Michael R Lundie (2018)
- * Last Modified 10/10/18 06:27
- */
-
 package io.lundie.michael.viewcue.injection;
 
 import android.arch.lifecycle.ViewModel;
