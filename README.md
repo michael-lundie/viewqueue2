@@ -12,3 +12,25 @@ Offline access gained through the combination of a ROOM database (initially usin
 
 # Future Intentions
 I intend to return to this project to more fully utilise Dagger injection.
+
+# References
+
+Below are some of the references used while producing this application. Other references are noted directly within comments in the code.
+
+MVVM architecture:
+
+https://proandroiddev.com/mvvm-architecture-viewmodel-and-livedata-part-1-604f50cda1
+
+https://medium.com/corebuild-software/simple-android-mvvm-using-rx-and-kotlin-9769a91b03ef
+
+https://github.com/hazems/mvvm-sample-app/blob/part1
+
+Retrofit:
+
+https://www.simplifiedcoding.net/android-viewmodel-using-retrofit/
+
+https://guides.codepath.com/android/consuming-apis-with-retrofit
+
+https://futurestud.io/tutorials/retrofit-2-how-to-add-query-parameters-to-every-request
+
+https://inthecheesefactory.com/blog/retrofit-2.0/en
