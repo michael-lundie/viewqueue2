@@ -1,7 +1,7 @@
 # Viewcue
 Udacity Android Developer Movie Stage 2 App
 
-![Loading Images in ViewQ](https://s696797961.websitehome.co.uk/lundie/ghub_gif/lundie_viewCue_imageLoad3.gif)
+![Loading Images in ViewQ](http://s696797961.websitehome.co.uk/lundie/ghub_gif/lundie_viewCue_imageLoad3.gif)
 
 # Editing the API Key
 This application requires the use of an API key from [The Movie Database](https://www.themoviedb.org/). Please add your own API key in your local gradle.properties file located in the application root.
